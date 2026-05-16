@@ -19,10 +19,9 @@
             <li><a href="#" onclick="switchTab('affiliates')">Afiliados</a></li>
         </ul>
         <div class="nav-actions" style="display: flex; gap: 10px;">
-            <!-- Modificado: Agora apontam diretamente para os arquivos físicos externos -->
             <a href="login.html" class="btn btn-outline" style="text-decoration: none; display: flex; align-items: center;">Entrar</a>
-            <!-- Corrigido: Redireciona fisicamente para o arquivo externo da dashboard em vez de disparar a switchTab antiga -->
-            <a href="dashboard.html" class="btn btn-primary" style="text-decoration: none; display: flex; align-items: center;">Painel</a>
+            <a href="register.html" class="btn btn-outline" style="text-decoration: none; display: flex; align-items: center;">Registrar</a>
+            <a href="login.html" id="btn-painel" class="btn btn-primary" style="text-decoration: none; display: flex; align-items: center;">Painel</a>
         </div>
     </nav>
 
@@ -98,10 +97,7 @@
             </div>
         </section>
 
-        <!-- As seções antigas <section id="login"> e <section id="register"> foram removidas daqui -->
-
-        <!-- Removido o <section id="dashboard"> que causava duplicidade estrutural pós-isolamento -->
-    </main>
+        </main>
 
     <div id="depositModal" class="modal">
         <div class="modal-content">
@@ -140,7 +136,6 @@
 
     <script src="script.js"></script>
 
-    <!-- Script de Captura de Ações de Login/Registro Externos -->
     <script>
         window.addEventListener('DOMContentLoaded', () => {
             const params = new URLSearchParams(window.location.search);
@@ -149,6 +144,26 @@
                 window.location.href = 'dashboard.html';
             }
         });
+    </script>
+
+    <script type="module">
+        import { auth, onAuthStateChanged } from "./firebase-config.js";
+        
+        const btnPainel = document.getElementById('btn-painel');
+        if (btnPainel) {
+            // Deixa o padrão apontando para login.html caso a resposta da rede demore
+            btnPainel.href = 'login.html';
+            
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    // Se o usuário já possuir sessão ativa no navegador, o botão altera para ir direto ao painel
+                    btnPainel.href = 'dashboard.html';
+                } else {
+                    // Se não estiver logado, redireciona estritamente para tela de login
+                    btnPainel.href = 'login.html';
+                }
+            });
+        }
     </script>
 </body>
 </html>
