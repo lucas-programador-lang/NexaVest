@@ -14,16 +14,19 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
         }
         .dashboard-container {
             display: flex;
-            flex-index: 1;
             width: 100%;
             max-width: 1440px;
             margin: 0 auto;
             padding: 2rem 5% 4rem 5%;
             gap: 2rem;
             flex: 1;
+            box-sizing: border-box;
         }
         @media (max-width: 992px) {
             .dashboard-container {
@@ -44,6 +47,7 @@
             flex-direction: column;
             justify-content: space-between;
             height: fit-content;
+            box-sizing: border-box;
         }
         @media (max-width: 992px) {
             .sidebar-premium {
@@ -79,11 +83,12 @@
             align-items: center;
             gap: 1rem;
             padding: 1rem 1.25rem;
-            color: var(--text-muted);
+            color: #94a3b8; /* fallback caso var não carregue */
             text-decoration: none;
             font-weight: 600;
             border-radius: 14px;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid transparent;
         }
         @media (max-width: 992px) {
             .sidebar-item a {
@@ -142,6 +147,36 @@
         .stat-card-premium.highlighted::before {
             background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%);
         }
+        /* Estilos básicos para os Modais funcionarem caso não estejam no styles.css */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(4, 7, 13, 0.8);
+            backdrop-filter: blur(8px);
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .input-premium {
+            background: #070b14;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .input-premium:focus {
+            border-color: #10b981;
+        }
     </style>
 </head>
 <body>
@@ -155,7 +190,7 @@
         <div class="nav-actions" style="display: flex; align-items: center; gap: 1.25rem;">
             <div style="display: flex; flex-direction: column; text-align: right;" class="user-meta">
                 <span style="font-weight: 700; font-size: 0.95rem;" id="user-name-display">Carregando Investidor...</span>
-                <span style="font-size: 0.75rem; color: var(--emerald); font-weight: 600; letter-spacing: 0.5px;"><i class="fa-solid fa-shield-halved"></i> CONTA PREMIUM</span>
+                <span style="font-size: 0.75rem; color: #10b981; font-weight: 600; letter-spacing: 0.5px;"><i class="fa-solid fa-shield-halved"></i> CONTA PREMIUM</span>
             </div>
             
             <a href="perfil.html" class="btn-profile">
@@ -194,8 +229,8 @@
             
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
                 <div>
-                    <h1 style="font-weight: 800; font-size: 1.8rem; letter-spacing: -0.5px;">Painel de Controle Financeiro</h1>
-                    <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0.25rem;">Monitore seus ciclos e gerencie seus lucros operacionais.</p>
+                    <h1 style="font-weight: 800; font-size: 1.8rem; letter-spacing: -0.5px; margin: 0;">Painel de Controle Financeiro</h1>
+                    <p style="color: #94a3b8; font-size: 0.95rem; margin-top: 0.25rem; margin-bottom: 0;">Monitore seus ciclos e gerencie seus lucros operacionais.</p>
                 </div>
                 <button class="btn btn-primary" onclick="openModal('depositModal')" style="display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 8px 25px rgba(16, 185, 129, 0.25);">
                     <i class="fa-brands fa-pix"></i> Adicionar Fundos
@@ -205,7 +240,7 @@
             <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); display: grid; gap: 1.5rem;">
                 
                 <div class="stat-card-premium">
-                    <h4 style="color: var(--text-muted); font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Saldo Disponível</h4>
+                    <h4 style="color: #94a3b8; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; margin: 0;">Saldo Disponível</h4>
                     <div class="value" id="balance-display" style="font-size: 2rem; font-weight: 800; margin: 0.75rem 0; letter-spacing: -0.5px;">R$ 0,00</div>
                     <button class="btn btn-sm btn-outline" onclick="openModal('withdrawModal')" style="width: 100%; border-radius: 10px; font-weight: 600;">
                         Sacar para Conta PIX
@@ -213,17 +248,17 @@
                 </div>
 
                 <div class="stat-card-premium highlighted">
-                    <h4 style="color: var(--emerald); font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Rendimentos Acumulados</h4>
-                    <div class="value text-emerald" id="yield-display" style="font-size: 2rem; font-weight: 800; margin: 0.75rem 0; letter-spacing: -0.5px;">R$ 0,00</div>
-                    <span class="trend" style="color: var(--emerald); font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 0.4rem;">
+                    <h4 style="color: #10b981; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; margin: 0;">Rendimentos Acumulados</h4>
+                    <div class="value text-emerald" id="yield-display" style="font-size: 2rem; font-weight: 800; margin: 0.75rem 0; letter-spacing: -0.5px; color: #10b981;">R$ 0,00</div>
+                    <span class="trend" style="color: #10b981; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 0.4rem;">
                         <i class="fa-solid fa-arrow-trend-up"></i> Atualizações automáticas às 23h
                     </span>
                 </div>
 
                 <div class="stat-card-premium">
-                    <h4 style="color: var(--text-muted); font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Afiliados Ativos</h4>
+                    <h4 style="color: #94a3b8; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; margin: 0;">Afiliados Ativos</h4>
                     <div class="value" id="referrals-display" style="font-size: 2rem; font-weight: 800; margin: 0.75rem 0; letter-spacing: -0.5px;">0</div>
-                    <span class="trend" style="color: var(--text-muted); font-size: 0.85rem; font-weight: 500;">
+                    <span class="trend" style="color: #94a3b8; font-size: 0.85rem; font-weight: 500;">
                         <i class="fa-solid fa-users"></i> Programa de indicações diretas
                     </span>
                 </div>
@@ -231,8 +266,8 @@
 
             <div class="panel-card recent-activity">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.5rem;">
-                    <h3 style="font-weight: 700; font-size: 1.2rem;">Extrato de Operações Recentes</h3>
-                    <span style="font-size: 0.85rem; color: var(--text-muted); background: rgba(255,255,255,0.03); padding: 0.4rem 0.8rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.03);">
+                    <h3 style="font-weight: 700; font-size: 1.2rem; margin: 0;">Extrato de Operações Recentes</h3>
+                    <span style="font-size: 0.85rem; color: #94a3b8; background: rgba(255,255,255,0.03); padding: 0.4rem 0.8rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.03);">
                         Sincronizado com o Livro de Registro
                     </span>
                 </div>
@@ -241,14 +276,16 @@
                     <table class="activity-table" style="width: 100%; border-collapse: collapse; text-align: left;">
                         <thead>
                             <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
-                                <th style="padding: 1rem 0.75rem; color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">Data/Hora</th>
-                                <th style="padding: 1rem 0.75rem; color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">Operação</th>
-                                <th style="padding: 1rem 0.75rem; color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">Valor</th>
-                                <th style="padding: 1rem 0.75rem; color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">Status</th>
+                                <th style="padding: 1rem 0.75rem; color: #94a3b8; font-weight: 600; font-size: 0.9rem;">Data/Hora</th>
+                                <th style="padding: 1rem 0.75rem; color: #94a3b8; font-weight: 600; font-size: 0.9rem;">Operação</th>
+                                <th style="padding: 1rem 0.75rem; color: #94a3b8; font-weight: 600; font-size: 0.9rem;">Valor</th>
+                                <th style="padding: 1rem 0.75rem; color: #94a3b8; font-weight: 600; font-size: 0.9rem;">Status</th>
                             </tr>
                         </thead>
+                        <tbody id="transactions-tbody">
+                            </tbody>
                     </table>
-                    <div id="no-transactions-message" style="text-align: center; color: var(--text-muted); padding: 2rem; font-size: 0.95rem;">
+                    <div id="no-transactions-message" style="text-align: center; color: #94a3b8; padding: 2rem; font-size: 0.95rem;">
                         Nenhuma movimentação financeira registrada até o momento.
                     </div>
                 </div>
@@ -257,16 +294,16 @@
     </div>
 
     <div id="depositModal" class="modal">
-        <div class="modal-content" style="max-width: 500px; padding: 2.5rem; background: #0f172a; border: 1px solid rgba(255,255,255,0.08); border-radius: 24px;">
-            <span class="close-modal" onclick="closeModal('depositModal')" style="font-size: 1.75rem; cursor: pointer; float: right; color: var(--text-muted);">&times;</span>
-            <h2 style="margin-bottom: 0.5rem; font-weight: 800; font-size: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
-                <i class="fa-brands fa-pix text-emerald"></i> Depósito Instantâneo
+        <div class="modal-content" style="max-width: 500px; width: 100%; padding: 2.5rem; background: #0f172a; border: 1px solid rgba(255,255,255,0.08); border-radius: 24px; position: relative;">
+            <span class="close-modal" onclick="closeModal('depositModal')" style="font-size: 1.75rem; cursor: pointer; position: absolute; top: 1.5rem; right: 1.5rem; color: #94a3b8;">&times;</span>
+            <h2 style="margin-top: 0; margin-bottom: 0.5rem; font-weight: 800; font-size: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fa-brands fa-pix style='color: #10b981;'"></i> Depósito Instantâneo
             </h2>
-            <p style="color: var(--text-muted); margin-bottom: 2rem; font-size: 0.9rem;">Insira o valor do aporte para gerar um faturamento dinâmico via API Workers.</p>
+            <p style="color: #94a3b8; margin-bottom: 2rem; font-size: 0.9rem;">Insira o valor do aporte para gerar um faturamento dinâmico via API Workers.</p>
             
             <form id="deposit-form">
-                <div class="input-group" style="margin-bottom: 1.5rem;">
-                    <label style="font-weight: 600; font-size: 0.85rem; margin-bottom: 0.5rem; display: block;">Defina o Valor do Aporte (R$)</label>
+                <div class="input-group" style="margin-bottom: 1.5rem; display: flex; flex-direction: column;">
+                    <label style="font-weight: 600; font-size: 0.85rem; margin-bottom: 0.5rem;">Defina o Valor do Aporte (R$)</label>
                     <input type="number" id="deposit-amount" class="input-premium" placeholder="Ex: 500" min="20" required style="width: 100%;">
                 </div>
                 
@@ -277,8 +314,8 @@
 
             <div id="qr-response-area" style="display: none;">
                 <div class="qr-container" style="text-align: center; margin: 1.5rem 0; padding: 2rem; background: rgba(7, 11, 20, 0.5); border-radius: 16px; border: 1px dashed rgba(16, 185, 129, 0.3);">
-                    <i class="fa-solid fa-qrcode" style="font-size: 5rem; color: var(--emerald); opacity: 0.9; text-shadow: 0 0 20px rgba(16,185,129,0.2);"></i>
-                    <p style="margin-top: 1rem; font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">Sincronizado e aguardando processamento da API</p>
+                    <i class="fa-solid fa-qrcode" style="font-size: 5rem; color: #10b981; opacity: 0.9; text-shadow: 0 0 20px rgba(16,185,129,0.2);"></i>
+                    <p style="margin-top: 1rem; font-size: 0.85rem; color: #94a3b8; font-weight: 500;">Sincronizado e aguardando processamento da API</p>
                 </div>
 
                 <div class="input-group">
@@ -295,17 +332,17 @@
     </div>
 
     <div id="withdrawModal" class="modal">
-        <div class="modal-content" style="max-width: 500px; padding: 2.5rem; background: #0f172a; border: 1px solid rgba(255,255,255,0.08); border-radius: 24px;">
-            <span class="close-modal" onclick="closeModal('withdrawModal')" style="font-size: 1.75rem; cursor: pointer; float: right; color: var(--text-muted);">&times;</span>
-            <h2 style="margin-bottom: 0.5rem; font-weight: 800; font-size: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
-                <i class="fa-solid fa-building-columns text-emerald"></i> Retirada de Lucros
+        <div class="modal-content" style="max-width: 500px; width: 100%; padding: 2.5rem; background: #0f172a; border: 1px solid rgba(255,255,255,0.08); border-radius: 24px; position: relative;">
+            <span class="close-modal" onclick="closeModal('withdrawModal')" style="font-size: 1.75rem; cursor: pointer; position: absolute; top: 1.5rem; right: 1.5rem; color: #94a3b8;">&times;</span>
+            <h2 style="margin-top: 0; margin-bottom: 0.5rem; font-weight: 800; font-size: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fa-solid fa-building-columns" style="color: #10b981;"></i> Retirada de Lucros
             </h2>
-            <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.9rem;">Saque mínimo: <strong>R$ 90,00</strong> | Taxa de processamento: <strong>10%</strong></p>
+            <p style="color: #94a3b8; margin-bottom: 1.5rem; font-size: 0.9rem;">Saque mínimo: <strong>R$ 90,00</strong> | Taxa de processamento: <strong>10%</strong></p>
             
             <form id="withdraw-form">
-                <div class="input-group" style="margin-bottom: 1.25rem;">
-                    <label style="font-weight: 600; font-size: 0.85rem; margin-bottom: 0.5rem; display: block;">Tipo de Chave PIX</label>
-                    <select id="withdraw-pix-type" class="input-premium" required style="width: 100%; background: #070b14; border: 1px solid rgba(255,255,255,0.1); color: white; padding: 0.75rem; border-radius: 12px;">
+                <div class="input-group" style="margin-bottom: 1.25rem; display: flex; flex-direction: column;">
+                    <label style="font-weight: 600; font-size: 0.85rem; margin-bottom: 0.5rem;">Tipo de Chave PIX</label>
+                    <select id="withdraw-pix-type" class="input-premium" required style="width: 100%;">
                         <option value="" disabled selected>Selecione o tipo de chave</option>
                         <option value="CPF">CPF</option>
                         <option value="Email">E-mail</option>
@@ -314,24 +351,24 @@
                     </select>
                 </div>
 
-                <div class="input-group" style="margin-bottom: 1.25rem;">
-                    <label style="font-weight: 600; font-size: 0.85rem; margin-bottom: 0.5rem; display: block;">Insira a Chave PIX Destinatária</label>
+                <div class="input-group" style="margin-bottom: 1.25rem; display: flex; flex-direction: column;">
+                    <label style="font-weight: 600; font-size: 0.85rem; margin-bottom: 0.5rem;">Insira a Chave PIX Destinatária</label>
                     <input type="text" id="withdraw-pix-key" class="input-premium" placeholder="Preencha exatamente a chave selecionada" required style="width: 100%;">
                 </div>
 
-                <div class="input-group" style="margin-bottom: 1rem;">
-                    <label style="font-weight: 600; font-size: 0.85rem; margin-bottom: 0.5rem; display: block;">Valor do Resgate (R$)</label>
+                <div class="input-group" style="margin-bottom: 1rem; display: flex; flex-direction: column;">
+                    <label style="font-weight: 600; font-size: 0.85rem; margin-bottom: 0.5rem;">Valor do Resgate (R$)</label>
                     <input type="number" id="withdraw-amount" class="input-premium" placeholder="Mínimo 90" min="90" required style="width: 100%;">
                 </div>
 
                 <div style="background: rgba(7, 11, 20, 0.5); padding: 1rem; border-radius: 12px; margin-bottom: 1.5rem; font-size: 0.85rem; display: flex; flex-direction: column; gap: 0.4rem;">
-                    <div style="display: flex; justify-content: space-between; color: var(--text-muted);">
+                    <div style="display: flex; justify-content: space-between; color: #94a3b8;">
                         <span>Desconto de Taxa (10%):</span>
                         <span id="withdraw-tax-display">R$ 0,00</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; font-weight: 700; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.4rem;">
                         <span>Líquido a Receber:</span>
-                        <span class="text-emerald" id="withdraw-liquid-display">R$ 0,00</span>
+                        <span style="color: #10b981;" id="withdraw-liquid-display">R$ 0,00</span>
                     </div>
                 </div>
 
@@ -343,12 +380,12 @@
     </div>
 
     <div id="affiliatesModal" class="modal">
-        <div class="modal-content" style="max-width: 500px; padding: 2.5rem; background: #0f172a; border: 1px solid rgba(255,255,255,0.08); border-radius: 24px;">
-            <span class="close-modal" onclick="closeModal('affiliatesModal')" style="font-size: 1.75rem; cursor: pointer; float: right; color: var(--text-muted);">&times;</span>
-            <h2 style="margin-bottom: 1rem; font-weight: 800; font-size: 1.5rem;"><i class="fa-solid fa-network-wired text-emerald"></i> Sua Rede</h2>
-            <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.5rem;">O monitoramento de comissões por indicação de novos membros e os bônus recorrentes são integrados de forma transparente ao seu saldo principal. Você recebe **6%** de comissão direta assim que seu indicado adquirir qualquer plano.</p>
+        <div class="modal-content" style="max-width: 500px; width: 100%; padding: 2.5rem; background: #0f172a; border: 1px solid rgba(255,255,255,0.08); border-radius: 24px; position: relative;">
+            <span class="close-modal" onclick="closeModal('affiliatesModal')" style="font-size: 1.75rem; cursor: pointer; position: absolute; top: 1.5rem; right: 1.5rem; color: #94a3b8;">&times;</span>
+            <h2 style="margin-top: 0; margin-bottom: 1rem; font-weight: 800; font-size: 1.5rem;"><i class="fa-solid fa-network-wired" style="color: #10b981;"></i> Sua Rede</h2>
+            <p style="color: #94a3b8; font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.5rem;">O monitoramento de comissões por indicação de novos membros e os bônus recorrentes são integrados de forma transparente ao seu saldo principal. Você recebe <strong>6%</strong> de comissão direta assim que seu indicado adquirir qualquer plano.</p>
             
-            <div class="input-group">
+            <div class="input-group" style="display: flex; flex-direction: column;">
                 <label style="font-weight: 600; font-size: 0.85rem; margin-bottom: 0.5rem; display: block;">Seu Link Exclusivo de Afiliado (6%):</label>
                 <div style="display: flex; gap: 10px;">
                     <input type="text" id="affiliate-link-input" class="input-premium" value="Carregando link..." readonly style="flex: 1; font-size: 0.85rem;">
@@ -363,12 +400,20 @@
     <div id="toast-container"></div>
 
     <footer style="margin-top: auto; padding: 1.5rem 5%; border-top: 1px solid rgba(255,255,255,0.02); background: rgba(7, 11, 20, 0.4);">
-        <p style="color: var(--text-muted); font-size: 0.85rem; text-align: center;">&copy; 2026 NexaVest. Sistema financeiro protegido por criptografia de ponta a ponta.</p>
+        <p style="color: #94a3b8; font-size: 0.85rem; text-align: center;">&copy; 2026 NexaVest. Sistema financeiro protegido por criptografia de ponta a ponta.</p>
     </footer>
 
     <script src="script.js"></script>
     <script type="module">
-        import { auth, onAuthStateChanged, db, doc, getDoc, setDoc } from "./firebase-config.js";
+        import { auth, onAuthStateChanged, db, doc, getDoc, setDoc, updateDoc, increment } from "./firebase-config.js";
+
+        // Expor funções de modal no escopo global para o onclick funcionar com type="module"
+        window.openModal = function(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+        window.closeModal = function(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
 
         const displayNameElement = document.getElementById('user-name-display');
         const balanceDisplay = document.getElementById('balance-display');
@@ -444,6 +489,13 @@
                 }
 
                 try {
+                    // 1. Deduzir o saldo imediatamente do documento do usuário por segurança
+                    const userDocRef = doc(db, "users", user.uid);
+                    await updateDoc(userDocRef, {
+                        saldo: increment(-amount)
+                    });
+
+                    // 2. Registrar o log do saque pendente
                     const withdrawRef = doc(db, "saques_solicitados", `${user.uid}_${Date.now()}`);
                     await setDoc(withdrawRef, {
                         uid: user.uid,
@@ -457,10 +509,18 @@
                     });
 
                     if (typeof showToast === 'function') {
-                        showToast('Saque agendado com sucesso!', 'success');
+                        showToast('Saque solicitado e saldo reservado!', 'success');
                     }
+                    
+                    closeModal('withdrawModal');
+                    
+                    // Atualiza a interface local temporariamente
+                    currentBalance -= amount;
+                    if (balanceDisplay) balanceDisplay.innerText = `R$ ${currentBalance.toFixed(2)}`;
+
                 } catch (error) {
                     console.error("Erro ao solicitar saque:", error);
+                    if (typeof showToast === 'function') showToast('Erro interno ao processar a retirada.', 'error');
                 }
             });
         }
