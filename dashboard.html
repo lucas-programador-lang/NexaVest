@@ -215,7 +215,7 @@
                 </div>
                 <button class="btn btn-primary" onclick="openModal('depositModal')" style="display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 8px 25px rgba(16, 185, 129, 0.25);">
                     <i class="fa-brands fa-pix"></i> Adicionar Fundos
-                </</button>
+                </button>
             </div>
 
             <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); display: grid; gap: 1.5rem;">
@@ -232,7 +232,7 @@
                     <h4 style="color: var(--emerald); font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Rendimentos Acumulados</h4>
                     <div class="value text-emerald" id="yield-display" style="font-size: 2rem; font-weight: 800; margin: 0.75rem 0; letter-spacing: -0.5px;">R$ 0,00</div>
                     <span class="trend" style="color: var(--emerald); font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 0.4rem;">
-                        <i class="fa-solid fa-arrow-trend-up"></i> Atualizações automáticas às 20h
+                        <i class="fa-solid fa-arrow-trend-up"></i> Atualizações automáticas às 23h
                     </span>
                 </div>
 
@@ -362,7 +362,7 @@
         <div class="modal-content" style="max-width: 700px; padding: 2.5rem; background: #0f172a; border: 1px solid rgba(255,255,255,0.08); border-radius: 24px;">
             <span class="close-modal" onclick="closeModal('plansModal')" style="font-size: 1.75rem; cursor: pointer; float: right; color: var(--text-muted);">&times;</span>
             <h2 style="margin-bottom: 1rem; font-weight: 800; font-size: 1.5rem;"><i class="fa-solid fa-chart-pie text-emerald"></i> Ciclos Operacionais</h2>
-            <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6;">Os planos de investimento ativo e taxas de rendimento Pro Yield são geridos de forma automatizada pelo motor computacional às <strong>20h (Horário de Brasília)</strong>.</p>
+            <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6;">Os planos de investimento ativo e taxas de rendimento Pro Yield são geridos de forma automatizada pelo motor computacional às <strong>23h</strong>.</p>
             
             <div class="plans-grid">
                 <div class="plan-card-item">
@@ -539,108 +539,14 @@
                     });
 
                     if (typeof showToast === 'function') {
-                        showToast('Saque agendado com sucesso! Aguardando processamento.', 'success');
+                        showToast('Saque agendado com sucesso!', 'success');
                     }
-                    closeModal('withdrawModal');
-                    withdrawForm.reset();
-                    if (withdrawTaxDisplay) withdrawTaxDisplay.innerText = "R$ 0,00";
-                    if (withdrawLiquidDisplay) withdrawLiquidDisplay.innerText = "R$ 0,00";
-
                 } catch (error) {
-                    console.error("Erro ao registrar ordem de saque no Firestore:", error);
-                    if (typeof showToast === 'function') showToast('Erro no sistema de resgates. Tente mais tarde.', 'error');
+                    console.error("Erro ao solicitar saque:", error);
+                    if (typeof showToast === 'function') showToast('Erro interno ao processar o saque.', 'error');
                 }
             });
         }
-
-        // 3. Lógica do Formulário de Depósito (Simulador para Geração de Chave via Workers)
-        const depositForm = document.getElementById('deposit-form');
-        const qrResponseArea = document.getElementById('qr-response-area');
-        const pixCopiaCola = document.getElementById('pix-copia-cola');
-        const btnCopyPix = document.getElementById('btn-copy-pix');
-
-        if (depositForm) {
-            depositForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const amount = document.getElementById('deposit-amount').value;
-
-                // Modifica o estado visual para exibir a área de pagamento simulada para a API Workers
-                if (qrResponseArea) qrResponseArea.style.display = 'block';
-                if (pixCopiaCola) {
-                    pixCopiaCola.value = `00020126580014br.gov.bcb.pix.v10215nexavest.payment.api.workers.dev/payload/qrcodestatic/val=${amount}dma2026`;
-                }
-                if (typeof showToast === 'function') showToast('Código PIX gerado com sucesso pela rede NexaVest.', 'success');
-            });
-        }
-
-        if (btnCopyPix && pixCopiaCola) {
-            btnCopyPix.addEventListener('click', () => {
-                pixCopiaCola.select();
-                navigator.clipboard.writeText(pixCopiaCola.value);
-                if (typeof showToast === 'function') showToast('Chave PIX copiada para a área de transferência!', 'success');
-            });
-        }
-
-        // 4. Lógica de Encerramento de Sessão
-        const logoutBtn = document.querySelector('a[href="index.html"]'); 
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', async (e) => {
-                e.preventDefault();
-                try {
-                    await signOut(auth);
-                    window.location.href = 'index.html';
-                } catch (error) {
-                    console.error("Erro ao encerrar sessão:", error);
-                }
-            });
-        }
-
-        // 5. NOVA LÓGICA DE COMPRA DE PLANOS E AFILIADOS (6%)
-        // Gerenciamento do botão de copiar link de afiliados
-        const btnCopyAff = document.getElementById('btn-copy-affiliate');
-        const affiliateLinkInput = document.getElementById('affiliate-link-input');
-        if (btnCopyAff && affiliateLinkInput) {
-            btnCopyAff.addEventListener('click', () => {
-                affiliateLinkInput.select();
-                navigator.clipboard.writeText(affiliateLinkInput.value);
-                if (typeof showToast === 'function') showToast('Link de afiliado copiado!', 'success');
-            });
-        }
-
-        // Captura do clique de compra nos botões dos planos injetados
-        document.querySelectorAll('.buy-plan-btn').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                const user = auth.currentUser;
-                if (!user) return;
-
-                const planName = e.target.getAttribute('data-name');
-                const planPrice = parseFloat(e.target.getAttribute('data-price'));
-
-                if (planPrice > currentBalance) {
-                    if (typeof showToast === 'function') showToast('Saldo insuficiente para ativar este plano. Faça um novo depósito.', 'error');
-                    return;
-                }
-
-                try {
-                    // Cria intenção de compra para a API externa processar debitos e repasse de afiliados (6%)
-                    const orderRef = doc(db, "planos_comprados", `${user.uid}_${Date.now()}`);
-                    await setDoc(orderRef, {
-                        uid: user.uid,
-                        plano_nome: planName,
-                        valor_plano: planPrice,
-                        comissao_afiliado_estimada: planPrice * 0.06, // Regra de 6% mapeada para processamento do Worker
-                        status: "pendente",
-                        data_compra: new Date().toISOString()
-                    });
-
-                    if (typeof showToast === 'function') showToast(`Solicitação de ativação do ${planName} enviada!`, 'success');
-                    closeModal('plansModal');
-                } catch (error) {
-                    console.error("Erro ao registrar intenção de compra do plano:", error);
-                    if (typeof showToast === 'function') showToast('Erro ao processar compra do plano. Tente mais tarde.', 'error');
-                }
-            });
-        });
     </script>
 </body>
 </html>
