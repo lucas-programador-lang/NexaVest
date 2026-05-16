@@ -1,8 +1,9 @@
 // firebase-config.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+// Adicionado: Importação das ferramentas do Firestore Database
+import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// Substitua pelas chaves reais geradas no seu console
 const firebaseConfig = {
   apiKey: "AIzaSyBDOu9o_Ox7RnVFuHcR8EuJrOfbUrpyO5o",
   authDomain: "nexavest-4c3ae.firebaseapp.com",
@@ -14,6 +15,21 @@ const firebaseConfig = {
 
 // Inicializa o Firebase
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
 
-export { auth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut };
+// Inicializa os serviços específicos
+const auth = getAuth(app);
+const db = getFirestore(app); // Instância do banco de dados
+
+// Exporta tudo que as telas de cadastro, login e painel vão precisar
+export { 
+  auth, 
+  createUserWithEmailAndPassword, 
+  signInWithEmailAndPassword, 
+  onAuthStateChanged, 
+  signOut,
+  db,
+  doc,
+  setDoc,
+  getDoc,
+  updateDoc
+};
