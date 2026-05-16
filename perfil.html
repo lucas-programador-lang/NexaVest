@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexaVest | Meu Perfil & Segurança</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #070b14;
+            --bg-card: #0f172a;
+            --emerald: #10b981;
+            --emerald-hover: #059669;
+            --border-color: rgba(255, 255, 255, 0.05);
+            --text-main: #ffffff;
+            --text-muted: #94a3b8;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex; 
+            flex-direction: column;
+            opacity: 0; 
+            transition: opacity 0.15s ease;
+        }
+
+        /* Barra de Navegação */
+        .profile-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(10px);
+            z-index: 10;
+        }
+
+        .profile-nav .logo {
+            font-weight: 800;
+            font-size: 1.3rem;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .profile-nav .logo i {
+            color: var(--emerald);
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-back {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 10px 18px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-back:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(-3px);
+        }
+
+        .btn-logout {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+            padding: 10px 18px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-logout:hover {
+            background: var(--danger);
+            color: #ffffff;
+            border-color: var(--danger);
+        }
+
+        /* Container Principal */
+        .profile-container {
+            flex: 1;
+            width: 100%;
+            max-width: 800px;
+            margin: 3rem auto;
+            padding: 0 1.5rem;
+            box-sizing: border-box;
+        }
+
+        .profile-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .profile-header h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.5px;
+        }
+
+        .profile-header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* Grid de Configurações */
+        .profile-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        /* Card de Configuração */
+        .profile-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 2.5rem;
+        }
+
+        .profile-card h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin: 0 0 0.5rem 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .profile-card h3 i {
+            color: var(--emerald);
+        }
+
+        .card-description {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 1.8rem;
+            display: block;
+        }
+
+        /* Formulários e Inputs */
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .form-group:last-of-type {
+            margin-bottom: 1.8rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #cbd5e1;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+            font-size: 1rem;
+        }
+
+        .form-control {
+            width: 100%;
+            background: rgba(7, 11, 20, 0.5);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 14px 16px 14px 46px;
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            box-sizing: border-box;
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: rgba(16, 185, 129, 0.5);
+            background: rgba(7, 11, 20, 0.8);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        /* Botões */
+        .btn-submit {
+            background: var(--emerald);
+            color: #070b14;
+            border: none;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-submit:hover {
+            background: var(--emerald-hover);
+            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.25);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        /* Container de Toasts */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 380px;
+            width: calc(100% - 48px);
+        }
+
+        .toast {
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            border-radius: 18px;
+            padding: 1.2rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            transform: translateX(120%);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .toast.active {
+            transform: translateX(0);
+        }
+
+        .toast-icon {
+            font-size: 1.2rem;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .toast.success .toast-icon { color: var(--emerald); }
+        .toast.error .toast-icon { color: var(--danger); }
+        
+        .toast.success { border-left: 4px solid var(--emerald); }
+        .toast.error { border-left: 4px solid var(--danger); }
+
+        .toast-content {
+            flex-grow: 1;
+        }
+
+        .toast-title {
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+        }
+
+        .toast-message {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        /* Rodapé */
+        .profile-footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--border-color);
+            margin-top: 4rem;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="profile-nav">
+        <div class="logo">
+            <i class="fa-solid fa-chart-line"></i> NexaVest
+        </div>
+        <div class="nav-actions">
+            <a href="dashboard.html" class="btn-back">
+                <i class="fa-solid fa-arrow-left"></i> Painel Geral
+            </a>
+            <button class="btn-logout" id="btnLogoutNav">
+                <i class="fa-solid fa-right-from-bracket"></i> Sair
+            </button>
+        </div>
+    </nav>
+
+    <main class="profile-container">
+        <header class="profile-header">
+            <h1>Segurança da Conta</h1>
+            <p>Gerencie suas credenciais de acesso e proteja seus investimentos.</p>
+        </header>
+
+        <div class="profile-grid">
+            
+            <div class="profile-card">
+                <h3><i class="fa-solid fa-key"></i> Alterar Minha Senha</h3>
+                <span class="card-description">Caso saiba sua senha atual e queira modificá-la diretamente por aqui.</span>
+                
+                <form id="formUpdatePassword" onsubmit="event.preventDefault();">
+                    <div class="form-group">
+                        <label for="currentPassword">Senha Atual</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-lock"></i>
+                            <input type="password" id="currentPassword" class="form-control" placeholder="••••••••" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="newPassword">Nova Senha</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-shield-halved"></i>
+                            <input type="password" id="newPassword" class="form-control" placeholder="Mínimo 6 caracteres" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirmNewPassword">Confirmar Nova Senha</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-check-double"></i>
+                            <input type="password" id="confirmNewPassword" class="form-control" placeholder="Repita a nova senha" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-submit" id="btnSaveNewPassword">
+                        <i class="fa-solid fa-floppy-disk"></i> Atualizar Senha
+                    </button>
+                </form>
+            </div>
+
+            <div class="profile-card">
+                <h3><i class="fa-solid fa-envelope-open-text"></i> Esqueci Minha Senha Atual</h3>
+                <span class="card-description">Se você não lembra a sua senha atual, nós enviaremos de forma segura um link de redefinição para o seu e-mail de cadastro.</span>
+                
+                <div class="form-group">
+                    <label id="labelUserEmail">E-mail de Envio</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-at"></i>
+                        <input type="email" id="recoveryEmailField" class="form-control" placeholder="Carregando seu e-mail..." disabled>
+                    </div>
+                </div>
+
+                <button class="btn-secondary" id="btnSendResetLink">
+                    <i class="fa-solid fa-paper-plane"></i> Enviar Link de Redefinição
+                </button>
+            </div>
+
+        </div>
+    </main>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <footer class="profile-footer">
+        &copy; 2026 NexaVest. Inteligência, Alta Performance e Segurança.
+    </footer>
+
+    <script>
+        // Função do Toast Premium idêntico ao dos planos
+        function showPremiumToast(title, message, type) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icon = type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation';
+
+            toast.innerHTML = `
+                <div class="toast-icon"><i class="fa-solid ${icon}"></i></div>
+                <div class="toast-content">
+                    <div class="toast-title">${title}</div>
+                    <div class="toast-message">${message}</div>
+                </div>
+            `;
+            
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('active'), 50);
+            
+            setTimeout(() => {
+                toast.classList.remove('active');
+                setTimeout(() => toast.remove(), 400);
+            }, 5000);
+        }
+    </script>
+
+    <script type="module">
+        import { auth, onAuthStateChanged } from "./firebase-config.js";
+        // Importações necessárias do Firebase Auth para gerenciar credenciais
+        import { 
+            updatePassword, 
+            EmailAuthProvider, 
+            reauthenticateWithCredential, 
+            sendPasswordResetEmail,
+            signOut 
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        let currentUserEmail = "";
+
+        // Verifica estado de autenticação do usuário
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUserEmail = user.email;
+                document.getElementById('recoveryEmailField').value = user.email;
+                document.body.style.opacity = '1';
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+
+        // Evento 1: Modificar a senha conhecendo a anterior (Reautenticação obrigatória pelo Firebase)
+        document.getElementById('btnSaveNewPassword').addEventListener('click', async () => {
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+            const user = auth.currentUser;
+
+            if(!currentPassword || !newPassword || !confirmNewPassword) {
+                showPremiumToast("Campos Incompletos", "Preencha todos os campos para continuar.", "error");
+                return;
+            }
+
+            if(newPassword !== confirmNewPassword) {
+                showPremiumToast("Senhas Não Conferem", "A nova senha e a confirmação precisam ser idênticas.", "error");
+                return;
+            }
+
+            if(newPassword.length < 6) {
+                showPremiumToast("Senha Fraca", "A nova senha deve possuir no mínimo 6 dígitos.", "error");
+                return;
+            }
+
+            try {
+                // Cria a credencial para provar que o usuário sabe a senha atual antes de trocar
+                const credential = EmailAuthProvider.credential(user.email, currentPassword);
+                await reauthenticateWithCredential(user, credential);
+                
+                // Atualiza de fato a senha após o sucesso da verificação anterior
+                await updatePassword(user, newPassword);
+                
+                showPremiumToast("Senha Atualizada", "Sua senha foi redefinida internamente com sucesso.", "success");
+                document.getElementById('formUpdatePassword').reset();
+            } catch (error) {
+                console.error(error);
+                if (error.code === 'auth/wrong-password') {
+                    showPremiumToast("Acesso Negado", "A senha atual informada está incorreta.", "error");
+                } else {
+                    showPremiumToast("Erro na Operação", "Não foi possível atualizar. Tente novamente mais tarde.", "error");
+                }
+            }
+        });
+
+        // Evento 2: Enviar link para o e-mail cadastrado caso não saiba a senha
+        document.getElementById('btnSendResetLink').addEventListener('click', async () => {
+            if(!currentUserEmail) return;
+
+            try {
+                await sendPasswordResetEmail(auth, currentUserEmail);
+                showPremiumToast(
+                    "E-mail Enviado", 
+                    `Um link seguro de redefinição foi encaminhado para o endereço ${currentUserEmail}.`, 
+                    "success"
+                );
+            } catch (error) {
+                console.error(error);
+                showPremiumToast("Falha no Envio", "Houve um problema ao solicitar o link. Verifique mais tarde.", "error");
+            }
+        });
+
+        // Evento 3: Botão de Logout da Navbar
+        document.getElementById('btnLogoutNav').addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+                window.location.href = 'login.html';
+            } catch (error) {
+                console.error(error);
+                showPremiumToast("Erro ao Sair", "Não foi possível processar seu encerramento de sessão.", "error");
+            }
+        });
+    </script>
+</body>
+</html>
