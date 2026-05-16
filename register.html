@@ -103,5 +103,38 @@
         });
     </script>
 
+
+    <script type="module">
+        import { auth, createUserWithEmailAndPassword } from "./firebase-config.js";
+
+        const registerForm = document.getElementById('register-form');
+
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            // Nota: Os campos 'fullname' e 'cpf' podem ser vinculados ao Firestore posteriormente.
+
+            try {
+                // Criação da conta no Firebase Authentication
+                await createUserWithEmailAndPassword(auth, email, password);
+                
+                // Redirecionamento seguro enviando o parâmetro de sucesso para exibir o Toast na tela de login
+                window.location.href = 'login.html?action=registered';
+            } catch (error) {
+                console.error("Erro na criação de usuário no Firebase:", error.code, error.message);
+                
+                // Dispara o Toast nativo caso a função global esteja acessível
+                if (typeof showToast === 'function') {
+                    showToast('Erro ao realizar o cadastro. Tente outra combinação.', 'danger');
+                } else {
+                    alert('Erro ao realizar cadastro: ' + error.message);
+                }
+            }
+        });
+    </script>
+
 </body>
 </html>
