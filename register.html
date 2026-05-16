@@ -33,21 +33,32 @@
             <p style="text-align: center; color: var(--text-muted); margin-bottom: 2rem; font-size: 0.95rem;">Faça parte do ecossistema inteligente de investimentos.</p>
             
             <form onsubmit="event.preventDefault(); window.location.href='login.html?action=registered';">
+                
+                <!-- Campo: Nome Completo -->
                 <div class="input-group">
                     <label><i class="fa-regular fa-user"></i> Nome Completo</label>
                     <input type="text" class="input-premium" placeholder="Seu nome e sobrenome" required>
                 </div>
 
+                <!-- Campo Adicionado: CPF (Obrigatório para transações PIX) -->
+                <div class="input-group">
+                    <label><i class="fa-regular fa-id-card"></i> CPF (Apenas números)</label>
+                    <input type="text" id="cpf" class="input-premium" placeholder="000.000.000-00" maxlength="14" inputmode="numeric" required>
+                </div>
+
+                <!-- Campo: E-mail -->
                 <div class="input-group">
                     <label><i class="fa-regular fa-envelope"></i> Endereço de E-mail</label>
                     <input type="email" class="input-premium" placeholder="seu@email.com" required autocomplete="username">
                 </div>
                 
+                <!-- Campo: Senha -->
                 <div class="input-group">
                     <label><i class="fa-solid fa-lock"></i> Crie uma Senha Forte</label>
                     <input type="password" class="input-premium" placeholder="No mínimo 8 caracteres" required autocomplete="new-password">
                 </div>
 
+                <!-- Termos e Condições -->
                 <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 2rem; text-align: left;">
                     <input type="checkbox" id="terms" style="accent-color: var(--emerald); cursor: pointer; margin-top: 4px;" required>
                     <label for="terms" style="color: var(--text-muted); font-size: 0.85rem; cursor: pointer; user-select: none; line-height: 1.4;">
@@ -55,6 +66,7 @@
                     </label>
                 </div>
                 
+                <!-- Botão de Envio -->
                 <button type="submit" class="btn btn-primary" style="width: 100%;">
                     Concluir Cadastro <i class="fa-solid fa-user-plus"></i>
                 </button>
@@ -70,6 +82,22 @@
     <footer style="padding: 1.5rem 5%;">
         <p style="color: var(--text-muted); font-size: 0.85rem;">&copy; 2026 NexaVest. Dados estritamente protegidos sob as diretrizes de segurança de criptoativos.</p>
     </footer>
+
+    <!-- Script de Máscara de CPF em Tempo Real -->
+    <script>
+        const cpfInput = document.getElementById('cpf');
+        
+        cpfInput.addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\D/g, ''); // Remove caracteres não numéricos
+            
+            // Aplica a formatação dinâmica de forma limpa
+            if (value.length > 3) value = value.substring(0,3) + '.' + value.substring(3);
+            if (value.length > 7) value = value.substring(0,7) + '.' + value.substring(7);
+            if (value.length > 11) value = value.substring(0,11) + '-' + value.substring(11,13);
+            
+            e.target.value = value;
+        });
+    </script>
 
 </body>
 </html>
