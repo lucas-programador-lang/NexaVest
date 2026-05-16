@@ -21,7 +21,8 @@
         <div class="nav-actions" style="display: flex; gap: 10px;">
             <!-- Modificado: Agora apontam diretamente para os arquivos físicos externos -->
             <a href="login.html" class="btn btn-outline" style="text-decoration: none; display: flex; align-items: center;">Entrar</a>
-            <button class="btn btn-primary" onclick="switchTab('dashboard')">Painel</button>
+            <!-- Corrigido: Redireciona fisicamente para o arquivo externo da dashboard em vez de disparar a switchTab antiga -->
+            <a href="dashboard.html" class="btn btn-primary" style="text-decoration: none; display: flex; align-items: center;">Painel</a>
         </div>
     </nav>
 
@@ -99,74 +100,7 @@
 
         <!-- As seções antigas <section id="login"> e <section id="register"> foram removidas daqui -->
 
-        <section id="dashboard" class="view">
-            <div class="dashboard-layout">
-                <aside class="sidebar">
-                    <ul>
-                        <li class="active"><i class="fa-solid fa-wallet"></i> Resumo</li>
-                        <li><i class="fa-solid fa-chart-pie"></i> Meus Investimentos</li>
-                        <li onclick="openModal('depositModal')"><i class="fa-solid fa-money-bill-transfer"></i> Depósito</li>
-                        <li onclick="showToast('Saque solicitado. Aguarde o ciclo.', 'info')"><i class="fa-solid fa-building-columns"></i> Saque PIX</li>
-                        <li><i class="fa-solid fa-network-wired"></i> Minha Rede</li>
-                        <li onclick="switchTab('home')"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair</li>
-                    </ul>
-                </aside>
-                <div class="dashboard-content">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                        <h2>Bem-vindo ao seu Portfólio</h2>
-                        <button class="btn btn-primary" onclick="openModal('depositModal')"><i class="fa-brands fa-pix"></i> Novo Depósito</button>
-                    </div>
-                    
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <h4>Saldo Disponível</h4>
-                            <div class="value">R$ 4.250,00</div>
-                            <button class="btn btn-sm btn-outline" onclick="showToast('Função de saque em processamento', 'info')">Sacar via PIX</button>
-                        </div>
-                        <div class="stat-card">
-                            <h4>Total Investido</h4>
-                            <div class="value text-emerald">R$ 10.000,00</div>
-                            <span class="trend"><i class="fa-solid fa-arrow-trend-up"></i> Ciclo Ativo (+2.2% a.d)</span>
-                        </div>
-                        <div class="stat-card">
-                            <h4>Ganhos de Afiliados</h4>
-                            <div class="value">R$ 850,00</div>
-                            <span class="trend">12 Diretos ativos</span>
-                        </div>
-                    </div>
-
-                    <div class="recent-activity">
-                        <h3>Últimos Rendimentos</h3>
-                        <div style="overflow-x: auto;">
-                            <table class="activity-table">
-                                <thead>
-                                    <tr>
-                                        <th>Data/Hora</th>
-                                        <th>Descrição</th>
-                                        <th>Valor</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>Hoje, 23:00</td>
-                                        <td>Rendimento Diário (Pro Yield)</td>
-                                        <td class="text-emerald">+ R$ 22,00</td>
-                                        <td><span class="badge-status success">Concluído</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Ontem, 14:30</td>
-                                        <td>Comissão de Afiliado (Nível 1)</td>
-                                        <td class="text-emerald">+ R$ 50,00</td>
-                                        <td><span class="badge-status success">Concluído</span></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
+        <!-- Removido o <section id="dashboard"> que causava duplicidade estrutural pós-isolamento -->
     </main>
 
     <div id="depositModal" class="modal">
@@ -211,11 +145,8 @@
         window.addEventListener('DOMContentLoaded', () => {
             const params = new URLSearchParams(window.location.search);
             if (params.get('action') === 'login') {
-                // Aguarda um instante para o script principal carregar e exibe a transição premium
-                setTimeout(() => {
-                    if (typeof showToast === 'function') showToast('Autenticado com sucesso!', 'success');
-                    if (typeof switchTab === 'function') switchTab('dashboard');
-                }, 200);
+                // Redireciona o fluxo de login capturado na URL diretamente para o novo arquivo físico
+                window.location.href = 'dashboard.html';
             }
         });
     </script>
