@@ -103,9 +103,10 @@
         });
     </script>
 
-
+<!-- Lógica de Conexão com Firebase, Cadastro em Nuvem e Gravação no Firestore -->
     <script type="module">
-        import { auth, createUserWithEmailAndPassword } from "./firebase-config.js";
+        // Importações atualizadas para incluir o banco de dados (db), referenciamento de documentos (doc) e escrita (setDoc)
+        import { auth, createUserWithEmailAndPassword, db, doc, setDoc } from "./firebase-config.js";
 
         const registerForm = document.getElementById('register-form');
 
@@ -114,23 +115,42 @@
 
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            
-            // Nota: Os campos 'fullname' e 'cpf' podem ser vinculados ao Firestore posteriormente.
+            const fullname = document.getElementById('fullname').value;
+            // Remove pontos e traço da máscara para salvar o CPF puramente numérico
+            const cpfClean = document.getElementById('cpf').value.replace(/\D/g, ''); 
 
             try {
-                // Criação da conta no Firebase Authentication
-                await createUserWithEmailAndPassword(auth, email, password);
+                // 1. Criação da credencial de autenticação na nuvem
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                
+                // 2. Criação do documento exclusivo do usuário no Firestore usando o UID da autenticação
+                await setDoc(doc(db, "users", user.uid), {
+                    nome: fullname,
+                    cpf: cpfClean,
+                    email: email,
+                    saldo: 0.00,          // Estrutura financeira zerada para novos investidores
+                    rendimentos: 0.00,
+                    afiliados_ativos: 0,
+                    data_cadastro: new Date().toISOString()
+                });
                 
                 // Redirecionamento seguro enviando o parâmetro de sucesso para exibir o Toast na tela de login
                 window.location.href = 'login.html?action=registered';
             } catch (error) {
                 console.error("Erro na criação de usuário no Firebase:", error.code, error.message);
                 
+                // Tratamento amigável para e-mails duplicados
+                let userMessage = 'Erro ao realizar o cadastro. Tente outra combinação.';
+                if (error.code === 'auth/email-already-in-use') {
+                    userMessage = 'Este endereço de e-mail já está cadastrado no sistema.';
+                }
+                
                 // Dispara o Toast nativo caso a função global esteja acessível
                 if (typeof showToast === 'function') {
-                    showToast('Erro ao realizar o cadastro. Tente outra combinação.', 'danger');
+                    showToast(userMessage, 'danger');
                 } else {
-                    alert('Erro ao realizar cadastro: ' + error.message);
+                    alert('Erro ao realizar cadastro: ' + userMessage);
                 }
             }
         });
