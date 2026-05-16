@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexaVest | Inteligência em Investimentos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navegação -->
+    <nav class="navbar">
+        <div class="logo">
+            <i class="fa-solid fa-chart-line"></i> NexaVest
+        </div>
+        <ul class="nav-links">
+            <li><a href="#" onclick="switchTab('home')">Início</a></li>
+            <li><a href="#" onclick="switchTab('plans')">Planos</a></li>
+            <li><a href="#" onclick="switchTab('affiliates')">Afiliados</a></li>
+        </ul>
+        <div class="nav-actions">
+            <button class="btn btn-outline" onclick="switchTab('dashboard')">Acessar Painel</button>
+        </div>
+    </nav>
+
+    <!-- Container Principal -->
+    <main id="app-content">
+        
+        <!-- SEÇÃO: LANDING PAGE -->
+        <section id="home" class="view active">
+            <header class="hero">
+                <div class="hero-content">
+                    <h1>Multiplique seu capital com tecnologia de ponta</h1>
+                    <p>Ecossistema automatizado de rendimentos com saques instantâneos via PIX e ciclos diários de rentabilidade.</p>
+                    <button class="btn btn-primary" onclick="switchTab('plans')">Conheça os Planos</button>
+                </div>
+            </header>
+            
+            <div class="features">
+                <div class="feature-card">
+                    <i class="fa-solid fa-bolt"></i>
+                    <h3>Liquidez Diária</h3>
+                    <p>Ciclos de rendimento processados automaticamente todos os dias às 23:00.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fa-brands fa-pix"></i>
+                    <h3>Saque e Depósito PIX</h3>
+                    <p>Integração fluida e instantânea para movimentar seus fundos sem burocracia.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fa-solid fa-users"></i>
+                    <h3>Rede de Afiliados</h3>
+                    <p>Ganhe comissões estruturadas indicando novos investidores para a plataforma.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEÇÃO: PLANOS DE INVESTIMENTO -->
+        <section id="plans" class="view">
+            <div class="section-header">
+                <h2>Planos de Investimento</h2>
+                <p>Escolha o ciclo de rendimento que se adapta ao seu perfil</p>
+            </div>
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <h3>Start</h3>
+                    <div class="price">R$ 100<span>/mínimo</span></div>
+                    <ul>
+                        <li><i class="fa-solid fa-check"></i> Rendimento de 1.5% ao dia</li>
+                        <li><i class="fa-solid fa-check"></i> Contrato de 30 dias</li>
+                        <li><i class="fa-solid fa-check"></i> Saque Semanal</li>
+                    </ul>
+                    <button class="btn btn-primary">Investir Agora</button>
+                </div>
+                <div class="pricing-card premium">
+                    <div class="badge">Mais Popular</div>
+                    <h3>Pro Yield</h3>
+                    <div class="price">R$ 1.000<span>/mínimo</span></div>
+                    <ul>
+                        <li><i class="fa-solid fa-check"></i> Rendimento de 2.2% ao dia</li>
+                        <li><i class="fa-solid fa-check"></i> Contrato de 45 dias</li>
+                        <li><i class="fa-solid fa-check"></i> Saque Diário via PIX</li>
+                        <li><i class="fa-solid fa-check"></i> Bônus de Afiliado Nível 2</li>
+                    </ul>
+                    <button class="btn btn-primary">Investir Agora</button>
+                </div>
+                <div class="pricing-card">
+                    <h3>Enterprise</h3>
+                    <div class="price">R$ 5.000<span>/mínimo</span></div>
+                    <ul>
+                        <li><i class="fa-solid fa-check"></i> Rendimento de 3.0% ao dia</li>
+                        <li><i class="fa-solid fa-check"></i> Contrato de 60 dias</li>
+                        <li><i class="fa-solid fa-check"></i> Saque Diário Ilimitado</li>
+                        <li><i class="fa-solid fa-check"></i> Gerente de Conta VIP</li>
+                    </ul>
+                    <button class="btn btn-primary">Investir Agora</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEÇÃO: DASHBOARD (ÁREA LOGADA) -->
+        <section id="dashboard" class="view">
+            <div class="dashboard-layout">
+                <aside class="sidebar">
+                    <ul>
+                        <li class="active"><i class="fa-solid fa-wallet"></i> Resumo</li>
+                        <li><i class="fa-solid fa-chart-pie"></i> Meus Investimentos</li>
+                        <li><i class="fa-solid fa-money-bill-transfer"></i> Depósito / Saque</li>
+                        <li><i class="fa-solid fa-network-wired"></i> Minha Rede</li>
+                    </ul>
+                </aside>
+                <div class="dashboard-content">
+                    <h2>Bem-vindo ao seu Portfólio</h2>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <h4>Saldo Disponível</h4>
+                            <div class="value">R$ 4.250,00</div>
+                            <button class="btn btn-sm btn-outline">Sacar via PIX</button>
+                        </div>
+                        <div class="stat-card">
+                            <h4>Total Investido</h4>
+                            <div class="value text-emerald">R$ 10.000,00</div>
+                            <span class="trend"><i class="fa-solid fa-arrow-trend-up"></i> Ciclo Ativo</span>
+                        </div>
+                        <div class="stat-card">
+                            <h4>Ganhos de Afiliados</h4>
+                            <div class="value">R$ 850,00</div>
+                            <span class="trend">12 Diretos</span>
+                        </div>
+                    </div>
+
+                    <div class="recent-activity">
+                        <h3>Últimos Rendimentos</h3>
+                        <table class="activity-table">
+                            <thead>
+                                <tr>
+                                    <th>Data/Hora</th>
+                                    <th>Descrição</th>
+                                    <th>Valor</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Hoje, 23:00</td>
+                                    <td>Rendimento Diário (Pro Yield)</td>
+                                    <td class="text-emerald">+ R$ 22,00</td>
+                                    <td><span class="badge-status success">Concluído</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Ontem, 14:30</td>
+                                    <td>Comissão de Afiliado (Nível 1)</td>
+                                    <td class="text-emerald">+ R$ 50,00</td>
+                                    <td><span class="badge-status success">Concluído</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="logo"><i class="fa-solid fa-chart-line"></i> NexaVest</div>
+            <p>&copy; 2026 NexaVest. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
