@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexaVest | Minha Carteira</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            background: #070b14;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+        }
+        .dashboard-container {
+            display: flex;
+            width: 100%;
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 2rem 5% 4rem 5%;
+            gap: 2rem;
+            flex: 1;
+            box-sizing: border-box;
+        }
+        @media (max-width: 992px) {
+            .dashboard-container {
+                flex-direction: column;
+                padding: 1rem 1.5rem 3rem 1.5rem;
+                gap: 1.5rem;
+            }
+        }
+        .sidebar-premium {
+            width: 280px;
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 24px;
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: fit-content;
+            box-sizing: border-box;
+        }
+        @media (max-width: 992px) {
+            .sidebar-premium {
+                width: 100%;
+                padding: 1.25rem;
+            }
+        }
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        @media (max-width: 992px) {
+            .sidebar-menu {
+                flex-direction: row;
+                overflow-x: auto;
+                padding-bottom: 0.5rem;
+                gap: 0.75rem;
+            }
+            .sidebar-menu::-webkit-scrollbar {
+                height: 4px;
+            }
+            .sidebar-menu::-webkit-scrollbar-thumb {
+                background: rgba(16, 185, 129, 0.3);
+                border-radius: 10px;
+            }
+        }
+        .sidebar-item a {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.25rem;
+            color: #94a3b8;
+            text-decoration: none;
+            font-weight: 600;
+            border-radius: 14px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid transparent;
+        }
+        @media (max-width: 992px) {
+            .sidebar-item a {
+                padding: 0.75rem 1rem;
+                white-space: nowrap;
+                gap: 0.5rem;
+            }
+        }
+        .sidebar-item.active a, .sidebar-item a:hover {
+            color: #ffffff;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.03) 100%);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.05);
+        }
+        .main-content-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+        .panel-card {
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 24px;
+            padding: 2.25rem;
+        }
+        .btn-premium-nav {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            padding: 0.55rem 1rem;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .btn-premium-nav.profile {
+            color: #ffffff;
+            background: rgba(30, 41, 59, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .btn-premium-nav.profile:hover {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+        .btn-premium-nav.logout {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.05);
+            border: 1px solid rgba(239, 68, 68, 0.1);
+        }
+        .btn-premium-nav.logout:hover {
+            background: #ef4444;
+            color: #ffffff;
+        }
+
+        /* Badge de status do investimento */
+        .badge-status-active {
+            background: rgba(16, 185, 129, 0.12);
+            color: #10b981;
+            padding: 0.35rem 0.75rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo">
+            <a href="index.html" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fa-solid fa-chart-line text-emerald"></i> NexaVest
+            </a>
+        </div>
+        <div class="nav-actions" style="display: flex; align-items: center; gap: 1.5rem;">
+            <div style="display: flex; flex-direction: column; text-align: right;" class="user-meta">
+                <span style="font-weight: 700; font-size: 0.95rem;" id="user-name-display">Carregando Investidor...</span>
+                <span style="font-size: 0.75rem; color: #10b981; font-weight: 600; letter-spacing: 0.5px;"><i class="fa-solid fa-shield-halved"></i> CONTA PREMIUM</span>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 0.4rem; min-width: 130px;">
+                <a href="perfil.html" class="btn-premium-nav profile">
+                    <i class="fa-regular fa-user text-emerald"></i> Meu Perfil
+                </a>
+                <a href="index.html" class="btn-premium-nav logout">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Sair
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        
+        <aside class="sidebar-premium">
+            <ul class="sidebar-menu">
+                <li class="sidebar-item">
+                    <a href="dashboard.html"><i class="fa-solid fa-wallet"></i> Resumo Geral</a>
+                </li>
+                <li class="sidebar-item active">
+                    <a href="carteira.html"><i class="fa-solid fa-briefcase"></i> Minha Carteira</a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="planos.html"><i class="fa-solid fa-chart-pie"></i> Planos de Investimento</a>
+                </li>
+            </ul>
+        </aside>
+
+        <main class="main-content-wrapper">
+            
+            <div>
+                <h1 style="font-weight: 800; font-size: 1.8rem; letter-spacing: -0.5px; margin: 0;">Meus Ativos & Contratos</h1>
+                <p style="color: #94a3b8; font-size: 0.95rem; margin-top: 0.25rem; margin-bottom: 0;">Acompanhe a evolução das suas alocações de capital operando no sistema.</p>
+            </div>
+
+            <div class="panel-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h3 style="font-weight: 700; font-size: 1.2rem; margin: 0;">Planos de Investimento Ativos</h3>
+                </div>
+                
+                <div style="overflow-x: auto;">
+                    <table class="activity-table" style="width: 100%; border-collapse: collapse; text-align: left;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+                                <th style="padding: 1rem 0.75rem; color: #94a3b8; font-weight: 600; font-size: 0.9rem;">Data de Início</th>
+                                <th style="padding: 1rem 0.75rem; color: #94a3b8; font-weight: 600; font-size: 0.9rem;">Plano Adquirido</th>
+                                <th style="padding: 1rem 0.75rem; color: #94a3b8; font-weight: 600; font-size: 0.9rem;">Capital Alocado</th>
+                                <th style="padding: 1rem 0.75rem; color: #94a3b8; font-weight: 600; font-size: 0.9rem;">Rendimento Atual</th>
+                                <th style="padding: 1rem 0.75rem; color: #94a3b8; font-weight: 600; font-size: 0.9rem;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="investments-tbody">
+                            </tbody>
+                    </table>
+                    <div id="no-investments-message" style="text-align: center; color: #94a3b8; padding: 3rem; font-size: 0.95rem;">
+                        <i class="fa-solid fa-folder-open" style="font-size: 2rem; color: #334155; margin-bottom: 0.75rem; display: block;"></i>
+                        Você ainda não possui nenhum plano de investimento ativo.
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <footer style="margin-top: auto; padding: 1.5rem 5%; border-top: 1px solid rgba(255,255,255,0.02); background: rgba(7, 11, 20, 0.4);">
+        <p style="color: #94a3b8; font-size: 0.85rem; text-align: center;">&copy; 2026 NexaVest. Sistema financeiro protegido por criptografia de ponta a ponta.</p>
+    </footer>
+
+    <script type="module">
+        import { auth, onAuthStateChanged, db, doc, getDoc, collection, query, where, getDocs } from "./firebase-config.js";
+
+        const displayNameElement = document.getElementById('user-name-display');
+        const investmentsTbody = document.getElementById('investments-tbody');
+        const noInvestmentsMessage = document.getElementById('no-investments-message');
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                try {
+                    // Carregar Nome do Usuário
+                    const userDocRef = doc(db, "users", user.uid);
+                    const userDocSnap = await getDoc(userDocRef);
+                    if (userDocSnap.exists() && userDocSnap.data().nome) {
+                        displayNameElement.innerText = userDocSnap.data().nome;
+                    } else {
+                        displayNameElement.innerText = user.email.split('@')[0];
+                    }
+
+                    // Buscar os investimentos ativos do usuário logado
+                    const invCollectionRef = collection(db, "user_investimentos");
+                    const q = query(invCollectionRef, where("uid", "==", user.uid));
+                    const querySnapshot = await getDocs(q);
+
+                    if (!querySnapshot.empty) {
+                        noInvestmentsMessage.style.display = 'none';
+                        investmentsTbody.innerHTML = '';
+
+                        querySnapshot.forEach((doc) => {
+                            const data = doc.data();
+                            const dateFormated = data.data_compra ? new Date(data.data_compra).toLocaleDateString('pt-BR') : '---';
+                            
+                            const tr = document.createElement('tr');
+                            tr.style.borderBottom = '1px solid rgba(255,255,255,0.04)';
+                            tr.innerHTML = `
+                                <td style="padding: 1.2rem 0.75rem; font-size: 0.9rem; color: #94a3b8;">${dateFormated}</td>
+                                <td style="padding: 1.2rem 0.75rem; font-size: 0.9rem; font-weight: 700; color: #ffffff;">${data.plano_nome}</td>
+                                <td style="padding: 1.2rem 0.75rem; font-size: 0.9rem; font-weight: 600; color: #ffffff;">R$ ${parseFloat(data.valor_investido).toFixed(2)}</td>
+                                <td style="padding: 1.2rem 0.75rem; font-size: 0.9rem; font-weight: 700; color: #10b981;">R$ ${parseFloat(data.lucro_acumulado || 0).toFixed(2)}</td>
+                                <td style="padding: 1.2rem 0.75rem;"><span class="badge-status-active"><i class="fa-solid fa-circle" style="font-size: 0.5rem;"></i> Emitido</span></td>
+                            `;
+                            investmentsTbody.appendChild(tr);
+                        });
+                    }
+                } catch (error) {
+                    console.error("Erro ao carregar investimentos:", error);
+                }
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+    </script>
+</body>
+</html>
