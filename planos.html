@@ -24,8 +24,10 @@
             margin: 0;
             padding: 0;
             min-height: 100vh;
-            display: none; /* Proteção inicial: oculta a página até o Firebase validar a sessão */
+            display: flex; /* Mantido o flex original para estrutura de coluna */
             flex-direction: column;
+            opacity: 0; /* Correção: Oculta via opacidade para evitar que o layout quebre ao injetar display inline dinamicamente */
+            transition: opacity 0.15s ease;
         }
 
         /* Barra de topo simplificada para retorno */
@@ -343,10 +345,9 @@
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                // Se estiver autenticado corretamente, revela a página
-                document.body.style.display = 'flex';
+                // Modificado aqui: Altera apenas a opacidade preservando as regras de display flex declaradas no CSS
+                document.body.style.opacity = '1';
             } else {
-                // Se tentar burlar digitando o link direto sem conta, é expulso para o login
                 window.location.href = 'login.html';
             }
         });
