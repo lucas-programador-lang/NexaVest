@@ -668,8 +668,9 @@
         document.getElementById('btnConfirmInvestment').addEventListener('click', () => {
             closeInvestmentModal();
 
-            // EXEMPLO DE REGRA DE SALDO: Substitua por sua variável real vinda do Firebase/D1
-            const userBalance = 50; 
+            // MUDANÇA AQUI: Defina aqui o saldo real do usuário vindo do seu Firebase, Firestore ou D1.
+            // Para testar com 0 reais, basta deixar o valor como 0 abaixo.
+            const userBalance = 0; 
 
             if (userBalance >= activePlanValue) {
                 // Fluxo com Saldo Suficiente
@@ -679,7 +680,7 @@
                     "success"
                 );
             } else {
-                // Fluxo com Saldo Insuficiente - Injeta o redirecionamento com a query correta na URL
+                // MUDANÇA AQUI: Agora exibe dinamicamente o saldo exato contido em 'userBalance' no Toast.
                 showPremiumToast(
                     "Saldo Insuficiente", 
                     `Sua conta possui R$ ${userBalance.toFixed(2)}. É necessário realizar um aporte de R$ ${activePlanValue.toFixed(2)} para este plano.`, 
