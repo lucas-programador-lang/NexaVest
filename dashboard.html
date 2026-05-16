@@ -17,12 +17,13 @@
         }
         .dashboard-container {
             display: flex;
-            flex: 1;
+            flex-index: 1;
             width: 100%;
             max-width: 1440px;
             margin: 0 auto;
             padding: 2rem 5% 4rem 5%;
             gap: 2rem;
+            flex: 1;
         }
         @media (max-width: 992px) {
             .dashboard-container {
@@ -145,7 +146,6 @@
 </head>
 <body>
 
-    <!-- Navbar da Área Logada -->
     <nav class="navbar">
         <div class="logo">
             <a href="index.html" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.5rem;">
@@ -153,7 +153,7 @@
             </a>
         </div>
         <div class="nav-actions" style="display: flex; align-items: center; gap: 1.25rem;">
-            <div style="display: flex; flex-direction: column; text-align: right; class='user-meta'">
+            <div style="display: flex; flex-direction: column; text-align: right;" class="user-meta">
                 <span style="font-weight: 700; font-size: 0.95rem;" id="user-name-display">Carregando Investidor...</span>
                 <span style="font-size: 0.75rem; color: var(--emerald); font-weight: 600; letter-spacing: 0.5px;"><i class="fa-solid fa-shield-halved"></i> CONTA PREMIUM</span>
             </div>
@@ -163,34 +163,30 @@
         </div>
     </nav>
 
-    <!-- Layout da Dashboard Unificada -->
     <div class="dashboard-container">
         
-        <!-- Sidebar Esquerda -->
         <aside class="sidebar-premium">
             <ul class="sidebar-menu">
                 <li class="sidebar-item active">
                     <a href="#"><i class="fa-solid fa-wallet"></i> Resumo Geral</a>
                 </li>
                 <li class="sidebar-item">
-                    <a href="#" onclick="showToast('Módulo de Contratos em atualização de ciclos.', 'info')"><i class="fa-solid fa-chart-pie"></i> Investimentos</a>
+                    <a href="#" onclick="openModal('plansModal')"><i class="fa-solid fa-chart-pie"></i> Planos de Investimento</a>
                 </li>
                 <li class="sidebar-item">
                     <a href="#" onclick="openModal('depositModal')"><i class="fa-solid fa-money-bill-transfer"></i> Novo Depósito</a>
                 </li>
                 <li class="sidebar-item">
-                    <a href="#" onclick="showToast('Saque solicitado para a chave PIX vinculada.', 'success')"><i class="fa-solid fa-building-columns"></i> Solicitar Saque</a>
+                    <a href="#" onclick="openModal('withdrawModal')"><i class="fa-solid fa-building-columns"></i> Solicitar Saque</a>
                 </li>
                 <li class="sidebar-item">
-                    <a href="#" onclick="showToast('Sua rede possui 12 afiliados ativos.', 'info')"><i class="fa-solid fa-network-wired"></i> Afiliados</a>
+                    <a href="#" onclick="openModal('affiliatesModal')"><i class="fa-solid fa-network-wired"></i> Afiliados</a>
                 </li>
             </ul>
         </aside>
 
-        <!-- Painel Principal de Dados -->
         <main class="main-content-wrapper">
             
-            <!-- Saudação e Botão de Ação Rápida -->
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
                 <div>
                     <h1 style="font-weight: 800; font-size: 1.8rem; letter-spacing: -0.5px;">Painel de Controle Financeiro</h1>
@@ -201,43 +197,38 @@
                 </button>
             </div>
 
-            <!-- Grade de Cartões de Status de Rendimento -->
             <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); display: grid; gap: 1.5rem;">
                 
-                <!-- Card 1: Saldo Disponível -->
                 <div class="stat-card-premium">
                     <h4 style="color: var(--text-muted); font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Saldo Disponível</h4>
-                    <div class="value" style="font-size: 2rem; font-weight: 800; margin: 0.75rem 0; letter-spacing: -0.5px;">R$ 4.250,00</div>
-                    <button class="btn btn-sm btn-outline" onclick="showToast('Processando transferência imediata via PIX.', 'info')" style="width: 100%; border-radius: 10px; font-weight: 600;">
+                    <div class="value" id="balance-display" style="font-size: 2rem; font-weight: 800; margin: 0.75rem 0; letter-spacing: -0.5px;">R$ 0,00</div>
+                    <button class="btn btn-sm btn-outline" onclick="openModal('withdrawModal')" style="width: 100%; border-radius: 10px; font-weight: 600;">
                         Sacar para Conta PIX
                     </button>
                 </div>
 
-                <!-- Card 2: Total Investido Ativo -->
                 <div class="stat-card-premium highlighted">
-                    <h4 style="color: var(--emerald); font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Capital Alocado</h4>
-                    <div class="value text-emerald" style="font-size: 2rem; font-weight: 800; margin: 0.75rem 0; letter-spacing: -0.5px;">R$ 10.000,00</div>
+                    <h4 style="color: var(--emerald); font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Rendimentos Acumulados</h4>
+                    <div class="value text-emerald" id="yield-display" style="font-size: 2rem; font-weight: 800; margin: 0.75rem 0; letter-spacing: -0.5px;">R$ 0,00</div>
                     <span class="trend" style="color: var(--emerald); font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 0.4rem;">
-                        <i class="fa-solid fa-arrow-trend-up"></i> Ciclo Pro Yield Ativo (+2.2% a.d)
+                        <i class="fa-solid fa-arrow-trend-up"></i> Atualizações automáticas às 20h
                     </span>
                 </div>
 
-                <!-- Card 3: Ganhos com Rede de Afiliados -->
                 <div class="stat-card-premium">
-                    <h4 style="color: var(--text-muted); font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Comissão de Rede</h4>
-                    <div class="value" style="font-size: 2rem; font-weight: 800; margin: 0.75rem 0; letter-spacing: -0.5px;">R$ 850,00</div>
+                    <h4 style="color: var(--text-muted); font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Afiliados Ativos</h4>
+                    <div class="value" id="referrals-display" style="font-size: 2rem; font-weight: 800; margin: 0.75rem 0; letter-spacing: -0.5px;">0</div>
                     <span class="trend" style="color: var(--text-muted); font-size: 0.85rem; font-weight: 500;">
-                        <i class="fa-solid fa-users"></i> 12 Indicações diretas ativas
+                        <i class="fa-solid fa-users"></i> Programa de indicações diretas
                     </span>
                 </div>
             </div>
 
-            <!-- Tabela de Atividades Recentes e Histórico -->
             <div class="panel-card recent-activity">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.5rem;">
-                    <h3 style="font-weight: 700; font-size: 1.2rem;">Extrato de Rendimentos Recentes</h3>
+                    <h3 style="font-weight: 700; font-size: 1.2rem;">Extrato de Operações Recentes</h3>
                     <span style="font-size: 0.85rem; color: var(--text-muted); background: rgba(255,255,255,0.03); padding: 0.4rem 0.8rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.03);">
-                        Atualizado automaticamente às 23:00
+                        Sincronizado com o Livro de Registro
                     </span>
                 </div>
                 
@@ -250,121 +241,270 @@
                                 <th style="padding: 1rem 0.75rem; color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">Valor</th>
                                 <th style="padding: 1rem 0.75rem; color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">Status</th>
                             </tr>
-                        </thead>
-                        <tbody>
-                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
-                                <td style="padding: 1.25rem 0.75rem; font-size: 0.95rem;">Hoje, 23:00</td>
-                                <td style="padding: 1.25rem 0.75rem; font-size: 0.95rem; font-weight: 600;">Rendimento Diário (Pro Yield)</td>
-                                <td style="padding: 1.25rem 0.75rem; font-size: 0.95rem;" class="text-emerald">+ R$ 22,00</td>
-                                <td style="padding: 1.25rem 0.75rem;"><span class="badge-status success" style="background: rgba(16, 185, 129, 0.1); color: var(--emerald); padding: 0.3rem 0.6rem; border-radius: 6px; font-size: 0.8rem; font-weight: 600;">Efetivado</span></td>
-                            </tr>
-                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
-                                <td style="padding: 1.25rem 0.75rem; font-size: 0.95rem;">Ontem, 14:30</td>
-                                <td style="padding: 1.25rem 0.75rem; font-size: 0.95rem; font-weight: 600;">Comissão de Afiliado (Nível 1)</td>
-                                <td style="padding: 1.25rem 0.75rem; font-size: 0.95rem;" class="text-emerald">+ R$ 50,00</td>
-                                <td style="padding: 1.25rem 0.75rem;"><span class="badge-status success" style="background: rgba(16, 185, 129, 0.1); color: var(--emerald); padding: 0.3rem 0.6rem; border-radius: 6px; font-size: 0.8rem; font-weight: 600;">Efetivado</span></td>
-                            </tr>
-                        </tbody>
-                    </table>
+                        </table>
+                        <div id="no-transactions-message" style="text-align: center; color: var(--text-muted); padding: 2rem; font-size: 0.95rem;">
+                            Nenhuma movimentação financeira registrada até o momento.
+                        </div>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- Modal para Geração Dinâmica de Código PIX -->
     <div id="depositModal" class="modal">
         <div class="modal-content" style="max-width: 500px; padding: 2.5rem; background: #0f172a; border: 1px solid rgba(255,255,255,0.08); border-radius: 24px;">
             <span class="close-modal" onclick="closeModal('depositModal')" style="font-size: 1.75rem; cursor: pointer; float: right; color: var(--text-muted);">&times;</span>
             <h2 style="margin-bottom: 0.5rem; font-weight: 800; font-size: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
                 <i class="fa-brands fa-pix text-emerald"></i> Depósito Instantâneo
             </h2>
-            <p style="color: var(--text-muted); margin-bottom: 2rem; font-size: 0.9rem;">Gere um código de faturamento PIX dinâmico para creditar seu portfólio.</p>
+            <p style="color: var(--text-muted); margin-bottom: 2rem; font-size: 0.9rem;">Insira o valor do aporte para gerar um faturamento dinâmico via API Workers.</p>
             
-            <div class="input-group" style="margin-bottom: 1.5rem;">
-                <label style="font-weight: 600; font-size: 0.85rem; margin-bottom: 0.5rem; display: block;">Defina o Valor do Aporte (R$)</label>
-                <input type="number" class="input-premium" placeholder="0,00" value="1000" style="width: 100%;">
-            </div>
-            
-            <div class="qr-container" style="text-align: center; margin: 1.5rem 0; padding: 2rem; background: rgba(7, 11, 20, 0.5); border-radius: 16px; border: 1px dashed rgba(16, 185, 129, 0.3);">
-                <i class="fa-solid fa-qrcode" style="font-size: 5rem; color: var(--emerald); opacity: 0.9; text-shadow: 0 0 20px rgba(16,185,129,0.2);"></i>
-                <p style="margin-top: 1rem; font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">QR Code sincronizado e pronto para pagamento</p>
-            </div>
+            <form id="deposit-form">
+                <div class="input-group" style="margin-bottom: 1.5rem;">
+                    <label style="font-weight: 600; font-size: 0.85rem; margin-bottom: 0.5rem; display: block;">Defina o Valor do Aporte (R$)</label>
+                    <input type="number" id="deposit-amount" class="input-premium" placeholder="Ex: 500" min="20" required style="width: 100%;">
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 1.5rem;">
+                    Gerar Copia e Cola / QR Code
+                </button>
+            </form>
 
-            <div class="input-group">
-                <label style="font-weight: 600; font-size: 0.85rem; margin-bottom: 0.5rem; display: block;">Código PIX Copia e Cola</label>
-                <div style="display: flex; gap: 10px;">
-                    <input type="text" class="input-premium" value="00020126580014br.gov.bcb.pix.v1..." readonly style="flex: 1; font-size: 0.85rem;">
-                    <button class="btn btn-primary" onclick="showToast('Chave PIX copiada para a área de transferência!', 'success')" style="padding: 0 1.25rem;">
-                        <i class="fa-regular fa-copy"></i>
-                    </button>
+            <div id="qr-response-area" style="display: none;">
+                <div class="qr-container" style="text-align: center; margin: 1.5rem 0; padding: 2rem; background: rgba(7, 11, 20, 0.5); border-radius: 16px; border: 1px dashed rgba(16, 185, 129, 0.3);">
+                    <i class="fa-solid fa-qrcode" style="font-size: 5rem; color: var(--emerald); opacity: 0.9; text-shadow: 0 0 20px rgba(16,185,129,0.2);"></i>
+                    <p style="margin-top: 1rem; font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">Sincronizado e aguardando processamento da API</p>
+                </div>
+
+                <div class="input-group">
+                    <label style="font-weight: 600; font-size: 0.85rem; margin-bottom: 0.5rem; display: block;">Código PIX Copia e Cola</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="pix-copia-cola" class="input-premium" value="Aguardando geração..." readonly style="flex: 1; font-size: 0.85rem;">
+                        <button class="btn btn-primary" id="btn-copy-pix" style="padding: 0 1.25rem;">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Container de Mensagens Suspensas (Toasts) -->
+    <div id="withdrawModal" class="modal">
+        <div class="modal-content" style="max-width: 500px; padding: 2.5rem; background: #0f172a; border: 1px solid rgba(255,255,255,0.08); border-radius: 24px;">
+            <span class="close-modal" onclick="closeModal('withdrawModal')" style="font-size: 1.75rem; cursor: pointer; float: right; color: var(--text-muted);">&times;</span>
+            <h2 style="margin-bottom: 0.5rem; font-weight: 800; font-size: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fa-solid fa-building-columns text-emerald"></i> Retirada de Lucros
+            </h2>
+            <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.9rem;">Saque mínimo: <strong>R$ 90,00</strong> | Taxa de processamento: <strong>10%</strong></p>
+            
+            <form id="withdraw-form">
+                <div class="input-group" style="margin-bottom: 1.25rem;">
+                    <label style="font-weight: 600; font-size: 0.85rem; margin-bottom: 0.5rem; display: block;">Tipo de Chave PIX</label>
+                    <select id="withdraw-pix-type" class="input-premium" required style="width: 100%; background: #070b14; border: 1px solid rgba(255,255,255,0.1); color: white; padding: 0.75rem; border-radius: 12px;">
+                        <option value="" disabled selected>Selecione o tipo de chave</option>
+                        <option value="CPF">CPF</option>
+                        <option value="Email">E-mail</option>
+                        <option value="Telefone">Telefone / Número</option>
+                        <option value="ChaveAleatoria">Chave Aleatória (EVP)</option>
+                    </select>
+                </div>
+
+                <div class="input-group" style="margin-bottom: 1.25rem;">
+                    <label style="font-weight: 600; font-size: 0.85rem; margin-bottom: 0.5rem; display: block;">Insira a Chave PIX Destinatária</label>
+                    <input type="text" id="withdraw-pix-key" class="input-premium" placeholder="Preencha exatamente a chave selecionada" required style="width: 100%;">
+                </div>
+
+                <div class="input-group" style="margin-bottom: 1rem;">
+                    <label style="font-weight: 600; font-size: 0.85rem; margin-bottom: 0.5rem; display: block;">Valor do Resgate (R$)</label>
+                    <input type="number" id="withdraw-amount" class="input-premium" placeholder="Mínimo 90" min="90" required style="width: 100%;">
+                </div>
+
+                <div style="background: rgba(7, 11, 20, 0.5); padding: 1rem; border-radius: 12px; margin-bottom: 1.5rem; font-size: 0.85rem; display: flex; flex-direction: column; gap: 0.4rem;">
+                    <div style="display: flex; justify-content: space-between; color: var(--text-muted);">
+                        <span>Desconto de Taxa (10%):</span>
+                        <span id="withdraw-tax-display">R$ 0,00</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-weight: 700; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.4rem;">
+                        <span>Líquido a Receber:</span>
+                        <span class="text-emerald" id="withdraw-liquid-display">R$ 0,00</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    Confirmar Saque Imediato
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div id="plansModal" class="modal">
+        <div class="modal-content" style="max-width: 500px; padding: 2.5rem; background: #0f172a; border: 1px solid rgba(255,255,255,0.08); border-radius: 24px;">
+            <span class="close-modal" onclick="closeModal('plansModal')" style="font-size: 1.75rem; cursor: pointer; float: right; color: var(--text-muted);">&times;</span>
+            <h2 style="margin-bottom: 1rem; font-weight: 800; font-size: 1.5rem;"><i class="fa-solid fa-chart-pie text-emerald"></i> Ciclos Operacionais</h2>
+            <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6;">Os planos de investimento ativo e taxas de rendimento Pro Yield são geridos de forma automatizada pelo motor computacional às <strong>20h (Horário de Brasília)</strong>.</p>
+        </div>
+    </div>
+
+    <div id="affiliatesModal" class="modal">
+        <div class="modal-content" style="max-width: 500px; padding: 2.5rem; background: #0f172a; border: 1px solid rgba(255,255,255,0.08); border-radius: 24px;">
+            <span class="close-modal" onclick="closeModal('affiliatesModal')" style="font-size: 1.75rem; cursor: pointer; float: right; color: var(--text-muted);">&times;</span>
+            <h2 style="margin-bottom: 1rem; font-weight: 800; font-size: 1.5rem;"><i class="fa-solid fa-network-wired text-emerald"></i> Sua Rede</h2>
+            <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6;">O monitoramento de comissões por indicação de novos membros e os bônus recorrentes são integrados de forma transparente ao seu saldo principal.</p>
+        </div>
+    </div>
+
     <div id="toast-container"></div>
 
-    <!-- Rodapé da Dashboard -->
     <footer style="margin-top: auto; padding: 1.5rem 5%; border-top: 1px solid rgba(255,255,255,0.02); background: rgba(7, 11, 20, 0.4);">
         <p style="color: var(--text-muted); font-size: 0.85rem; text-align: center;">&copy; 2026 NexaVest. Sistema financeiro protegido por criptografia de ponta a ponta.</p>
     </footer>
 
-    <!-- Scripts de Controle -->
     <script src="script.js"></script>
     <script type="module">
-    import { auth, onAuthStateChanged, signOut, db, doc, getDoc } from "./firebase-config.js";
+        import { auth, onAuthStateChanged, signOut, db, doc, getDoc, setDoc } from "./firebase-config.js";
 
-    // Elemento global de exibição do nome do investidor
-    const displayNameElement = document.getElementById('user-name-display');
+        const displayNameElement = document.getElementById('user-name-display');
+        const balanceDisplay = document.getElementById('balance-display');
+        const yieldDisplay = document.getElementById('yield-display');
+        const referralsDisplay = document.getElementById('referrals-display');
+        
+        let currentBalance = 0.00; // Guarda o saldo em escopo local para validação de saque
 
-    // Monitoramento do estado da sessão e captura de dados financeiros na nuvem
-    onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            try {
-                // Referência ao documento do investidor utilizando o UID exclusivo da sessão
-                const userDocRef = doc(db, "users", user.uid);
-                const userDocSnap = await getDoc(userDocRef);
+        // 1. Escuta Estado do Usuário e Carrega Valores Reais do Firestore (Ex: Iniciando do Zero)
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                try {
+                    const userDocRef = doc(db, "users", user.uid);
+                    const userDocSnap = await getDoc(userDocRef);
 
-                if (userDocSnap.exists()) {
-                    const userData = userDocSnap.data();
-                    
-                    // Injeta o Nome Completo real vindo do banco de dados
-                    if (displayNameElement && userData.nome) {
-                        displayNameElement.innerText = userData.nome;
+                    if (userDocSnap.exists()) {
+                        const userData = userDocSnap.data();
+                        
+                        currentBalance = userData.saldo || 0.00;
+
+                        // Atualiza elementos visuais com dados do banco
+                        if (displayNameElement && userData.nome) displayNameElement.innerText = userData.nome;
+                        if (balanceDisplay) balanceDisplay.innerText = `R$ ${currentBalance.toFixed(2)}`;
+                        if (yieldDisplay) yieldDisplay.innerText = `R$ ${(userData.rendimentos || 0.00).toFixed(2)}`;
+                        if (referralsDisplay) referralsDisplay.innerText = userData.afiliados_ativos || 0;
+                    } else {
+                        if (displayNameElement) displayNameElement.innerText = user.email.split('@')[0];
                     }
-
-                    // Abaixo você pode mapear os IDs dos seus cards de saldo para injetar os dados reais:
-                    // document.getElementById('balance-display').innerText = `R$ ${userData.saldo.toFixed(2)}`;
-                    // document.getElementById('yield-display').innerText = `R$ ${userData.rendimentos.toFixed(2)}`;
-                } else {
-                    // Fallback caso o documento ainda não tenha sido criado no Firestore
-                    if (displayNameElement) displayNameElement.innerText = user.email.split('@')[0];
+                } catch (error) {
+                    console.error("Erro ao resgatar dados do perfil no Firestore:", error);
                 }
-            } catch (error) {
-                console.error("Erro ao resgatar dados do perfil no Firestore:", error);
-                if (displayNameElement) displayNameElement.innerText = "Investidor Premium";
-            }
-        } else {
-            // Sem usuário ativo, chuta de volta para o login de forma segura para evitar brechas
-            window.location.href = 'login.html';
-        }
-    });
-
-    // Vincula a função de desconectar com segurança ao botão correspondente da sua Sidebar/Navbar
-    // Dica: Caso queira mapear por uma classe específica, pode alterar para '.logout-action' ou manter a busca pelo link
-    const logoutBtn = document.querySelector('a[href="index.html"]'); 
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', async (e) => {
-            e.preventDefault();
-            try {
-                await signOut(auth);
-                window.location.href = 'index.html';
-            } catch (error) {
-                console.error("Erro ao encerrar sessão no Firebase Auth:", error);
+            } else {
+                window.location.href = 'login.html';
             }
         });
-    }
-</script>
+
+        // 2. Lógica do Formulário de Retirada (Saque Mínimo R$ 90 e Taxa de 10%)
+        const withdrawAmountInput = document.getElementById('withdraw-amount');
+        const withdrawTaxDisplay = document.getElementById('withdraw-tax-display');
+        const withdrawLiquidDisplay = document.getElementById('withdraw-liquid-display');
+        const withdrawForm = document.getElementById('withdraw-form');
+
+        if (withdrawAmountInput) {
+            withdrawAmountInput.addEventListener('input', (e) => {
+                const amount = parseFloat(e.target.value) || 0;
+                const tax = amount * 0.10; // Taxa de 10% fixada
+                const liquid = amount - tax;
+
+                withdrawTaxDisplay.innerText = `R$ ${tax.toFixed(2)}`;
+                withdrawLiquidDisplay.innerText = `R$ ${liquid > 0 ? liquid.toFixed(2) : '0,00'}`;
+            });
+        }
+
+        if (withdrawForm) {
+            withdrawForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const user = auth.currentUser;
+                if (!user) return;
+
+                const amount = parseFloat(document.getElementById('withdraw-amount').value);
+                const pixType = document.getElementById('withdraw-pix-type').value;
+                const pixKey = document.getElementById('withdraw-pix-key').value;
+
+                // Travas de segurança estritas no front-end
+                if (amount < 90) {
+                    if (typeof showToast === 'function') showToast('O valor mínimo de saque é R$ 90,00.', 'error');
+                    return;
+                }
+
+                if (amount > currentBalance) {
+                    if (typeof showToast === 'function') showToast('Saldo insuficiente para processar essa retirada.', 'error');
+                    return;
+                }
+
+                try {
+                    // Cria uma intenção de saque para ser processada pela API externa nos Workers
+                    const withdrawRef = doc(db, "saques_solicitados", `${user.uid}_${Date.now()}`);
+                    await setDoc(withdrawRef, {
+                        uid: user.uid,
+                        valor_solicitado: amount,
+                        taxa_aplicada: amount * 0.10,
+                        valor_liquido: amount * 0.90,
+                        tipo_chave: pixType,
+                        chave_pix: pixKey,
+                        status: "pendente",
+                        data_solicitacao: new Date().toISOString()
+                    });
+
+                    if (typeof showToast === 'function') {
+                        showToast('Saque agendado com sucesso! Aguardando processamento.', 'success');
+                    }
+                    closeModal('withdrawModal');
+                    withdrawForm.reset();
+                    if (withdrawTaxDisplay) withdrawTaxDisplay.innerText = "R$ 0,00";
+                    if (withdrawLiquidDisplay) withdrawLiquidDisplay.innerText = "R$ 0,00";
+
+                } catch (error) {
+                    console.error("Erro ao registrar ordem de saque no Firestore:", error);
+                    if (typeof showToast === 'function') showToast('Erro no sistema de resgates. Tente mais tarde.', 'error');
+                }
+            });
+        }
+
+        // 3. Lógica do Formulário de Depósito (Simulador para Geração de Chave via Workers)
+        const depositForm = document.getElementById('deposit-form');
+        const qrResponseArea = document.getElementById('qr-response-area');
+        const pixCopiaCola = document.getElementById('pix-copia-cola');
+        const btnCopyPix = document.getElementById('btn-copy-pix');
+
+        if (depositForm) {
+            depositForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const amount = document.getElementById('deposit-amount').value;
+
+                // Modifica o estado visual para exibir a área de pagamento simulada para a API Workers
+                if (qrResponseArea) qrResponseArea.style.display = 'block';
+                if (pixCopiaCola) {
+                    pixCopiaCola.value = `00020126580014br.gov.bcb.pix.v10215nexavest.payment.api.workers.dev/payload/qrcodestatic/val=${amount}dma2026`;
+                }
+                if (typeof showToast === 'function') showToast('Código PIX gerado com sucesso pela rede NexaVest.', 'success');
+            });
+        }
+
+        if (btnCopyPix && pixCopiaCola) {
+            btnCopyPix.addEventListener('click', () => {
+                pixCopiaCola.select();
+                navigator.clipboard.writeText(pixCopiaCola.value);
+                if (typeof showToast === 'function') showToast('Chave PIX copiada para a área de transferência!', 'success');
+            });
+        }
+
+        // 4. Lógica de Encerramento de Sessão
+        const logoutBtn = document.querySelector('a[href="index.html"]'); 
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                try {
+                    await signOut(auth);
+                    window.location.href = 'index.html';
+                } catch (error) {
+                    console.error("Erro ao encerrar sessão:", error);
+                }
+            });
+        }
+    </script>
 </body>
 </html>
