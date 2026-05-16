@@ -607,101 +607,154 @@
         &copy; 2026 NexaVest. Inteligência, Alta Performance e Segurança.
     </footer>
 
-    <script>
-        // Variáveis globais de controle para o modal dinâmico
-        let activePlanName = "";
-        let activePlanValue = 0;
+  <script type="module">
+    import { auth, onAuthStateChanged, db } from "./firebase-config.js";
+    import { doc, getDoc, updateDoc, collection, addDoc, increment } from "https://www.gstatic.com/firebasejs/10.x.x/firebase-firestore.js";
 
-        // Função para abrir o Modal preenchendo os dados corretos
-        function openInvestmentModal(name, value, rate) {
-            activePlanName = name;
-            activePlanValue = value;
-            
-            document.getElementById('modalPlanName').innerText = name;
-            document.getElementById('modalPlanRate').innerText = rate + " ao dia";
-            document.getElementById('modalPlanValue').innerText = "R$ " + value.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-            
-            document.getElementById('investmentModal').classList.add('active');
+    // Variáveis globais de controle dentro do escopo do módulo
+    let activePlanName = "";
+    let activePlanValue = 0;
+    let currentUserData = null; // Armazena os dados do usuário vindos do Firestore
+
+    // Garante que o corpo do site só aparece após validar o estado do auth
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            document.body.style.opacity = '1';
+            await carregarDadosUsuario(user.uid);
+        } else {
+            window.location.href = 'login.html';
         }
+    });
 
-        function closeInvestmentModal() {
-            document.getElementById('investmentModal').classList.remove('active');
-        }
-
-        // Função Geradora do Toast Premium e Customizado
-        function showPremiumToast(title, message, type, actionUrl = null, actionText = "") {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
+    // Função para buscar os dados de saldo e nome em tempo real ou no load
+    async function carregarDadosUsuario(uid) {
+        try {
+            const userDocRef = doc(db, "users", uid);
+            const userDocSnap = await getDoc(userDocRef);
             
-            const icon = type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation';
-            
-            let actionButtonHtml = "";
-            if(actionUrl) {
-                actionButtonHtml = `<a href="${actionUrl}" class="toast-action-btn"><i class="fa-solid fa-wallet"></i> ${actionText}</a>`;
+            if (userDocSnap.exists()) {
+                currentUserData = userDocSnap.data();
+                // Opcional: Se tiver exibição de saldo estático na tela de planos, atualize aqui
+            } else {
+                console.error("Documento do usuário não encontrado no Firestore.");
             }
+        } catch (error) {
+            console.error("Erro ao carregar dados do usuário:", error);
+        }
+    }
 
-            toast.innerHTML = `
-                <div class="toast-icon"><i class="fa-solid ${icon}"></i></div>
-                <div class="toast-content">
-                    <div class="toast-title">${title}</div>
-                    <div class="toast-message">${message}</div>
-                    ${actionButtonHtml}
-                </div>
-            `;
-            
-            container.appendChild(toast);
-            
-            // Força o reflow para rodar a animação CSS de entrada suave
-            setTimeout(() => toast.classList.add('active'), 50);
-            
-            // Remove o toast após 5 segundos se não houver ação necessária de depósito
-            if (!actionUrl) {
-                setTimeout(() => {
-                    toast.classList.remove('active');
-                    setTimeout(() => toast.remove(), 400);
-                }, 5000);
-            }
+    // Função para abrir o Modal preenchendo os dados corretos
+    window.openInvestmentModal = function(name, value, rate) {
+        activePlanName = name;
+        activePlanValue = parseFloat(value);
+        
+        document.getElementById('modalPlanName').innerText = name;
+        document.getElementById('modalPlanRate').innerText = rate + " ao dia";
+        document.getElementById('modalPlanValue').innerText = "R$ " + activePlanValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+        
+        document.getElementById('investmentModal').classList.add('active');
+    }
+
+    window.closeInvestmentModal = function() {
+        document.getElementById('investmentModal').classList.remove('active');
+    }
+
+    // Função Geradora do Toast Premium e Customizado
+    function showPremiumToast(title, message, type, actionUrl = null, actionText = "") {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        
+        const icon = type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation';
+        
+        let actionButtonHtml = "";
+        if(actionUrl) {
+            actionButtonHtml = `<a href="${actionUrl}" class="toast-action-btn"><i class="fa-solid fa-wallet"></i> ${actionText}</a>`;
         }
 
-        // Escutador do clique de confirmação interna do modal
-        document.getElementById('btnConfirmInvestment').addEventListener('click', () => {
-            closeInvestmentModal();
+        toast.innerHTML = `
+            <div class="toast-icon"><i class="fa-solid ${icon}"></i></div>
+            <div class="toast-content">
+                <div class="toast-title">${title}</div>
+                <div class="toast-message">${message}</div>
+                ${actionButtonHtml}
+            </div>
+        `;
+        
+        container.appendChild(toast);
+        
+        // Força o reflow para rodar a animação CSS
+        setTimeout(() => toast.classList.add('active'), 50);
+        
+        if (!actionUrl) {
+            setTimeout(() => {
+                toast.classList.remove('active');
+                setTimeout(() => toast.remove(), 400);
+            }, 5000);
+        }
+    }
 
-            // MUDANÇA AQUI: Defina aqui o saldo real do usuário vindo do seu Firebase, Firestore ou D1.
-            // Para testar com 0 reais, basta deixar o valor como 0 abaixo.
-            const userBalance = 0; 
+    // Escutador do clique de confirmação interna do modal
+    document.getElementById('btnConfirmInvestment').addEventListener('click', async () => {
+        closeInvestmentModal();
 
-            if (userBalance >= activePlanValue) {
-                // Fluxo com Saldo Suficiente
+        const user = auth.currentUser;
+        if (!user) {
+            showPremiumToast("Erro de Sessão", "Usuário não autenticado. Faça login novamente.", "error");
+            return;
+        }
+
+        // Garante que temos os dados atualizados do banco antes de validar
+        await carregarDadosUsuario(user.uid);
+        
+        // Se o campo de saldo não existir no documento, assume 0
+        const userBalance = currentUserData && currentUserData.saldo ? parseFloat(currentUserData.saldo) : 0; 
+
+        if (userBalance >= activePlanValue) {
+            try {
+                const userDocRef = doc(db, "users", user.uid);
+                
+                // 1. Deduz o saldo do usuário de forma atômica no Firestore
+                await updateDoc(userDocRef, {
+                    saldo: increment(-activePlanValue)
+                });
+
+                // 2. Cria a nova alocação/contrato na coleção 'user_investimentos'
+                await addDoc(collection(db, "user_investimentos"), {
+                    uid: user.uid,
+                    plano_nome: activePlanName,
+                    valor_investido: activePlanValue,
+                    lucro_acumulado: 0.00,
+                    data_compra: new Date().toISOString(),
+                    status: "ativo"
+                });
+
                 showPremiumToast(
                     "Operação Concluída", 
-                    `Seu plano ${activePlanName} foi contratado com sucesso e já está gerando yields.`, 
+                    `Seu plano ${activePlanName} foi contratado com sucesso e já está gerando yields. Redirecionando...`, 
                     "success"
                 );
-            } else {
-                // MUDANÇA AQUI: Agora exibe dinamicamente o saldo exato contido em 'userBalance' no Toast.
-                showPremiumToast(
-                    "Saldo Insuficiente", 
-                    `Sua conta possui R$ ${userBalance.toFixed(2)}. É necessário realizar um aporte de R$ ${activePlanValue.toFixed(2)} para este plano.`, 
-                    "error",
-                    `dashboard.html?action=deposit&amount=${activePlanValue}`,
-                    "Depositar Agora"
-                );
-            }
-        });
-    </script>
 
-    <script type="module">
-        import { auth, onAuthStateChanged } from "./firebase-config.js";
+                // Aguarda 2.5 segundos para o usuário ver o toast de sucesso e joga ele para a carteira
+                setTimeout(() => {
+                    window.location.href = "carteira.html";
+                }, 2500);
 
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                document.body.style.opacity = '1';
-            } else {
-                window.location.href = 'login.html';
+            } catch (error) {
+                console.error("Erro ao processar transação de investimento:", error);
+                showPremiumToast("Erro na Operação", "Não foi possível processar seu contrato. Tente novamente.", "error");
             }
-        });
-    </script>
+        } else {
+            // Caso falte saldo, gera o link dinâmico para a área de depósito
+            showPremiumToast(
+                "Saldo Insuficiente", 
+                `Sua conta possui R$ ${userBalance.toFixed(2)}. É necessário realizar um aporte de R$ ${activePlanValue.toFixed(2)} para este plano.`, 
+                "error",
+                `dashboard.html?action=deposit&amount=${activePlanValue}`,
+                "Depositar Agora"
+            );
+        }
+    });
+</script>
 </body>
 </html>
