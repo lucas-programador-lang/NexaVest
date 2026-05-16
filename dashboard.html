@@ -142,6 +142,27 @@
         .stat-card-premium.highlighted::before {
             background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%);
         }
+        /* Estilos específicos para a grade de planos dentro do modal */
+        .plans-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+        .plan-card-item {
+            background: rgba(7, 11, 20, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            padding: 1.25rem;
+            text-align: center;
+            transition: border-color 0.3s;
+        }
+        .plan-card-item:hover {
+            border-color: var(--emerald);
+        }
     </style>
 </head>
 <body>
@@ -194,7 +215,7 @@
                 </div>
                 <button class="btn btn-primary" onclick="openModal('depositModal')" style="display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 8px 25px rgba(16, 185, 129, 0.25);">
                     <i class="fa-brands fa-pix"></i> Adicionar Fundos
-                </button>
+                </</button>
             </div>
 
             <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); display: grid; gap: 1.5rem;">
@@ -241,10 +262,11 @@
                                 <th style="padding: 1rem 0.75rem; color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">Valor</th>
                                 <th style="padding: 1rem 0.75rem; color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">Status</th>
                             </tr>
-                        </table>
-                        <div id="no-transactions-message" style="text-align: center; color: var(--text-muted); padding: 2rem; font-size: 0.95rem;">
-                            Nenhuma movimentação financeira registrada até o momento.
-                        </div>
+                        </thead>
+                    </table>
+                    <div id="no-transactions-message" style="text-align: center; color: var(--text-muted); padding: 2rem; font-size: 0.95rem;">
+                        Nenhuma movimentação financeira registrada até o momento.
+                    </div>
                 </div>
             </div>
         </main>
@@ -337,10 +359,61 @@
     </div>
 
     <div id="plansModal" class="modal">
-        <div class="modal-content" style="max-width: 500px; padding: 2.5rem; background: #0f172a; border: 1px solid rgba(255,255,255,0.08); border-radius: 24px;">
+        <div class="modal-content" style="max-width: 700px; padding: 2.5rem; background: #0f172a; border: 1px solid rgba(255,255,255,0.08); border-radius: 24px;">
             <span class="close-modal" onclick="closeModal('plansModal')" style="font-size: 1.75rem; cursor: pointer; float: right; color: var(--text-muted);">&times;</span>
             <h2 style="margin-bottom: 1rem; font-weight: 800; font-size: 1.5rem;"><i class="fa-solid fa-chart-pie text-emerald"></i> Ciclos Operacionais</h2>
             <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6;">Os planos de investimento ativo e taxas de rendimento Pro Yield são geridos de forma automatizada pelo motor computacional às <strong>20h (Horário de Brasília)</strong>.</p>
+            
+            <div class="plans-grid">
+                <div class="plan-card-item">
+                    <h3 style="font-size: 1.1rem; font-weight: 700; color: #fff;">Plano Bronze</h3>
+                    <p style="color: var(--emerald); font-weight: 800; margin: 0.5rem 0; font-size: 1.2rem;">R$ 50,00</p>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Rendimento: 1.5% ao dia</p>
+                    <button class="btn btn-sm btn-primary buy-plan-btn" data-name="Plano Bronze" data-price="50" style="width: 100%; font-size: 0.8rem; padding: 0.5rem;">Adquirir</button>
+                </div>
+                <div class="plan-card-item">
+                    <h3 style="font-size: 1.1rem; font-weight: 700; color: #fff;">Plano Prata</h3>
+                    <p style="color: var(--emerald); font-weight: 800; margin: 0.5rem 0; font-size: 1.2rem;">R$ 100,00</p>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Rendimento: 1.8% ao dia</p>
+                    <button class="btn btn-sm btn-primary buy-plan-btn" data-name="Plano Prata" data-price="100" style="width: 100%; font-size: 0.8rem; padding: 0.5rem;">Adquirir</button>
+                </div>
+                <div class="plan-card-item">
+                    <h3 style="font-size: 1.1rem; font-weight: 700; color: #fff;">Plano Ouro</h3>
+                    <p style="color: var(--emerald); font-weight: 800; margin: 0.5rem 0; font-size: 1.2rem;">R$ 250,00</p>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Rendimento: 2.0% ao dia</p>
+                    <button class="btn btn-sm btn-primary buy-plan-btn" data-name="Plano Ouro" data-price="250" style="width: 100%; font-size: 0.8rem; padding: 0.5rem;">Adquirir</button>
+                </div>
+                <div class="plan-card-item">
+                    <h3 style="font-size: 1.1rem; font-weight: 700; color: #fff;">Plano Platina</h3>
+                    <p style="color: var(--emerald); font-weight: 800; margin: 0.5rem 0; font-size: 1.2rem;">R$ 500,00</p>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Rendimento: 2.2% ao dia</p>
+                    <button class="btn btn-sm btn-primary buy-plan-btn" data-name="Plano Platina" data-price="500" style="width: 100%; font-size: 0.8rem; padding: 0.5rem;">Adquirir</button>
+                </div>
+                <div class="plan-card-item">
+                    <h3 style="font-size: 1.1rem; font-weight: 700; color: #fff;">Plano Esmeralda</h3>
+                    <p style="color: var(--emerald); font-weight: 800; margin: 0.5rem 0; font-size: 1.2rem;">R$ 1.000,00</p>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Rendimento: 2.5% ao dia</p>
+                    <button class="btn btn-sm btn-primary buy-plan-btn" data-name="Plano Esmeralda" data-price="1000" style="width: 100%; font-size: 0.8rem; padding: 0.5rem;">Adquirir</button>
+                </div>
+                <div class="plan-card-item">
+                    <h3 style="font-size: 1.1rem; font-weight: 700; color: #fff;">Plano Rubi</h3>
+                    <p style="color: var(--emerald); font-weight: 800; margin: 0.5rem 0; font-size: 1.2rem;">R$ 2.500,00</p>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Rendimento: 2.8% ao dia</p>
+                    <button class="btn btn-sm btn-primary buy-plan-btn" data-name="Plano Rubi" data-price="2500" style="width: 100%; font-size: 0.8rem; padding: 0.5rem;">Adquirir</button>
+                </div>
+                <div class="plan-card-item">
+                    <h3 style="font-size: 1.1rem; font-weight: 700; color: #fff;">Plano Diamante</h3>
+                    <p style="color: var(--emerald); font-weight: 800; margin: 0.5rem 0; font-size: 1.2rem;">R$ 5.000,00</p>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Rendimento: 3.2% ao dia</p>
+                    <button class="btn btn-sm btn-primary buy-plan-btn" data-name="Plano Diamante" data-price="5000" style="width: 100%; font-size: 0.8rem; padding: 0.5rem;">Adquirir</button>
+                </div>
+                <div class="plan-card-item">
+                    <h3 style="font-size: 1.1rem; font-weight: 700; color: #fff;">Plano Nexa Imperial</h3>
+                    <p style="color: var(--emerald); font-weight: 800; margin: 0.5rem 0; font-size: 1.2rem;">R$ 10.000,00</p>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Rendimento: 3.8% ao dia</p>
+                    <button class="btn btn-sm btn-primary buy-plan-btn" data-name="Plano Nexa Imperial" data-price="10000" style="width: 100%; font-size: 0.8rem; padding: 0.5rem;">Adquirir</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -348,7 +421,17 @@
         <div class="modal-content" style="max-width: 500px; padding: 2.5rem; background: #0f172a; border: 1px solid rgba(255,255,255,0.08); border-radius: 24px;">
             <span class="close-modal" onclick="closeModal('affiliatesModal')" style="font-size: 1.75rem; cursor: pointer; float: right; color: var(--text-muted);">&times;</span>
             <h2 style="margin-bottom: 1rem; font-weight: 800; font-size: 1.5rem;"><i class="fa-solid fa-network-wired text-emerald"></i> Sua Rede</h2>
-            <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6;">O monitoramento de comissões por indicação de novos membros e os bônus recorrentes são integrados de forma transparente ao seu saldo principal.</p>
+            <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.5rem;">O monitoramento de comissões por indicação de novos membros e os bônus recorrentes são integrados de forma transparente ao seu saldo principal. Você recebe **6%** de comissão direta assim que seu indicado adquirir qualquer plano.</p>
+            
+            <div class="input-group">
+                <label style="font-weight: 600; font-size: 0.85rem; margin-bottom: 0.5rem; display: block;">Seu Link Exclusivo de Afiliado (6%)</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="affiliate-link-input" class="input-premium" value="Carregando link..." readonly style="flex: 1; font-size: 0.85rem;">
+                    <button class="btn btn-primary" id="btn-copy-affiliate" style="padding: 0 1.25rem;">
+                        <i class="fa-regular fa-copy"></i>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -380,6 +463,12 @@
                         const userData = userDocSnap.data();
                         
                         currentBalance = userData.saldo || 0.00;
+
+                        // Hotfix para alimentar o Link de Afiliado dinamicamente com a UID do usuário logado
+                        const affInput = document.getElementById('affiliate-link-input');
+                        if (affInput) {
+                            affInput.value = `${window.location.origin}/register.html?ref=${user.uid}`;
+                        }
 
                         // Atualiza elementos visuais com dados do banco
                         if (displayNameElement && userData.nome) displayNameElement.innerText = userData.nome;
@@ -505,6 +594,53 @@
                 }
             });
         }
+
+        // 5. NOVA LÓGICA DE COMPRA DE PLANOS E AFILIADOS (6%)
+        // Gerenciamento do botão de copiar link de afiliados
+        const btnCopyAff = document.getElementById('btn-copy-affiliate');
+        const affiliateLinkInput = document.getElementById('affiliate-link-input');
+        if (btnCopyAff && affiliateLinkInput) {
+            btnCopyAff.addEventListener('click', () => {
+                affiliateLinkInput.select();
+                navigator.clipboard.writeText(affiliateLinkInput.value);
+                if (typeof showToast === 'function') showToast('Link de afiliado copiado!', 'success');
+            });
+        }
+
+        // Captura do clique de compra nos botões dos planos injetados
+        document.querySelectorAll('.buy-plan-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const user = auth.currentUser;
+                if (!user) return;
+
+                const planName = e.target.getAttribute('data-name');
+                const planPrice = parseFloat(e.target.getAttribute('data-price'));
+
+                if (planPrice > currentBalance) {
+                    if (typeof showToast === 'function') showToast('Saldo insuficiente para ativar este plano. Faça um novo depósito.', 'error');
+                    return;
+                }
+
+                try {
+                    // Cria intenção de compra para a API externa processar debitos e repasse de afiliados (6%)
+                    const orderRef = doc(db, "planos_comprados", `${user.uid}_${Date.now()}`);
+                    await setDoc(orderRef, {
+                        uid: user.uid,
+                        plano_nome: planName,
+                        valor_plano: planPrice,
+                        comissao_afiliado_estimada: planPrice * 0.06, // Regra de 6% mapeada para processamento do Worker
+                        status: "pendente",
+                        data_compra: new Date().toISOString()
+                    });
+
+                    if (typeof showToast === 'function') showToast(`Solicitação de ativação do ${planName} enviada!`, 'success');
+                    closeModal('plansModal');
+                } catch (error) {
+                    console.error("Erro ao registrar intenção de compra do plano:", error);
+                    if (typeof showToast === 'function') showToast('Erro ao processar compra do plano. Tente mais tarde.', 'error');
+                }
+            });
+        });
     </script>
 </body>
 </html>
