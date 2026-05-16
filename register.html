@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexaVest | Criar Conta Premium</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body style="display: flex; flex-direction: column; min-height: 100vh;">
+
+    <!-- Navbar Simplificada para Telas de Autenticação -->
+    <nav class="navbar">
+        <div class="logo">
+            <a href="index.html" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fa-solid fa-chart-line"></i> NexaVest
+            </a>
+        </div>
+        <div class="nav-actions">
+            <a href="login.html" class="btn btn-outline">Já tenho conta</a>
+        </div>
+    </nav>
+
+    <!-- Container Centralizado com efeito de Blur e Centralização Absoluta -->
+    <main style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 2rem; background: radial-gradient(circle at center, #1e293b 0%, #070b14 100%);">
+        <div class="auth-card" style="max-width: 460px;">
+            <div class="logo" style="justify-content: center; margin-bottom: 1.5rem;">
+                <i class="fa-solid fa-chart-line"></i> NexaVest
+            </div>
+            
+            <h2 style="text-align: center; margin-bottom: 0.5rem; font-weight: 800; font-size: 1.8rem;">Crie sua Conta Premium</h2>
+            <p style="text-align: center; color: var(--text-muted); margin-bottom: 2rem; font-size: 0.95rem;">Faça parte do ecossistema inteligente de investimentos.</p>
+            
+            <form onsubmit="event.preventDefault(); window.location.href='login.html?action=registered';">
+                <div class="input-group">
+                    <label><i class="fa-regular fa-user"></i> Nome Completo</label>
+                    <input type="text" class="input-premium" placeholder="Seu nome e sobrenome" required>
+                </div>
+
+                <div class="input-group">
+                    <label><i class="fa-regular fa-envelope"></i> Endereço de E-mail</label>
+                    <input type="email" class="input-premium" placeholder="seu@email.com" required autocomplete="username">
+                </div>
+                
+                <div class="input-group">
+                    <label><i class="fa-solid fa-lock"></i> Crie uma Senha Forte</label>
+                    <input type="password" class="input-premium" placeholder="No mínimo 8 caracteres" required autocomplete="new-password">
+                </div>
+
+                <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 2rem; text-align: left;">
+                    <input type="checkbox" id="terms" style="accent-color: var(--emerald); cursor: pointer; margin-top: 4px;" required>
+                    <label for="terms" style="color: var(--text-muted); font-size: 0.85rem; cursor: pointer; user-select: none; line-height: 1.4;">
+                        Eu aceito e concordo com os <a href="#" style="color: var(--emerald); text-decoration: none; font-weight: 600;">Termos de Serviço</a> e as <a href="#" style="color: var(--emerald); text-decoration: none; font-weight: 600;">Políticas de Privacidade</a> de rendimento da NexaVest.
+                    </label>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    Concluir Cadastro <i class="fa-solid fa-user-plus"></i>
+                </button>
+            </form>
+            
+            <p style="text-align: center; margin-top: 2rem; color: var(--text-muted); font-size: 0.95rem;">
+                Já possui uma conta ativa? <a href="login.html" style="color: var(--emerald); text-decoration: none; font-weight: 600; border-bottom: 1px dashed var(--emerald);">Efetuar Login</a>
+            </p>
+        </div>
+    </main>
+
+    <!-- Rodapé Minimalista -->
+    <footer style="padding: 1.5rem 5%;">
+        <p style="color: var(--text-muted); font-size: 0.85rem;">&copy; 2026 NexaVest. Dados estritamente protegidos sob as diretrizes de segurança de criptoativos.</p>
+    </footer>
+
+</body>
+</html>
