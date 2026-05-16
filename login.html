@@ -32,11 +32,11 @@
             <h2 style="text-align: center; margin-bottom: 0.5rem; font-weight: 800; font-size: 1.8rem;">Acesse sua Conta</h2>
             <p style="text-align: center; color: var(--text-muted); margin-bottom: 2rem; font-size: 0.95rem;">Insira suas credenciais para gerenciar seus rendimentos.</p>
             
-            <!-- Corrigido: Agora o onsubmit redireciona diretamente para o arquivo físico 'dashboard.html' em vez da antiga rota interna no index.html -->
-            <form onsubmit="event.preventDefault(); window.location.href='dashboard.html';">
+            <!-- IDs adicionados de forma limpa para captura no script modular do Firebase -->
+            <form id="login-form">
                 <div class="input-group">
                     <label><i class="fa-regular fa-envelope"></i> Endereço de E-mail</label>
-                    <input type="email" class="input-premium" placeholder="seu@email.com" required autocomplete="username">
+                    <input type="email" id="email" class="input-premium" placeholder="seu@email.com" required autocomplete="username">
                 </div>
                 
                 <div class="input-group" style="margin-bottom: 1rem;">
@@ -44,7 +44,7 @@
                         <label style="margin-bottom: 0;"><i class="fa-solid fa-lock"></i> Sua Senha</label>
                         <a href="#" style="color: var(--emerald); text-decoration: none; font-size: 0.85rem; font-weight: 600;">Esqueceu a senha?</a>
                     </div>
-                    <input type="password" class="input-premium" placeholder="••••••••" required autocomplete="current-password">
+                    <input type="password" id="password" class="input-premium" placeholder="••••••••" required autocomplete="current-password">
                 </div>
 
                 <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 2rem;">
@@ -67,6 +67,37 @@
     <footer style="padding: 1.5rem 5%;">
         <p style="color: var(--text-muted); font-size: 0.85rem;">&copy; 2026 NexaVest. Conexão criptografada de alta segurança de ponta a ponta.</p>
     </footer>
+
+    <!-- Lógica de Autenticação com o Firebase -->
+    <script type="module">
+        import { auth, signInWithEmailAndPassword } from "./firebase-config.js";
+
+        const loginForm = document.getElementById('login-form');
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                // Realiza a autenticação com e-mail e senha no Firebase
+                await signInWithEmailAndPassword(auth, email, password);
+                
+                // Redireciona para o arquivo físico do painel administrativo
+                window.location.href = 'dashboard.html';
+            } catch (error) {
+                console.error("Erro na autenticação do Firebase:", error.code, error.message);
+                
+                // Dispara o Toast se a estrutura global de avisos existir na aplicação
+                if (typeof showToast === 'function') {
+                    showToast('Credenciais incorretas ou inválidas. Tente novamente.', 'danger');
+                } else {
+                    alert('Erro ao acessar a conta: Verifique o e-mail e a senha informados.');
+                }
+            }
+        });
+    </script>
 
 </body>
 </html>
