@@ -9,8 +9,7 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <!-- Navegação -->
-    <nav class="navbar">
+    <nav class="navbar" id="main-nav">
         <div class="logo">
             <i class="fa-solid fa-chart-line"></i> NexaVest
         </div>
@@ -19,15 +18,14 @@
             <li><a href="#" onclick="switchTab('plans')">Planos</a></li>
             <li><a href="#" onclick="switchTab('affiliates')">Afiliados</a></li>
         </ul>
-        <div class="nav-actions">
-            <button class="btn btn-outline" onclick="switchTab('dashboard')">Acessar Painel</button>
+        <div class="nav-actions" style="display: flex; gap: 10px;">
+            <button class="btn btn-outline" onclick="switchTab('login')">Entrar</button>
+            <button class="btn btn-primary" onclick="switchTab('dashboard')">Painel</button>
         </div>
     </nav>
 
-    <!-- Container Principal -->
     <main id="app-content">
         
-        <!-- SEÇÃO: LANDING PAGE -->
         <section id="home" class="view active">
             <header class="hero">
                 <div class="hero-content">
@@ -56,7 +54,6 @@
             </div>
         </section>
 
-        <!-- SEÇÃO: PLANOS DE INVESTIMENTO -->
         <section id="plans" class="view">
             <div class="section-header">
                 <h2>Planos de Investimento</h2>
@@ -71,7 +68,7 @@
                         <li><i class="fa-solid fa-check"></i> Contrato de 30 dias</li>
                         <li><i class="fa-solid fa-check"></i> Saque Semanal</li>
                     </ul>
-                    <button class="btn btn-primary">Investir Agora</button>
+                    <button class="btn btn-outline" style="width: 100%;">Investir Agora</button>
                 </div>
                 <div class="pricing-card premium">
                     <div class="badge">Mais Popular</div>
@@ -83,7 +80,7 @@
                         <li><i class="fa-solid fa-check"></i> Saque Diário via PIX</li>
                         <li><i class="fa-solid fa-check"></i> Bônus de Afiliado Nível 2</li>
                     </ul>
-                    <button class="btn btn-primary">Investir Agora</button>
+                    <button class="btn btn-primary" style="width: 100%;">Investir Agora</button>
                 </div>
                 <div class="pricing-card">
                     <h3>Enterprise</h3>
@@ -92,81 +89,169 @@
                         <li><i class="fa-solid fa-check"></i> Rendimento de 3.0% ao dia</li>
                         <li><i class="fa-solid fa-check"></i> Contrato de 60 dias</li>
                         <li><i class="fa-solid fa-check"></i> Saque Diário Ilimitado</li>
-                        <li><i class="fa-solid fa-check"></i> Gerente de Conta VIP</li>
+                        <li><i class="fa-solid fa-check"></i> Gerente VIP</li>
                     </ul>
-                    <button class="btn btn-primary">Investir Agora</button>
+                    <button class="btn btn-outline" style="width: 100%;">Investir Agora</button>
                 </div>
             </div>
         </section>
 
-        <!-- SEÇÃO: DASHBOARD (ÁREA LOGADA) -->
+        <section id="login" class="view">
+            <div class="auth-container">
+                <div class="auth-card">
+                    <div class="logo" style="justify-content: center; margin-bottom: 2rem;">
+                        <i class="fa-solid fa-chart-line"></i> NexaVest
+                    </div>
+                    <h2 style="text-align: center; margin-bottom: 1.5rem;">Acesse sua conta</h2>
+                    <form onsubmit="event.preventDefault(); showToast('Login realizado com sucesso!', 'success'); switchTab('dashboard');">
+                        <div class="input-group">
+                            <label>E-mail</label>
+                            <input type="email" class="input-premium" placeholder="seu@email.com" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Senha</label>
+                            <input type="password" class="input-premium" placeholder="••••••••" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Entrar</button>
+                    </form>
+                    <p style="text-align: center; margin-top: 1.5rem; color: var(--text-muted);">
+                        Não tem conta? <a href="#" onclick="switchTab('register')" style="color: var(--emerald); text-decoration: none;">Cadastre-se</a>
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section id="register" class="view">
+            <div class="auth-container">
+                <div class="auth-card">
+                    <div class="logo" style="justify-content: center; margin-bottom: 2rem;">
+                        <i class="fa-solid fa-chart-line"></i> NexaVest
+                    </div>
+                    <h2 style="text-align: center; margin-bottom: 1.5rem;">Crie sua conta</h2>
+                    <form onsubmit="event.preventDefault(); showToast('Conta criada com sucesso!', 'success'); switchTab('login');">
+                        <div class="input-group">
+                            <label>Nome Completo</label>
+                            <input type="text" class="input-premium" placeholder="Seu nome" required>
+                        </div>
+                        <div class="input-group">
+                            <label>E-mail</label>
+                            <input type="email" class="input-premium" placeholder="seu@email.com" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Senha</label>
+                            <input type="password" class="input-premium" placeholder="••••••••" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Registrar</button>
+                    </form>
+                    <p style="text-align: center; margin-top: 1.5rem; color: var(--text-muted);">
+                        Já possui conta? <a href="#" onclick="switchTab('login')" style="color: var(--emerald); text-decoration: none;">Entrar</a>
+                    </p>
+                </div>
+            </div>
+        </section>
+
         <section id="dashboard" class="view">
             <div class="dashboard-layout">
                 <aside class="sidebar">
                     <ul>
                         <li class="active"><i class="fa-solid fa-wallet"></i> Resumo</li>
                         <li><i class="fa-solid fa-chart-pie"></i> Meus Investimentos</li>
-                        <li><i class="fa-solid fa-money-bill-transfer"></i> Depósito / Saque</li>
+                        <li onclick="openModal('depositModal')"><i class="fa-solid fa-money-bill-transfer"></i> Depósito</li>
+                        <li onclick="showToast('Saque solicitado. Aguarde o ciclo.', 'info')"><i class="fa-solid fa-building-columns"></i> Saque PIX</li>
                         <li><i class="fa-solid fa-network-wired"></i> Minha Rede</li>
+                        <li onclick="switchTab('home')"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair</li>
                     </ul>
                 </aside>
                 <div class="dashboard-content">
-                    <h2>Bem-vindo ao seu Portfólio</h2>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <h2>Bem-vindo ao seu Portfólio</h2>
+                        <button class="btn btn-primary" onclick="openModal('depositModal')"><i class="fa-brands fa-pix"></i> Novo Depósito</button>
+                    </div>
                     
                     <div class="stats-grid">
                         <div class="stat-card">
                             <h4>Saldo Disponível</h4>
                             <div class="value">R$ 4.250,00</div>
-                            <button class="btn btn-sm btn-outline">Sacar via PIX</button>
+                            <button class="btn btn-sm btn-outline" onclick="showToast('Função de saque em processamento', 'info')">Sacar via PIX</button>
                         </div>
                         <div class="stat-card">
                             <h4>Total Investido</h4>
                             <div class="value text-emerald">R$ 10.000,00</div>
-                            <span class="trend"><i class="fa-solid fa-arrow-trend-up"></i> Ciclo Ativo</span>
+                            <span class="trend"><i class="fa-solid fa-arrow-trend-up"></i> Ciclo Ativo (+2.2% a.d)</span>
                         </div>
                         <div class="stat-card">
                             <h4>Ganhos de Afiliados</h4>
                             <div class="value">R$ 850,00</div>
-                            <span class="trend">12 Diretos</span>
+                            <span class="trend">12 Diretos ativos</span>
                         </div>
                     </div>
 
                     <div class="recent-activity">
                         <h3>Últimos Rendimentos</h3>
-                        <table class="activity-table">
-                            <thead>
-                                <tr>
-                                    <th>Data/Hora</th>
-                                    <th>Descrição</th>
-                                    <th>Valor</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>Hoje, 23:00</td>
-                                    <td>Rendimento Diário (Pro Yield)</td>
-                                    <td class="text-emerald">+ R$ 22,00</td>
-                                    <td><span class="badge-status success">Concluído</span></td>
-                                </tr>
-                                <tr>
-                                    <td>Ontem, 14:30</td>
-                                    <td>Comissão de Afiliado (Nível 1)</td>
-                                    <td class="text-emerald">+ R$ 50,00</td>
-                                    <td><span class="badge-status success">Concluído</span></td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <div style="overflow-x: auto;">
+                            <table class="activity-table">
+                                <thead>
+                                    <tr>
+                                        <th>Data/Hora</th>
+                                        <th>Descrição</th>
+                                        <th>Valor</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Hoje, 23:00</td>
+                                        <td>Rendimento Diário (Pro Yield)</td>
+                                        <td class="text-emerald">+ R$ 22,00</td>
+                                        <td><span class="badge-status success">Concluído</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Ontem, 14:30</td>
+                                        <td>Comissão de Afiliado (Nível 1)</td>
+                                        <td class="text-emerald">+ R$ 50,00</td>
+                                        <td><span class="badge-status success">Concluído</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
     </main>
 
+    <div id="depositModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('depositModal')">&times;</span>
+            <h2 style="margin-bottom: 1rem;"><i class="fa-brands fa-pix text-emerald"></i> Depósito Inteligente</h2>
+            <p style="color: var(--text-muted); margin-bottom: 2rem;">Gere seu código PIX Copia e Cola para creditar instantaneamente na sua conta.</p>
+            
+            <div class="input-group">
+                <label>Valor do Depósito (R$)</label>
+                <input type="number" class="input-premium" placeholder="0,00" value="1000">
+            </div>
+            
+            <div class="qr-container" style="text-align: center; margin: 2rem 0; padding: 2rem; background: var(--bg-dark); border-radius: 12px; border: 1px dashed var(--border-color);">
+                <i class="fa-solid fa-qrcode" style="font-size: 5rem; color: var(--emerald); opacity: 0.8;"></i>
+                <p style="margin-top: 1rem; font-size: 0.9rem;">QR Code gerado com sucesso</p>
+            </div>
+
+            <div class="input-group">
+                <label>PIX Copia e Cola</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" class="input-premium" value="00020126580014br.gov.bcb.pix..." readonly>
+                    <button class="btn btn-primary" onclick="showToast('Código PIX copiado!', 'success')"><i class="fa-regular fa-copy"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container"></div>
+
     <footer>
         <div class="footer-content">
-            <div class="logo"><i class="fa-solid fa-chart-line"></i> NexaVest</div>
-            <p>&copy; 2026 NexaVest. Todos os direitos reservados.</p>
+            <div class="logo" style="justify-content: center;"><i class="fa-solid fa-chart-line"></i> NexaVest</div>
+            <p style="margin-top: 1rem; color: var(--text-muted);">&copy; 2026 NexaVest. Inteligência e Alta Performance.</p>
         </div>
     </footer>
 
