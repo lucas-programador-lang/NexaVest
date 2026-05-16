@@ -90,10 +90,14 @@
         cpfInput.addEventListener('input', (e) => {
             let value = e.target.value.replace(/\D/g, ''); // Remove caracteres não numéricos
             
-            // Aplica a formatação dinâmica de forma limpa
-            if (value.length > 3) value = value.substring(0,3) + '.' + value.substring(3);
-            if (value.length > 7) value = value.substring(0,7) + '.' + value.substring(7);
-            if (value.length > 11) value = value.substring(0,11) + '-' + value.substring(11,13);
+            // Aplica a formatação dinâmica baseada estritamente no comprimento dos dígitos limpos
+            if (value.length > 3 && value.length <= 6) {
+                value = value.substring(0,3) + '.' + value.substring(3);
+            } else if (value.length > 6 && value.length <= 9) {
+                value = value.substring(0,3) + '.' + value.substring(3,6) + '.' + value.substring(6);
+            } else if (value.length > 9) {
+                value = value.substring(0,3) + '.' + value.substring(3,6) + '.' + value.substring(6,9) + '-' + value.substring(9,11);
+            }
             
             e.target.value = value;
         });
