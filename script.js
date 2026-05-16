@@ -2,6 +2,20 @@
  * Lógica de roteamento SPA mantida e aprimorada
  */
 function switchTab(tabId) {
+    // Se tentar acessar abas que agora são arquivos físicos, faz o redirecionamento correto
+    if (tabId === 'dashboard') {
+        window.location.href = 'dashboard.html';
+        return;
+    }
+    if (tabId === 'login') {
+        window.location.href = 'login.html';
+        return;
+    }
+    if (tabId === 'register') {
+        window.location.href = 'register.html';
+        return;
+    }
+
     const views = document.querySelectorAll('.view');
     views.forEach(view => {
         view.classList.remove('active');
@@ -22,7 +36,7 @@ function switchTab(tabId) {
         navbar.style.display = 'flex'; // Mantém navbar
         window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
-        navbar.style.display = 'flex';
+        if (navbar) navbar.style.display = 'flex';
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 }
@@ -79,13 +93,14 @@ window.onclick = function(event) {
  */
 function showToast(message, type = 'success') {
     const container = document.getElementById('toast-container');
+    if (!container) return; // Proteção caso a tela não possua o container
     
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
     
     // Ícone dinâmico baseado no tipo
     let icon = 'fa-check-circle';
-    if(type === 'error') icon = 'fa-circle-xmark';
+    if(type === 'error' || type === 'danger') icon = 'fa-circle-xmark';
     if(type === 'info') icon = 'fa-circle-info';
     
     toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${message}</span>`;
