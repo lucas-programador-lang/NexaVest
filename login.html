@@ -32,8 +32,8 @@
             <h2 style="text-align: center; margin-bottom: 0.5rem; font-weight: 800; font-size: 1.8rem;">Acesse sua Conta</h2>
             <p style="text-align: center; color: var(--text-muted); margin-bottom: 2rem; font-size: 0.95rem;">Insira suas credenciais para gerenciar seus rendimentos.</p>
             
-            <!-- Formulário que redirecionará para a Dashboard no index.html utilizando localStorage para acionar o Toast se desejar -->
-            <form onsubmit="event.preventDefault(); window.location.href='index.html?action=login';">
+            <!-- Corrigido: Agora o onsubmit redireciona diretamente para o arquivo físico 'dashboard.html' em vez da antiga rota interna no index.html -->
+            <form onsubmit="event.preventDefault(); window.location.href='dashboard.html';">
                 <div class="input-group">
                     <label><i class="fa-regular fa-envelope"></i> Endereço de E-mail</label>
                     <input type="email" class="input-premium" placeholder="seu@email.com" required autocomplete="username">
