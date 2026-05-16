@@ -4,12 +4,12 @@ import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, on
 
 // Substitua pelas chaves reais geradas no seu console
 const firebaseConfig = {
-    apiKey: "SUA_API_KEY",
-    authDomain: "SEU_AUTH_DOMAIN",
-    projectId: "SEU_PROJECT_ID",
-    storageBucket: "SEU_STORAGE_BUCKET",
-    messagingSenderId: "SEU_MESSAGING_SENDER_ID",
-    appId: "SEU_APP_ID"
+  apiKey: "AIzaSyBDOu9o_Ox7RnVFuHcR8EuJrOfbUrpyO5o",
+  authDomain: "nexavest-4c3ae.firebaseapp.com",
+  projectId: "nexavest-4c3ae",
+  storageBucket: "nexavest-4c3ae.firebasestorage.app",
+  messagingSenderId: "578374341571",
+  appId: "1:578374341571:web:4bb7270c618ee5e9a1a376"
 };
 
 // Inicializa o Firebase
