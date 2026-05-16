@@ -15,6 +15,7 @@
             --border-color: rgba(255, 255, 255, 0.05);
             --text-main: #ffffff;
             --text-muted: #94a3b8;
+            --danger: #ef4444;
         }
 
         body {
@@ -24,9 +25,9 @@
             margin: 0;
             padding: 0;
             min-height: 100vh;
-            display: flex; /* Mantido o flex original para estrutura de coluna */
+            display: flex; 
             flex-direction: column;
-            opacity: 0; /* Correção: Oculta via opacidade para evitar que o layout quebre ao injetar display inline dinamicamente */
+            opacity: 0; 
             transition: opacity 0.15s ease;
         }
 
@@ -39,6 +40,7 @@
             border-bottom: 1px solid var(--border-color);
             background: rgba(15, 23, 42, 0.6);
             backdrop-filter: blur(10px);
+            z-index: 10;
         }
 
         .plans-nav .logo {
@@ -242,6 +244,239 @@
             border-color: var(--emerald-hover);
         }
 
+        /* ==========================================================================
+           ESTILOS PREMIUM: MODAL & TOAST (ADICIONADOS)
+           ========================================================================== */
+        
+        /* Backdrop do Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(4, 7, 13, 0.8);
+            backdrop-filter: blur(12px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        /* Janela do Modal */
+        .modal-card {
+            background: linear-gradient(180deg, #131c31 0%, #0f172a 100%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            width: 100%;
+            max-width: 440px;
+            border-radius: 28px;
+            padding: 2.2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transform: translateY(20px) scale(0.95);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-sizing: border-box;
+        }
+
+        .modal-overlay.active .modal-card {
+            transform: translateY(0) scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-header h2 {
+            font-size: 1.4rem;
+            font-weight: 800;
+            margin: 0;
+            letter-spacing: -0.5px;
+        }
+
+        .btn-close-modal {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 5px;
+            transition: color 0.2s ease;
+        }
+
+        .btn-close-modal:hover {
+            color: var(--text-main);
+        }
+
+        .modal-body {
+            margin-bottom: 2rem;
+        }
+
+        .modal-info-box {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 16px;
+            padding: 1.2rem;
+            margin-top: 1rem;
+        }
+
+        .modal-info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.8rem;
+            font-size: 0.95rem;
+        }
+
+        .modal-info-row:last-child {
+            margin-bottom: 0;
+            padding-top: 0.8rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .modal-info-label {
+            color: var(--text-muted);
+        }
+
+        .modal-info-value {
+            font-weight: 600;
+        }
+
+        .modal-info-value.highlight {
+            color: var(--emerald);
+            font-weight: 800;
+        }
+
+        .modal-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .btn-modal-confirm {
+            background: var(--emerald);
+            color: #070b14;
+            border: none;
+            padding: 15px;
+            border-radius: 14px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+
+        .btn-modal-confirm:hover {
+            background: var(--emerald-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-modal-cancel {
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 14px;
+            border-radius: 14px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-modal-cancel:hover {
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-main);
+        }
+
+        /* Container do Toast de Notificação */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 380px;
+            width: calc(100% - 48px);
+        }
+
+        .toast {
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            border-radius: 18px;
+            padding: 1.2rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            transform: translateX(120%);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .toast.active {
+            transform: translateX(0);
+        }
+
+        .toast-icon {
+            font-size: 1.2rem;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .toast.success .toast-icon { color: var(--emerald); }
+        .toast.error .toast-icon { color: var(--danger); }
+        
+        .toast.success { border-left: 4px solid var(--emerald); }
+        .toast.error { border-left: 4px solid var(--danger); }
+
+        .toast-content {
+            flex-grow: 1;
+        }
+
+        .toast-title {
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+        }
+
+        .toast-message {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .toast-action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--danger);
+            color: #ffffff;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-decoration: none;
+            margin-top: 10px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .toast-action-btn:hover {
+            background: #dc2626;
+        }
+
         /* Rodapé simplificado */
         .plans-footer {
             text-align: center;
@@ -287,9 +522,9 @@
                         <li><i class="fa-solid fa-circle-check"></i> Processamento diário às 23:00</li>
                     </ul>
                 </div>
-                <a href="dashboard.html?action=deposit" class="btn-action">
+                <button class="btn-action" onclick="openInvestmentModal('Start Yield', 100, '1.5%')">
                     <i class="fa-solid fa-bolt"></i> Contratar Start
-                </a>
+                </button>
             </div>
 
             <div class="plan-card featured">
@@ -308,9 +543,9 @@
                         <li><i class="fa-solid fa-circle-check"></i> Rede de Afiliados Nível 2</li>
                     </ul>
                 </div>
-                <a href="dashboard.html?action=deposit" class="btn-action">
+                <button class="btn-action" onclick="openInvestmentModal('Pro Yield', 1000, '2.2%')">
                     <i class="fa-solid fa-bolt"></i> Contratar Pro
-                </a>
+                </button>
             </div>
 
             <div class="plan-card">
@@ -328,24 +563,139 @@
                         <li><i class="fa-solid fa-circle-check"></i> Canal Direto com Gerente VIP</li>
                     </ul>
                 </div>
-                <a href="dashboard.html?action=deposit" class="btn-action">
+                <button class="btn-action" onclick="openInvestmentModal('Enterprise', 5000, '3.0%')">
                     <i class="fa-solid fa-bolt"></i> Contratar Enterprise
-                </a>
+                </button>
             </div>
 
         </div>
     </main>
 
+    <div class="modal-overlay" id="investmentModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>Confirmar Aporte</h2>
+                <button class="btn-close-modal" onclick="closeInvestmentModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0;">Você está prestes a ativar uma nova tecnologia de alocação de ativos.</p>
+                <div class="modal-info-box">
+                    <div class="modal-info-row">
+                        <span class="modal-info-label">Tecnologia:</span>
+                        <span class="modal-info-value" id="modalPlanName">-</span>
+                    </div>
+                    <div class="modal-info-row">
+                        <span class="modal-info-label">Taxa de Yield:</span>
+                        <span class="modal-info-value" id="modalPlanRate">-</span>
+                    </div>
+                    <div class="modal-info-row">
+                        <span class="modal-info-label">Valor do Contrato:</span>
+                        <span class="modal-info-value highlight" id="modalPlanValue">-</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-modal-confirm" id="btnConfirmInvestment">Confirmar Investimento</button>
+                <button class="btn-modal-cancel" onclick="closeInvestmentModal()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
     <footer class="plans-footer">
         &copy; 2026 NexaVest. Inteligência, Alta Performance e Segurança.
     </footer>
+
+    <script>
+        // Variáveis globais de controle para o modal dinâmico
+        let activePlanName = "";
+        let activePlanValue = 0;
+
+        // Função para abrir o Modal preenchendo os dados corretos
+        function openInvestmentModal(name, value, rate) {
+            activePlanName = name;
+            activePlanValue = value;
+            
+            document.getElementById('modalPlanName').innerText = name;
+            document.getElementById('modalPlanRate').innerText = rate + " ao dia";
+            document.getElementById('modalPlanValue').innerText = "R$ " + value.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+            
+            document.getElementById('investmentModal').classList.add('active');
+        }
+
+        function closeInvestmentModal() {
+            document.getElementById('investmentModal').classList.remove('active');
+        }
+
+        // Função Geradora do Toast Premium e Customizado
+        function showPremiumToast(title, message, type, actionUrl = null, actionText = "") {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icon = type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation';
+            
+            let actionButtonHtml = "";
+            if(actionUrl) {
+                actionButtonHtml = `<a href="${actionUrl}" class="toast-action-btn"><i class="fa-solid fa-wallet"></i> ${actionText}</a>`;
+            }
+
+            toast.innerHTML = `
+                <div class="toast-icon"><i class="fa-solid ${icon}"></i></div>
+                <div class="toast-content">
+                    <div class="toast-title">${title}</div>
+                    <div class="toast-message">${message}</div>
+                    ${actionButtonHtml}
+                </div>
+            `;
+            
+            container.appendChild(toast);
+            
+            // Força o reflow para rodar a animação CSS de entrada suave
+            setTimeout(() => toast.classList.add('active'), 50);
+            
+            // Remove o toast após 5 segundos se não houver ação necessária de depósito
+            if (!actionUrl) {
+                setTimeout(() => {
+                    toast.classList.remove('active');
+                    setTimeout(() => toast.remove(), 400);
+                }, 5000);
+            }
+        }
+
+        // Escutador do clique de confirmação interna do modal
+        document.getElementById('btnConfirmInvestment').addEventListener('click', () => {
+            closeInvestmentModal();
+
+            // EXEMPLO DE REGRA DE SALDO: Substitua por sua variável real vinda do Firebase/D1
+            const userBalance = 50; 
+
+            if (userBalance >= activePlanValue) {
+                // Fluxo com Saldo Suficiente
+                showPremiumToast(
+                    "Operação Concluída", 
+                    `Seu plano ${activePlanName} foi contratado com sucesso e já está gerando yields.`, 
+                    "success"
+                );
+            } else {
+                // Fluxo com Saldo Insuficiente - Injeta o redirecionamento com a query correta na URL
+                showPremiumToast(
+                    "Saldo Insuficiente", 
+                    `Sua conta possui R$ ${userBalance.toFixed(2)}. É necessário realizar um aporte de R$ ${activePlanValue.toFixed(2)} para este plano.`, 
+                    "error",
+                    `dashboard.html?action=deposit&amount=${activePlanValue}`,
+                    "Depositar Agora"
+                );
+            }
+        });
+    </script>
 
     <script type="module">
         import { auth, onAuthStateChanged } from "./firebase-config.js";
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                // Modificado aqui: Altera apenas a opacidade preservando as regras de display flex declaradas no CSS
                 document.body.style.opacity = '1';
             } else {
                 window.location.href = 'login.html';
