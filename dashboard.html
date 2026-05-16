@@ -321,5 +321,36 @@
             }
         });
     </script>
+
+
+    <script type="module">
+    import { auth, onAuthStateChanged, signOut } from "./firebase-config.js";
+
+    // Verifica se o usuário está logado
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            // Usuário conectado, injeta o e-mail ou dados dinâmicos
+            const display = document.getElementById('user-name-display');
+            if (display) display.innerText = user.email.split('@')[0]; // Exemplo temporário
+        } else {
+            // Sem usuário ativo, chuta de volta para o login de forma segura
+            window.location.href = 'login.html';
+        }
+    });
+
+    // Vincula a função de sair ao botão correspondente da sua Navbar
+    const logoutBtn = document.querySelector('a[href="index.html"]'); // Captura seu link de Sair
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            try {
+                await signOut(auth);
+                window.location.href = 'index.html';
+            } catch (error) {
+                console.error("Erro ao deslogar:", error);
+            }
+        });
+    }
+</script>
 </body>
 </html>
