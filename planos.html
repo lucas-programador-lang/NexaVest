@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexaVest | Escolha seu Plano de Investimento</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #070b14;
+            --bg-card: #0f172a;
+            --emerald: #10b981;
+            --emerald-hover: #059669;
+            --border-color: rgba(255, 255, 255, 0.05);
+            --text-main: #ffffff;
+            --text-muted: #94a3b8;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: none; /* Proteção inicial: oculta a página até o Firebase validar a sessão */
+            flex-direction: column;
+        }
+
+        /* Barra de topo simplificada para retorno */
+        .plans-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(10px);
+        }
+
+        .plans-nav .logo {
+            font-weight: 800;
+            font-size: 1.3rem;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .plans-nav .logo i {
+            color: var(--emerald);
+        }
+
+        .btn-back {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 10px 18px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-back:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(-3px);
+        }
+
+        /* Container Principal */
+        .plans-container {
+            flex: 1;
+            width: 100%;
+            max-width: 1200px;
+            margin: 3rem auto;
+            padding: 0 1.5rem;
+            box-sizing: border-box;
+        }
+
+        .plans-header {
+            text-align: center;
+            margin-bottom: 3.5rem;
+        }
+
+        .plans-header h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.5px;
+        }
+
+        .plans-header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Grid de Planos */
+        .plans-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            align-items: stretch;
+        }
+
+        /* Card de Plano */
+        .plan-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 2.5rem;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .plan-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(16, 185, 129, 0.4);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(16, 185, 129, 0.02);
+        }
+
+        /* Destaque do Pro Yield */
+        .plan-card.featured {
+            border: 1px solid rgba(16, 185, 129, 0.5);
+            background: linear-gradient(180deg, var(--bg-card) 0%, #082119 100%);
+        }
+
+        .plan-card .featured-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--emerald);
+            color: #070b14;
+            font-size: 0.7rem;
+            font-weight: 800;
+            padding: 5px 14px;
+            border-radius: 30px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .plan-card h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0 0 0.5rem 0;
+        }
+
+        .price-wrapper {
+            margin: 1.8rem 0;
+        }
+
+        .price-amount {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--emerald);
+            line-height: 1;
+        }
+
+        .price-detail {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-top: 8px;
+            display: block;
+        }
+
+        .plan-divider {
+            border: 0;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.06);
+            margin: 1.5rem 0;
+        }
+
+        /* Lista de Recursos */
+        .plan-features-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 2.5rem 0;
+            flex-grow: 1;
+        }
+
+        .plan-features-list li {
+            font-size: 0.95rem;
+            color: #cbd5e1;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .plan-features-list li i {
+            color: var(--emerald);
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        /* Botão de Ação */
+        .btn-action {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text-main);
+            padding: 16px;
+            border-radius: 14px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .btn-action:hover {
+            background: var(--emerald);
+            color: #070b14;
+            border-color: var(--emerald);
+            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.25);
+        }
+
+        .featured .btn-action {
+            background: var(--emerald);
+            color: #070b14;
+            border-color: var(--emerald);
+        }
+
+        .featured .btn-action:hover {
+            background: var(--emerald-hover);
+            border-color: var(--emerald-hover);
+        }
+
+        /* Rodapé simplificado */
+        .plans-footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--border-color);
+            margin-top: 4rem;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="plans-nav">
+        <div class="logo">
+            <i class="fa-solid fa-chart-line"></i> NexaVest
+        </div>
+        <a href="dashboard.html" class="btn-back">
+            <i class="fa-solid fa-arrow-left"></i> Voltar ao Painel
+        </a>
+    </nav>
+
+    <main class="plans-container">
+        <header class="plans-header">
+            <h1>Planos de Investimento</h1>
+            <p>Selecione a tecnologia de rendimento ideal para as suas metas financeiras.</p>
+        </header>
+
+        <div class="plans-grid">
+            
+            <div class="plan-card">
+                <div>
+                    <h3>Start Yield</h3>
+                    <div class="price-wrapper">
+                        <div class="price-amount">R$ 100</div>
+                        <span class="price-detail">Aporte mínimo inicial via PIX</span>
+                    </div>
+                    <hr class="plan-divider">
+                    <ul class="plan-features-list">
+                        <li><i class="fa-solid fa-circle-check"></i> Rendimento: 1.5% ao dia</li>
+                        <li><i class="fa-solid fa-circle-check"></i> Ciclo de Contrato: 30 dias</li>
+                        <li><i class="fa-solid fa-circle-check"></i> Retiradas Semanais</li>
+                        <li><i class="fa-solid fa-circle-check"></i> Processamento diário às 23:00</li>
+                    </ul>
+                </div>
+                <a href="dashboard.html?action=deposit" class="btn-action">
+                    <i class="fa-solid fa-bolt"></i> Contratar Start
+                </a>
+            </div>
+
+            <div class="plan-card featured">
+                <span class="featured-badge">Recomendado</span>
+                <div>
+                    <h3>Pro Yield</h3>
+                    <div class="price-wrapper">
+                        <div class="price-amount">R$ 1.000</div>
+                        <span class="price-detail">Aporte mínimo inicial via PIX</span>
+                    </div>
+                    <hr class="plan-divider">
+                    <ul class="plan-features-list">
+                        <li><i class="fa-solid fa-circle-check"></i> Rendimento: 2.2% ao dia</li>
+                        <li><i class="fa-solid fa-circle-check"></i> Ciclo de Contrato: 45 dias</li>
+                        <li><i class="fa-solid fa-circle-check"></i> Saques Diários Instantâneos</li>
+                        <li><i class="fa-solid fa-circle-check"></i> Rede de Afiliados Nível 2</li>
+                    </ul>
+                </div>
+                <a href="dashboard.html?action=deposit" class="btn-action">
+                    <i class="fa-solid fa-bolt"></i> Contratar Pro
+                </a>
+            </div>
+
+            <div class="plan-card">
+                <div>
+                    <h3>Enterprise</h3>
+                    <div class="price-wrapper">
+                        <div class="price-amount">R$ 5.000</div>
+                        <span class="price-detail">Aporte mínimo inicial via PIX</span>
+                    </div>
+                    <hr class="plan-divider">
+                    <ul class="plan-features-list">
+                        <li><i class="fa-solid fa-circle-check"></i> Rendimento: 3.0% ao dia</li>
+                        <li><i class="fa-solid fa-circle-check"></i> Ciclo de Contrato: 60 dias</li>
+                        <li><i class="fa-solid fa-circle-check"></i> Saques Diários Ilimitados</li>
+                        <li><i class="fa-solid fa-circle-check"></i> Canal Direto com Gerente VIP</li>
+                    </ul>
+                </div>
+                <a href="dashboard.html?action=deposit" class="btn-action">
+                    <i class="fa-solid fa-bolt"></i> Contratar Enterprise
+                </a>
+            </div>
+
+        </div>
+    </main>
+
+    <footer class="plans-footer">
+        &copy; 2026 NexaVest. Inteligência, Alta Performance e Segurança.
+    </footer>
+
+    <script type="module">
+        import { auth, onAuthStateChanged } from "./firebase-config.js";
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // Se estiver autenticado corretamente, revela a página
+                document.body.style.display = 'flex';
+            } else {
+                // Se tentar burlar digitando o link direto sem conta, é expulso para o login
+                window.location.href = 'login.html';
+            }
+        });
+    </script>
+</body>
+</html>
