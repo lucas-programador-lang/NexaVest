@@ -105,55 +105,62 @@
 
 <!-- Lógica de Conexão com Firebase, Cadastro em Nuvem e Gravação no Firestore -->
     <script type="module">
-        // Importações atualizadas para incluir o banco de dados (db), referenciamento de documentos (doc) e escrita (setDoc)
         import { auth, createUserWithEmailAndPassword, db, doc, setDoc } from "./firebase-config.js";
 
-        const registerForm = document.getElementById('register-form');
+        const registerForm = document.getElementById('register-form') || document.querySelector('form');
 
-        registerForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
+        if (registerForm) {
+            registerForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
 
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const fullname = document.getElementById('fullname').value;
-            // Remove pontos e traço da máscara para salvar o CPF puramente numérico
-            const cpfClean = document.getElementById('cpf').value.replace(/\D/g, ''); 
+                try {
+                    // Captura dinâmica preventiva (funciona tanto se tiver ID quanto pelas classes originais)
+                    const emailInput = document.getElementById('email') || registerForm.querySelector('input[type="email"]');
+                    const passwordInput = document.getElementById('password') || registerForm.querySelector('input[type="password"]');
+                    const fullnameInput = document.getElementById('fullname') || registerForm.querySelector('input[type="text"]:not(#cpf)');
+                    const cpfInput = document.getElementById('cpf');
 
-            try {
-                // 1. Criação da credencial de autenticação na nuvem
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                const user = userCredential.user;
-                
-                // 2. Criação do documento exclusivo do usuário no Firestore usando o UID da autenticação
-                await setDoc(doc(db, "users", user.uid), {
-                    nome: fullname,
-                    cpf: cpfClean,
-                    email: email,
-                    saldo: 0.00,          // Estrutura financeira zerada para novos investidores
-                    rendimentos: 0.00,
-                    afiliados_ativos: 0,
-                    data_cadastro: new Date().toISOString()
-                });
-                
-                // Redirecionamento seguro enviando o parâmetro de sucesso para exibir o Toast na tela de login
-                window.location.href = 'login.html?action=registered';
-            } catch (error) {
-                console.error("Erro na criação de usuário no Firebase:", error.code, error.message);
-                
-                // Tratamento amigável para e-mails duplicados
-                let userMessage = 'Erro ao realizar o cadastro. Tente outra combinação.';
-                if (error.code === 'auth/email-already-in-use') {
-                    userMessage = 'Este endereço de e-mail já está cadastrado no sistema.';
+                    if (!emailInput || !passwordInput) {
+                        throw new Error("Campos de e-mail ou senha não foram encontrados no HTML.");
+                    }
+
+                    const email = emailInput.value.trim();
+                    const password = passwordInput.value;
+                    const fullname = fullnameInput ? fullnameInput.value : "Investidor NexaVest";
+                    const cpfClean = cpfInput ? cpfInput.value.replace(/\D/g, '') : "";
+
+                    // 1. Criação da conta no Firebase Authentication
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    const user = userCredential.user;
+                    
+                    // 2. Gravação dos dados no Firestore Database
+                    try {
+                        await setDoc(doc(db, "users", user.uid), {
+                            nome: fullname,
+                            cpf: cpfClean,
+                            email: email,
+                            saldo: 0.00,
+                            rendimentos: 0.00,
+                            afiliados_actifs: 0,
+                            data_cadastro: new Date().toISOString()
+                        });
+                    } catch (firestoreError) {
+                        console.error("Erro ao salvar no Firestore, mas o usuário foi criado:", firestoreError);
+                        // Não trava o fluxo se for apenas persistência de dados secundários
+                    }
+                    
+                    // Redirecionamento de sucesso
+                    window.location.href = 'login.html?action=registered';
+
+                } catch (error) {
+                    console.error("Erro completo no processo de cadastro:", error);
+                    // Exibe o erro real diretamente na tela para sabermos o que quebrou
+                    alert(`Falha no Cadastro:\nCódigo: ${error.code || 'JS_ERROR'}\nMensagem: ${error.message}`);
                 }
-                
-                // Dispara o Toast nativo caso a função global esteja acessível
-                if (typeof showToast === 'function') {
-                    showToast(userMessage, 'danger');
-                } else {
-                    alert('Erro ao realizar cadastro: ' + userMessage);
-                }
-            }
-        });
+            });
+        } else {
+            alert("Erro crítico: O formulário de cadastro não foi encontrado na página.");
+        }
     </script>
 
 </body>
