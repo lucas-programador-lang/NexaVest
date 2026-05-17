@@ -10,7 +10,6 @@
 </head>
 <body style="display: flex; flex-direction: column; min-height: 100vh;">
 
-    <!-- Navbar Simplificada para Telas de Autenticação -->
     <nav class="navbar">
         <div class="logo">
             <a href="index.html" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.5rem;">
@@ -22,7 +21,6 @@
         </div>
     </nav>
 
-    <!-- Container Centralizado com efeito de Blur e Centralização Absoluta -->
     <main style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 2rem; background: radial-gradient(circle at center, #1e293b 0%, #070b14 100%);">
         <div class="auth-card">
             <div class="logo" style="justify-content: center; margin-bottom: 2rem;">
@@ -32,7 +30,6 @@
             <h2 style="text-align: center; margin-bottom: 0.5rem; font-weight: 800; font-size: 1.8rem;">Acesse sua Conta</h2>
             <p style="text-align: center; color: var(--text-muted); margin-bottom: 2rem; font-size: 0.95rem;">Insira suas credenciais para gerenciar seus rendimentos.</p>
             
-            <!-- IDs adicionados de forma limpa para captura no script modular do Firebase -->
             <form id="login-form">
                 <div class="input-group">
                     <label><i class="fa-regular fa-envelope"></i> Endereço de E-mail</label>
@@ -63,12 +60,10 @@
         </div>
     </main>
 
-    <!-- Rodapé Minimalista -->
     <footer style="padding: 1.5rem 5%;">
         <p style="color: var(--text-muted); font-size: 0.85rem;">&copy; 2026 NexaVest. Conexão criptografada de alta segurança de ponta a ponta.</p>
     </footer>
 
-    <!-- Lógica de Autenticação com o Firebase -->
     <script type="module">
         import { auth, signInWithEmailAndPassword } from "./firebase-config.js";
 
@@ -77,7 +72,8 @@
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            const email = document.getElementById('email').value;
+            // CORREÇÃO: Aplicação do .value.trim() no e-mail para evitar falhas de espaço em branco no envio ao Firebase
+            const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
 
             try {
