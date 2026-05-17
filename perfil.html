@@ -4,15 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NexaVest | Meu Perfil & Segurança</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --bg-dark: #070b14;
-            --bg-card: #0f172a;
+            --bg-gradient: radial-gradient(circle at top center, #0d1b2a 0%, #070b14 100%);
+            --bg-card: rgba(15, 23, 42, 0.45);
             --emerald: #10b981;
             --emerald-hover: #059669;
-            --border-color: rgba(255, 255, 255, 0.05);
+            --border-color: rgba(255, 255, 255, 0.06);
             --text-main: #ffffff;
             --text-muted: #94a3b8;
             --danger: #ef4444;
@@ -20,7 +21,8 @@
         }
 
         body {
-            background-color: var(--bg-dark);
+            background: var(--bg-dark);
+            background: var(--bg-gradient);
             color: var(--text-main);
             font-family: 'Inter', sans-serif;
             margin: 0;
@@ -29,32 +31,38 @@
             display: flex; 
             flex-direction: column;
             opacity: 0; 
-            transition: opacity 0.15s ease;
+            transition: opacity 0.25s ease;
+            overflow-x: hidden;
         }
 
-        /* Barra de Navegação */
+        /* Barra de Navegação Premium */
         .profile-nav {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1.5rem 2rem;
+            padding: 1.25rem 5%;
             border-bottom: 1px solid var(--border-color);
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(10px);
-            z-index: 10;
+            background: rgba(11, 19, 36, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
         .profile-nav .logo {
             font-weight: 800;
-            font-size: 1.3rem;
+            font-size: 1.4rem;
             color: var(--text-main);
             display: flex;
             align-items: center;
             gap: 10px;
+            letter-spacing: -0.5px;
         }
 
         .profile-nav .logo i {
             color: var(--emerald);
+            text-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
         }
 
         .nav-actions {
@@ -67,93 +75,81 @@
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid var(--border-color);
             color: var(--text-main);
-            padding: 10px 18px;
-            border-radius: 10px;
+            padding: 10px 20px;
+            border-radius: 12px;
             text-decoration: none;
             font-weight: 600;
             font-size: 0.9rem;
             display: flex;
             align-items: center;
             gap: 8px;
-            transition: all 0.2s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .btn-back:hover {
             background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.15);
             transform: translateX(-3px);
-        }
-
-        .btn-logout {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            color: var(--danger);
-            padding: 10px 18px;
-            border-radius: 10px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .btn-logout:hover {
-            background: var(--danger);
-            color: #ffffff;
-            border-color: var(--danger);
         }
 
         /* Container Principal */
         .profile-container {
             flex: 1;
             width: 100%;
-            max-width: 800px;
-            margin: 3rem auto;
+            max-width: 760px;
+            margin: 3.5rem auto;
             padding: 0 1.5rem;
             box-sizing: border-box;
         }
 
         .profile-header {
             text-align: center;
-            margin-bottom: 3rem;
+            margin-bottom: 3.5rem;
         }
 
         .profile-header h1 {
-            font-size: 2.2rem;
+            font-size: 2.25rem;
             font-weight: 800;
-            margin-bottom: 0.5rem;
-            letter-spacing: -0.5px;
+            margin: 0 0 0.6rem 0;
+            letter-spacing: -0.75px;
+            background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .profile-header p {
             color: var(--text-muted);
-            font-size: 1.1rem;
+            font-size: 1.05rem;
+            margin: 0;
+            line-height: 1.5;
         }
 
         /* Grid de Configurações */
         .profile-grid {
             display: flex;
             flex-direction: column;
-            gap: 30px;
+            gap: 2rem;
         }
 
-        /* Card de Configuração */
+        /* Card de Configuração Premium */
         .profile-card {
             background: var(--bg-card);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
             border: 1px solid var(--border-color);
             border-radius: 24px;
             padding: 2.5rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
         }
 
         .profile-card h3 {
-            font-size: 1.3rem;
+            font-size: 1.35rem;
             font-weight: 700;
             margin: 0 0 0.5rem 0;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
+            color: #f8fafc;
         }
 
         .profile-card h3 i {
@@ -163,25 +159,23 @@
         .card-description {
             color: var(--text-muted);
             font-size: 0.9rem;
-            margin-bottom: 1.8rem;
+            margin-bottom: 2rem;
             display: block;
+            line-height: 1.5;
         }
 
         /* Formulários e Inputs */
         .form-group {
-            margin-bottom: 1.2rem;
-        }
-
-        .form-group:last-of-type {
-            margin-bottom: 1.8rem;
+            margin-bottom: 1.5rem;
         }
 
         .form-group label {
             display: block;
             font-size: 0.85rem;
             font-weight: 600;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             color: #cbd5e1;
+            letter-spacing: 0.3px;
         }
 
         .input-wrapper {
@@ -190,74 +184,89 @@
 
         .input-wrapper i {
             position: absolute;
-            left: 16px;
+            left: 18px;
             top: 50%;
             transform: translateY(-50%);
-            color: #64748b;
+            color: #475569;
             font-size: 1rem;
+            transition: color 0.2s ease;
         }
 
         .form-control {
             width: 100%;
-            background: rgba(7, 11, 20, 0.5);
+            background: rgba(7, 11, 20, 0.4);
             border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 14px 16px 14px 46px;
+            border-radius: 14px;
+            padding: 15px 16px 15px 50px;
             color: var(--text-main);
             font-family: 'Inter', sans-serif;
             font-size: 0.95rem;
             box-sizing: border-box;
-            transition: all 0.2s ease;
+            transition: all 0.25s ease;
         }
 
         .form-control:focus {
             outline: none;
-            border-color: rgba(16, 185, 129, 0.5);
-            background: rgba(7, 11, 20, 0.8);
-            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+            border-color: rgba(16, 185, 129, 0.4);
+            background: rgba(7, 11, 20, 0.7);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.08);
         }
 
-        /* Botões */
+        .form-control:focus + i {
+            color: var(--emerald);
+        }
+
+        .form-control:disabled {
+            background: rgba(255, 255, 255, 0.02);
+            color: #64748b;
+            cursor: not-allowed;
+            border-color: rgba(255, 255, 255, 0.02);
+        }
+
+        /* Botões Estilizados */
         .btn-submit {
             background: var(--emerald);
             color: #070b14;
             border: none;
-            padding: 14px 24px;
-            border-radius: 12px;
+            padding: 15px 28px;
+            border-radius: 14px;
             font-size: 0.95rem;
             font-weight: 700;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
             gap: 10px;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
         }
 
         .btn-submit:hover {
             background: var(--emerald-hover);
-            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.25);
+            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.2);
+            transform: translateY(-1px);
         }
 
         .btn-secondary {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid var(--border-color);
             color: var(--text-main);
-            padding: 14px 24px;
-            border-radius: 12px;
+            padding: 15px 28px;
+            border-radius: 14px;
             font-size: 0.95rem;
             font-weight: 600;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
             gap: 10px;
-            transition: all 0.2s ease;
+            transition: all 0.25s ease;
         }
 
         .btn-secondary:hover {
             background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-1px);
         }
 
-        /* Container de Toasts */
+        /* Container de Toasts Refinados */
         .toast-container {
             position: fixed;
             bottom: 24px;
@@ -271,17 +280,18 @@
         }
 
         .toast {
-            background: rgba(15, 23, 42, 0.9);
+            background: rgba(15, 23, 42, 0.85);
             border: 1px solid rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(12px);
-            border-radius: 18px;
-            padding: 1.2rem;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 20px;
+            padding: 1.25rem;
             display: flex;
             align-items: flex-start;
             gap: 14px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
             transform: translateX(120%);
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.15);
         }
 
         .toast.active {
@@ -289,7 +299,7 @@
         }
 
         .toast-icon {
-            font-size: 1.2rem;
+            font-size: 1.25rem;
             flex-shrink: 0;
             margin-top: 2px;
         }
@@ -308,6 +318,7 @@
             font-weight: 700;
             font-size: 0.95rem;
             margin-bottom: 4px;
+            color: #f8fafc;
         }
 
         .toast-message {
@@ -319,11 +330,46 @@
         /* Rodapé */
         .profile-footer {
             text-align: center;
-            padding: 2rem;
-            color: var(--text-muted);
+            padding: 2rem 1.5rem;
+            color: #64748b;
             font-size: 0.85rem;
             border-top: 1px solid var(--border-color);
-            margin-top: 4rem;
+            margin-top: 5rem;
+            background: rgba(7, 11, 20, 0.4);
+        }
+
+        /* Responsividade Perfeita */
+        @media (max-width: 768px) {
+            .profile-container {
+                margin: 2rem auto;
+            }
+            .profile-header {
+                margin-bottom: 2.5rem;
+            }
+            .profile-header h1 {
+                font-size: 1.85rem;
+            }
+            .profile-card {
+                padding: 1.75rem;
+                border-radius: 20px;
+            }
+            .btn-submit, .btn-secondary {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .profile-nav {
+                padding: 1rem 1.25rem;
+            }
+            .btn-back {
+                padding: 8px 14px;
+                font-size: 0.85rem;
+            }
+            .profile-nav .logo {
+                font-size: 1.2rem;
+            }
         }
     </style>
 </head>
@@ -356,24 +402,24 @@
                     <div class="form-group">
                         <label for="currentPassword">Senha Atual</label>
                         <div class="input-wrapper">
-                            <i class="fa-solid fa-lock"></i>
                             <input type="password" id="currentPassword" class="form-control" placeholder="••••••••" required>
+                            <i class="fa-solid fa-lock"></i>
                         </div>
                     </div>
                     
                     <div class="form-group">
                         <label for="newPassword">Nova Senha</label>
                         <div class="input-wrapper">
-                            <i class="fa-solid fa-shield-halved"></i>
                             <input type="password" id="newPassword" class="form-control" placeholder="Mínimo 6 caracteres" required>
+                            <i class="fa-solid fa-shield-halved"></i>
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label for="confirmNewPassword">Confirmar Nova Senha</label>
                         <div class="input-wrapper">
-                            <i class="fa-solid fa-check-double"></i>
                             <input type="password" id="confirmNewPassword" class="form-control" placeholder="Repita a nova senha" required>
+                            <i class="fa-solid fa-check-double"></i>
                         </div>
                     </div>
 
@@ -390,8 +436,8 @@
                 <div class="form-group">
                     <label id="labelUserEmail">E-mail de Envio</label>
                     <div class="input-wrapper">
-                        <i class="fa-solid fa-at"></i>
                         <input type="email" id="recoveryEmailField" class="form-control" placeholder="Carregando seu e-mail..." disabled>
+                        <i class="fa-solid fa-at"></i>
                     </div>
                 </div>
 
@@ -460,7 +506,7 @@
             }
         });
 
-        // CORREÇÃO 1: Alterado o listener de 'click' no botão para interceptar o evento 'submit' do próprio elemento form
+        // listener de 'submit' do próprio elemento form
         document.getElementById('formUpdatePassword').addEventListener('submit', async (e) => {
             e.preventDefault(); // Evita o reload nativo síncrono da tag <form>
 
@@ -518,17 +564,6 @@
             } catch (error) {
                 console.error(error);
                 showPremiumToast("Falha no Envio", "Houve um problema ao solicitar o link. Verifique mais tarde.", "error");
-            }
-        });
-
-        // Evento 3: Botão de Logout da Navbar
-        document.getElementById('btnLogoutNav').addEventListener('click', async () => {
-            try {
-                await signOut(auth);
-                window.location.href = 'login.html';
-            } catch (error) {
-                console.error(error);
-                showPremiumToast("Erro ao Sair", "Não foi possível processar seu encerramento de sessão.", "error");
             }
         });
     </script>
