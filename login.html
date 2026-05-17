@@ -125,6 +125,14 @@
                 }, 300);
             }, 4000);
         }
+
+        // Alerta opcional caso o usuário venha redirecionado do registro bem-sucedido
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('action') === 'registered' && typeof window.showToast === 'function') {
+                window.showToast('Conta criada com sucesso! Realize o seu primeiro acesso.', 'success');
+            }
+        });
     </script>
 
     <script type="module">
@@ -132,30 +140,37 @@
 
         const loginForm = document.getElementById('login-form');
 
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
+        if (loginForm) {
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
 
-            // CORREÇÃO: Aplicação do .value.trim() no e-mail para evitar falhas de espaço em branco no envio ao Firebase
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
+                const emailInput = document.getElementById('email');
+                const passwordInput = document.getElementById('password');
 
-            try {
-                // Realiza a autenticação com e-mail e senha no Firebase
-                await signInWithEmailAndPassword(auth, email, password);
-                
-                // Redireciona para o arquivo físico do painel administrativo
-                window.location.href = 'dashboard.html';
-            } catch (error) {
-                console.error("Erro na autenticação do Firebase:", error.code, error.message);
-                
-                // Dispara o Toast se a estrutura global de avisos existir na aplicação
-                if (typeof showToast === 'function') {
-                    showToast('Credenciais incorretas ou inválidas. Tente novamente.', 'danger');
-                } else {
-                    alert('Erro ao acessar a conta: Verifique o e-mail e a senha informados.');
+                if (!emailInput || !passwordInput) return;
+
+                // CORREÇÃO: Aplicação do .value.trim() no e-mail para evitar falhas de espaço em branco no envio ao Firebase
+                const email = emailInput.value.trim();
+                const password = passwordInput.value;
+
+                try {
+                    // Realiza a autenticação com e-mail e senha no Firebase
+                    await signInWithEmailAndPassword(auth, email, password);
+                    
+                    // Redireciona para o arquivo físico do painel administrativo
+                    window.location.href = 'dashboard.html';
+                } catch (error) {
+                    console.error("Erro na autenticação do Firebase:", error.code, error.message);
+                    
+                    // Dispara o Toast se a estrutura global de avisos existir na aplicação
+                    if (typeof showToast === 'function') {
+                        showToast('Credenciais incorretas ou inválidas. Tente novamente.', 'danger');
+                    } else {
+                        alert('Erro ao acessar a conta: Verifique o e-mail e a senha informados.');
+                    }
                 }
-            }
-        });
+            });
+        }
     </script>
 
 </body>
