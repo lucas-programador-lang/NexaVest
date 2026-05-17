@@ -355,7 +355,7 @@
                 <h3><i class="fa-solid fa-key"></i> Alterar Minha Senha</h3>
                 <span class="card-description">Caso saiba sua senha atual e queira modificá-la diretamente por aqui.</span>
                 
-                <form id="formUpdatePassword" onsubmit="event.preventDefault();">
+                <form id="formUpdatePassword">
                     <div class="form-group">
                         <label for="currentPassword">Senha Atual</label>
                         <div class="input-wrapper">
@@ -463,8 +463,10 @@
             }
         });
 
-        // Evento 1: Modificar a senha conhecendo a anterior (Reautenticação obrigatória pelo Firebase)
-        document.getElementById('btnSaveNewPassword').addEventListener('click', async () => {
+        // CORREÇÃO 1: Alterado o listener de 'click' no botão para interceptar o evento 'submit' do próprio elemento form
+        document.getElementById('formUpdatePassword').addEventListener('submit', async (e) => {
+            e.preventDefault(); // Evita o reload nativo síncrono da tag <form>
+
             const currentPassword = document.getElementById('currentPassword').value;
             const newPassword = document.getElementById('newPassword').value;
             const confirmNewPassword = document.getElementById('confirmNewPassword').value;
