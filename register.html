@@ -115,9 +115,8 @@
         const cpfInput = document.getElementById('cpf');
         
         cpfInput.addEventListener('input', (e) => {
-            let value = e.target.value.replace(/\D/g, ''); // Remove caracteres não numéricos
+            let value = e.target.value.replace(/\D/g, ''); 
             
-            // Aplica a formatação dinâmica baseada estritamente no comprimento dos dígitos limpos
             if (value.length > 3 && value.length <= 6) {
                 value = value.substring(0,3) + '.' + value.substring(3);
             } else if (value.length > 6 && value.length <= 9) {
@@ -131,7 +130,6 @@
     </script>
 
     <script>
-        // Função global de Toast injetada mantendo o comportamento esperado pelo seu script original
         window.showToast = function(message, type = 'danger') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -157,7 +155,6 @@
     </script>
 
     <script type="module">
-        // Adicionados métodos de busca do Firestore: collection, query, where e getDocs
         import { auth, createUserWithEmailAndPassword, db, doc, setDoc } from "./firebase-config.js";
         import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
@@ -166,12 +163,9 @@
         if (registerForm) {
             registerForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
-
-                // Armazena credencial temporária para caso de rollback por CPF duplicado
                 let createdUser = null;
 
                 try {
-                    // Captura dinâmica dos campos
                     const emailInput = document.getElementById('email') || registerForm.querySelector('input[type="email"]');
                     const passwordInput = document.getElementById('password') || registerForm.querySelector('input[type="password"]');
                     const fullnameInput = document.getElementById('fullname') || registerForm.querySelector('input[type="text"]:not(#cpf)');
@@ -181,42 +175,32 @@
                         throw new Error("Campos obrigatórios de cadastro não foram localizados no HTML.");
                     }
 
-                    // Correção aplicada: sanitização do e-mail usando .trim().toLowerCase() para evitar erros de caixa no mobile
                     const email = emailInput.value.trim().toLowerCase();
                     const password = passwordInput.value;
                     const fullname = fullnameInput ? fullnameInput.value.trim() : "Investidor NexaVest";
-                    const cpfClean = cpfInput.value.replace(/\D/g, ''); // Limpa pontos e traços
+                    const cpfClean = cpfInput.value.replace(/\D/g, ''); 
 
-                    // VALIDAÇÃO 1: Verifica se o campo CPF foi preenchido corretamente
                     if (cpfClean.length !== 11) {
-                        if (typeof showToast === 'function') showToast('Por favor, insira um CPF válido com 11 dígitos.', 'danger');
-                        else alert('Por favor, insira um CPF válido com 11 dígitos.');
+                        showToast('Por favor, insira um CPF válido com 11 dígitos.', 'danger');
                         return;
                     }
 
-                    // 1. Criação da conta no Firebase Authentication primeiro (Garante permissão de leitura autenticada)
-                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                    createdUser = userCredential.user;
-
-                    // VALIDAÇÃO 2: Trava de CPF Duplicado executada sob o contexto autenticado do usuário ativo
+                    // 1. CHECAGEM DE CPF ANTES DE CRIAR O AUTH:
+                    // Fazemos a busca primeiro. Para isso funcionar, as regras do Firebase precisam permitir "list"
                     const usersRef = collection(db, "users");
                     const cpfQuery = query(usersRef, where("cpf", "==", cpfClean));
                     const cpfQuerySnapshot = await getDocs(cpfQuery);
 
                     if (!cpfQuerySnapshot.empty) {
-                        // Rollback: Remove o usuário autenticado recém-criado para permitir nova tentativa limpa
-                        if (auth.currentUser) {
-                            await auth.currentUser.delete();
-                        }
-                        if (typeof showToast === 'function') {
-                            showToast('Este CPF já está vinculado a outra conta cadastrada.', 'danger');
-                        } else {
-                            alert('Erro: Este CPF já está cadastrado no sistema.');
-                        }
+                        showToast('Este CPF já está vinculado a outra conta cadastrada.', 'danger');
                         return;
                     }
+
+                    // 2. Se o CPF está livre, cria o usuário no Auth
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    createdUser = userCredential.user;
                     
-                    // 2. Gravação dos dados financeiros zerados no Firestore Database (Cria a coleção se não existir)
+                    // 3. Gravação dos dados no Firestore utilizando o UID do usuário recém-criado
                     await setDoc(doc(db, "users", createdUser.uid), {
                         nome: fullname,
                         cpf: cpfClean,
@@ -227,28 +211,29 @@
                         data_cadastro: new Date().toISOString()
                     });
                     
-                    // Redirecionamento em caso de sucesso absoluto
                     window.location.href = 'login.html?action=registered';
 
                 } catch (error) {
                     console.error("Erro completo no processo de cadastro:", error);
                     
+                    // Se salvou o Auth mas falhou no Firestore, limpa a sujeira do Auth
+                    if (createdUser && auth.currentUser) {
+                        await auth.currentUser.delete();
+                    }
+                    
                     let userMessage = 'Erro ao realizar o cadastro. Tente outra combinação.';
                     
-                    // VALIDAÇÃO 3: Captura de erro mapeando códigos nativos do Firebase
                     if (error.code === 'auth/email-already-in-use') {
                         userMessage = 'Este endereço de e-mail já está cadastrado no sistema.';
                     } else if (error.code === 'auth/weak-password') {
                         userMessage = 'A senha escolhida é muito fraca. Use pelo menos 6 caracteres.';
                     } else if (error.code === 'auth/invalid-email') {
                         userMessage = 'O formato do e-mail inserido é inválido.';
+                    } else if (error.substring && error.substring(0,17) === 'FirebaseError: [') {
+                        userMessage = 'Erro de permissão no servidor. Verifique as regras do Firestore.';
                     }
                     
-                    if (typeof showToast === 'function') {
-                        showToast(userMessage, 'danger');
-                    } else {
-                        alert(userMessage);
-                    }
+                    showToast(userMessage, 'danger');
                 }
             });
         } else {
@@ -257,4 +242,3 @@
     </script>
 </body>
 </html>
-
