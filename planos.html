@@ -244,10 +244,6 @@
             border-color: var(--emerald-hover);
         }
 
-        /* ==========================================================================
-           ESTILOS PREMIUM: MODAL & TOAST (ADICIONADOS)
-           ========================================================================== */
-        
         /* Backdrop do Modal */
         .modal-overlay {
             position: fixed;
@@ -609,7 +605,7 @@
 
   <script type="module">
     import { auth, onAuthStateChanged, db } from "./firebase-config.js";
-    import { doc, getDoc, updateDoc, collection, addDoc, increment } from "https://www.gstatic.com/firebasejs/10.x.x/firebase-firestore.js";
+    import { doc, getDoc, updateDoc, collection, addDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     // Variáveis globais de controle dentro do escopo do módulo
     let activePlanName = "";
@@ -634,7 +630,6 @@
             
             if (userDocSnap.exists()) {
                 currentUserData = userDocSnap.data();
-                // Opcional: Se tiver exibição de saldo estático na tela de planos, atualize aqui
             } else {
                 console.error("Documento do usuário não encontrado no Firestore.");
             }
@@ -643,7 +638,7 @@
         }
     }
 
-    // Função para abrir o Modal preenchendo os dados corretos
+    // Vinculação ao escopo global (window) para os disparos inline onclick do HTML funcionar com módulos
     window.openInvestmentModal = function(name, value, rate) {
         activePlanName = name;
         activePlanValue = parseFloat(value);
