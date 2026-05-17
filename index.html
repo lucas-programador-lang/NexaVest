@@ -156,7 +156,7 @@
             
             onAuthStateChanged(auth, (user) => {
                 if (user) {
-                    // Se o usuário já possuir sessão ativa no navegador, o botão altera para ir direto ao painel
+                    // Se o usuário já possuir sessão activa no navegador, o botão altera para ir direto ao painel
                     btnPainel.href = 'dashboard.html';
                 } else {
                     // Se não estiver logado, redireciona estritamente para tela de login
