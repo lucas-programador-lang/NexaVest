@@ -400,145 +400,172 @@
         <p style="color: #94a3b8; font-size: 0.85rem; text-align: center;">&copy; 2026 NexaVest. Sistema financeiro protegido por criptografia de ponta a ponta.</p>
     </footer>
 
-    <script type="module">
-        import { auth, onAuthStateChanged, db, doc, getDoc, collection, query, where, getDocs } from "./firebase-config.js";
+   <script type="module">
+    import { auth, onAuthStateChanged, db, doc, getDoc, collection, query, where, getDocs } from "./firebase-config.js";
 
-        const displayNameElement = document.getElementById('user-name-display');
-        const referralUrlField = document.getElementById('referral-url-field');
-        const btnCopyLink = document.getElementById('btn-copy-link');
-        
-        const referralsTable = document.getElementById('referrals-table');
-        const referralsTbody = document.getElementById('referrals-tbody');
-        const noReferralsMessage = document.getElementById('no-referrals-message');
+    const displayNameElement = document.getElementById('user-name-display');
+    const referralUrlField = document.getElementById('referral-url-field');
+    const btnCopyLink = document.getElementById('btn-copy-link');
+    
+    const referralsTable = document.getElementById('referrals-table');
+    const referralsTbody = document.getElementById('referrals-tbody');
+    const noReferralsMessage = document.getElementById('no-referrals-message');
 
-        const totalReferralsCount = document.getElementById('total-referrals-count');
-        const pendingReferralsCount = document.getElementById('pending-referrals-count');
-        const totalCommissionsAmount = document.getElementById('total-commissions-amount');
+    const totalReferralsCount = document.getElementById('total-referrals-count');
+    const pendingReferralsCount = document.getElementById('pending-referrals-count');
+    const totalCommissionsAmount = document.getElementById('total-commissions-amount');
 
-        // Copiar Link Funcional
-        btnCopyLink.addEventListener('click', () => {
+    // Copiar Link Funcional com tratamento de API moderna
+    if (btnCopyLink && referralUrlField) {
+        btnCopyLink.addEventListener('click', async () => {
             if (referralUrlField.value && referralUrlField.value !== "Carregando link exclusivo...") {
-                referralUrlField.select();
-                referralUrlField.setSelectionRange(0, 99999);
-                navigator.clipboard.writeText(referralUrlField.value);
-                
-                const originalText = btnCopyLink.innerHTML;
-                btnCopyLink.innerHTML = `<i class="fa-solid fa-check"></i> Copiado!`;
-                btnCopyLink.style.background = "#059669";
-                setTimeout(() => {
-                    btnCopyLink.innerHTML = originalText;
-                    btnCopyLink.style.background = "#10b981";
-                }, 2000);
+                try {
+                    await navigator.clipboard.writeText(referralUrlField.value);
+                    
+                    const originalText = btnCopyLink.innerHTML;
+                    btnCopyLink.innerHTML = `<i class="fa-solid fa-check"></i> Copiado!`;
+                    btnCopyLink.style.background = "#059669";
+                    
+                    setTimeout(() => {
+                        btnCopyLink.innerHTML = originalText;
+                        btnCopyLink.style.background = "#10b981";
+                    }, 2000);
+                } catch (err) {
+                    // Fallback para navegadores legados/WebViews rígidas
+                    referralUrlField.select();
+                    document.execCommand('copy');
+                }
             }
         });
+    }
 
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                try {
-                    // 1. Nome do Usuário Autenticado
-                    const userDocRef = doc(db, "users", user.uid);
-                    const userDocSnap = await getDoc(userDocRef);
-                    if (userDocSnap.exists() && userDocSnap.data().nome) {
-                        displayNameElement.innerText = userDocSnap.data().nome;
-                    } else {
-                        displayNameElement.innerText = user.email ? user.email.split('@')[0] : "Investidor";
-                    }
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            try {
+                // 1. Nome do Usuário Autenticado
+                const userDocRef = doc(db, "users", user.uid);
+                const userDocSnap = await getDoc(userDocRef);
+                if (userDocSnap.exists() && userDocSnap.data().nome) {
+                    displayNameElement.innerText = userDocSnap.data().nome;
+                } else {
+                    displayNameElement.innerText = user.email ? user.email.split('@')[0] : "Investidor";
+                }
 
-                    // 2. Gerar URL Dinâmica Baseada na Origem Local ou Hospedada
-                    referralUrlField.value = `${window.location.origin}/register.html?ref=${user.uid}`;
+                // 2. Gerar URL Dinâmica Baseada na Origem
+                referralUrlField.value = `${window.location.origin}/register.html?ref=${user.uid}`;
 
-                    // 3. Buscar Usuários Indicados (onde o campo 'indicado_por' ou 'ref' é igual ao uid do logado)
-                    const usersRef = collection(db, "users");
-                    const qReferrals = query(usersRef, where("indicado_por", "==", user.uid));
-                    const referralsSnapshot = await getDocs(qReferrals);
+                // 3. Buscar Usuários Indicados
+                const usersRef = collection(db, "users");
+                const qReferrals = query(usersRef, where("indicado_por", "==", user.uid));
+                const referralsSnapshot = await getDocs(qReferrals);
 
-                    if (!referralsSnapshot.empty) {
-                        noReferralsMessage.style.display = 'none';
-                        referralsTable.style.display = 'table';
-                        referralsTbody.innerHTML = '';
+                if (!referralsSnapshot.empty) {
+                    noReferralsMessage.style.display = 'none';
+                    referralsTable.style.display = 'table';
+                    referralsTbody.innerHTML = '';
 
-                        let totalIndicados = 0;
-                        let totalAguardando = 0;
-                        let acumuladoComissoes = 0;
+                    let totalIndicados = 0;
+                    let totalAguardando = 0;
+                    let acumuladoComissoes = 0;
 
-                        // Iterar sobre cada usuário que entrou pelo link de referência do usuário logado
-                        for (const userDoc of referralsSnapshot.docs) {
-                            const referralData = userDoc.data();
-                            totalIndicados++;
+                    // Mapeia os documentos para criar promessas em paralelo, otimizando performance
+                    const referralPromises = referralsSnapshot.docs.map(async (userDoc) => {
+                        const referralData = userDoc.data();
+                        const uidIndicado = userDoc.id;
 
-                            // Buscar se este indicado específico possui investimentos ativos para calcular a comissão dinamicamente
-                            const invRef = collection(db, "user_investimentos");
-                            const qInv = query(invRef, where("uid", "==", userDoc.id));
-                            const invSnapshot = await getDocs(qInv);
+                        // Busca investimentos ativos do indicado
+                        const invRef = collection(db, "user_investimentos");
+                        const qInv = query(invRef, where("uid", "==", uidIndicado));
+                        const invSnapshot = await getDocs(qInv);
 
-                            let planoNome = 'Nenhum';
-                            let capitalAlocado = 0;
-                            let comissaoCalculada = 0;
-                            let statusBadge = `<span class="badge-status-pending"><i class="fa-solid fa-clock"></i> Pendente</span>`;
+                        let planoNome = 'Nenhum';
+                        let capitalAlocado = 0;
+                        let comissaoCalculada = 0;
+                        let statusBadge = `<span class="badge-status-pending" style="color: #f59e0b;"><i class="fa-solid fa-clock"></i> Pendente</span>`;
 
-                            if (!invSnapshot.empty) {
-                                // Caso possua múltiplos planos, soma os capitais e calcula 6% acumulado
-                                capitalAlocado = 0;
-                                let nomesPlanos = [];
-                                
-                                invSnapshot.forEach((investmentDoc) => {
-                                    const invData = investmentDoc.data();
-                                    const valor = invData.valor_investido ? parseFloat(invData.valor_investido) : 0;
-                                    capitalAlocado += valor;
-                                    if(invData.plano_nome) nomesPlanos.push(invData.plano_nome);
-                                });
+                        if (!invSnapshot.empty) {
+                            let nomesPlanos = [];
+                            invSnapshot.forEach((investmentDoc) => {
+                                const invData = investmentDoc.data();
+                                const valor = invData.valor_investido ? parseFloat(invData.valor_investido) : 0;
+                                capitalAlocado += valor;
+                                if (invData.plano_nome) nomesPlanos.push(invData.plano_nome);
+                            });
 
-                                planoNome = nomesPlanos.join(', ');
-                                comissaoCalculada = capitalAlocado * 0.06;
-                                acumuladoComissoes += comissaoCalculada;
-                                statusBadge = `<span class="badge-status-complete"><i class="fa-solid fa-circle-check"></i> Ativo</span>`;
-                            } else {
-                                totalAguardando++;
-                            }
-
-                            // Formatação de data do registro da indicação
-                            let dataRegistro = '---';
-                            if (referralData.data_cadastro) {
-                                if (typeof referralData.data_cadastro.toDate === 'function') {
-                                    dataRegistro = referralData.data_cadastro.toDate().toLocaleDateString('pt-BR');
-                                } else {
-                                    dataRegistro = new Date(referralData.data_cadastro).toLocaleDateString('pt-BR');
-                                }
-                            }
-
-                            const tr = document.createElement('tr');
-                            tr.style.borderBottom = '1px solid rgba(255,255,255,0.04)';
-                            tr.innerHTML = `
-                                <td style="padding: 1.2rem 0.75rem; font-size: 0.9rem; color: #94a3b8;">${dataRegistro}</td>
-                                <td style="padding: 1.2rem 0.75rem; font-size: 0.9rem; font-weight: 700; color: #ffffff;">${referralData.nome || 'Usuário Nexa'}</td>
-                                <td style="padding: 1.2rem 0.75rem; font-size: 0.9rem; color: #94a3b8;">${planoNome}</td>
-                                <td style="padding: 1.2rem 0.75rem; font-size: 0.9rem; font-weight: 600; color: #ffffff;">R$ ${capitalAlocado.toFixed(2)}</td>
-                                <td style="padding: 1.2rem 0.75rem; font-size: 0.9rem; font-weight: 700; color: #10b981;">R$ ${comissaoCalculada.toFixed(2)}</td>
-                                <td style="padding: 1.2rem 0.75rem;">${statusBadge}</td>
-                            `;
-                            referralsTbody.appendChild(tr);
+                            planoNome = nomesPlanos.join(', ');
+                            comissaoCalculada = capitalAlocado * 0.06;
+                            statusBadge = `<span class="badge-status-complete" style="color: #10b981;"><i class="fa-solid fa-circle-check"></i> Ativo</span>`;
                         }
 
-                        // Atualização Instantânea dos contadores dos mini cards superiores
-                        totalReferralsCount.innerText = totalIndicados;
-                        pendingReferralsCount.innerText = totalAguardando;
-                        totalCommissionsAmount.innerText = `R$ ${acumuladoComissoes.toFixed(2)}`;
+                        // Tratamento seguro de datas
+                        let dataRegistro = '---';
+                        if (referralData.data_cadastro) {
+                            if (typeof referralData.data_cadastro.toDate === 'function') {
+                                dataRegistro = referralData.data_cadastro.toDate().toLocaleDateString('pt-BR');
+                            } else {
+                                dataRegistro = new Date(referralData.data_cadastro).toLocaleDateString('pt-BR');
+                            }
+                        }
 
-                    } else {
-                        noReferralsMessage.style.display = 'block';
-                        referralsTable.style.display = 'none';
-                        totalReferralsCount.innerText = '0';
-                        pendingReferralsCount.innerText = '0';
-                        totalCommissionsAmount.innerText = 'R$ 0,00';
-                    }
+                        return {
+                            dataRegistro,
+                            nome: referralData.nome || 'Usuário Nexa',
+                            planoNome,
+                            capitalAlocado,
+                            comissaoCalculada,
+                            statusBadge
+                        };
+                    });
 
-                } catch (error) {
-                    console.error("Erro ao processar dados de afiliados:", error);
+                    // Resolve todas as leituras de subcoleções de uma só vez
+                    const resolvedReferrals = await Promise.all(referralPromises);
+
+                    // Renderização limpa no DOM após a resolução dos dados
+                    resolvedReferrals.forEach(data => {
+                        totalIndicados++;
+                        acumuladoComissoes += data.comissaoCalculada;
+                        if (data.capitalAlocado === 0) {
+                            totalAguardando++;
+                        }
+
+                        const tr = document.createElement('tr');
+                        tr.style.borderBottom = '1px solid rgba(255,255,255,0.04)';
+                        tr.innerHTML = `
+                            <td style="padding: 1.2rem 0.75rem; font-size: 0.9rem; color: #94a3b8;">${data.dataRegistro}</td>
+                            <td style="padding: 1.2rem 0.75rem; font-size: 0.9rem; font-weight: 700; color: #ffffff;">${data.nome}</td>
+                            <td style="padding: 1.2rem 0.75rem; font-size: 0.9rem; color: #94a3b8;">${data.planoNome}</td>
+                            <td style="padding: 1.2rem 0.75rem; font-size: 0.9rem; font-weight: 600; color: #ffffff;">R$ ${data.capitalAlocado.toFixed(2)}</td>
+                            <td style="padding: 1.2rem 0.75rem; font-size: 0.9rem; font-weight: 700; color: #10b981;">R$ ${data.comissaoCalculada.toFixed(2)}</td>
+                            <td style="padding: 1.2rem 0.75rem;">${data.statusBadge}</td>
+                        `;
+                        referralsTbody.appendChild(tr);
+                    });
+
+                    // Atualiza os contadores principais
+                    totalReferralsCount.innerText = totalIndicados;
+                    pendingReferralsCount.innerText = totalAguardando;
+                    totalCommissionsAmount.innerText = `R$ ${acumuladoComissoes.toFixed(2)}`;
+
+                } else {
+                    setEmptyState();
                 }
-            } else {
-                window.location.href = 'login.html';
+
+            } catch (error) {
+                console.error("Erro ao processar dados de afiliados:", error);
+                setEmptyState();
             }
-        });
-    </script>
+        } else {
+            window.location.href = 'login.html';
+        }
+    });
+
+    function setEmptyState() {
+        if(noReferralsMessage) noReferralsMessage.style.display = 'block';
+        if(referralsTable) referralsTable.style.display = 'none';
+        if(totalReferralsCount) totalReferralsCount.innerText = '0';
+        if(pendingReferralsCount) pendingReferralsCount.innerText = '0';
+        if(totalCommissionsAmount) totalCommissionsAmount.innerText = 'R$ 0,00';
+    }
+</script>
 </body>
 </html>
