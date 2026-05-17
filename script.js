@@ -77,8 +77,8 @@ function closeModal(modalId) {
     }
 }
 
-// Fechar modal clicando fora do conteúdo
-window.onclick = function(event) {
+// Fechar modal clicando fora do conteúdo - Corrigido com addEventListener para total compatibilidade mobile
+window.addEventListener('click', function(event) {
     const modals = document.getElementsByClassName('modal');
     for (let i = 0; i < modals.length; i++) {
         if (event.target == modals[i]) {
@@ -86,7 +86,7 @@ window.onclick = function(event) {
             document.body.style.overflow = 'auto';
         }
     }
-}
+});
 
 /**
  * NOVAS FUNÇÕES: Sistema de Toast (Notificações Premium)
@@ -121,3 +121,4 @@ function showToast(message, type = 'success') {
         }, 400);
     }, 3500);
 }
+
