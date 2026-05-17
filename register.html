@@ -10,7 +10,6 @@
 </head>
 <body style="display: flex; flex-direction: column; min-height: 100vh;">
 
-    <!-- Navbar Simplificada para Telas de Autenticação -->
     <nav class="navbar">
         <div class="logo">
             <a href="index.html" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.5rem;">
@@ -22,7 +21,6 @@
         </div>
     </nav>
 
-    <!-- Container Centralizado com efeito de Blur e Centralização Absoluta -->
     <main style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 2rem; background: radial-gradient(circle at center, #1e293b 0%, #070b14 100%);">
         <div class="auth-card" style="max-width: 460px;">
             <div class="logo" style="justify-content: center; margin-bottom: 1.5rem;">
@@ -32,33 +30,28 @@
             <h2 style="text-align: center; margin-bottom: 0.5rem; font-weight: 800; font-size: 1.8rem;">Crie sua Conta Premium</h2>
             <p style="text-align: center; color: var(--text-muted); margin-bottom: 2rem; font-size: 0.95rem;">Faça parte do ecossistema inteligente de investimentos.</p>
             
-            <form onsubmit="event.preventDefault(); window.location.href='login.html?action=registered';">
+            <form id="register-form">
                 
-                <!-- Campo: Nome Completo -->
                 <div class="input-group">
                     <label><i class="fa-regular fa-user"></i> Nome Completo</label>
                     <input type="text" class="input-premium" placeholder="Seu nome e sobrenome" required>
                 </div>
 
-                <!-- Campo Adicionado: CPF (Obrigatório para transações PIX) -->
                 <div class="input-group">
                     <label><i class="fa-regular fa-id-card"></i> CPF (Apenas números)</label>
                     <input type="text" id="cpf" class="input-premium" placeholder="000.000.000-00" maxlength="14" inputmode="numeric" required>
                 </div>
 
-                <!-- Campo: E-mail -->
                 <div class="input-group">
                     <label><i class="fa-regular fa-envelope"></i> Endereço de E-mail</label>
                     <input type="email" class="input-premium" placeholder="seu@email.com" required autocomplete="username">
                 </div>
                 
-                <!-- Campo: Senha -->
                 <div class="input-group">
                     <label><i class="fa-solid fa-lock"></i> Crie uma Senha Forte</label>
                     <input type="password" class="input-premium" placeholder="No mínimo 8 caracteres" required autocomplete="new-password">
                 </div>
 
-                <!-- Termos e Condições -->
                 <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 2rem; text-align: left;">
                     <input type="checkbox" id="terms" style="accent-color: var(--emerald); cursor: pointer; margin-top: 4px;" required>
                     <label for="terms" style="color: var(--text-muted); font-size: 0.85rem; cursor: pointer; user-select: none; line-height: 1.4;">
@@ -66,24 +59,21 @@
                     </label>
                 </div>
                 
-                <!-- Botão de Envio -->
                 <button type="submit" class="btn btn-primary" style="width: 100%;">
                     Concluir Cadastro <i class="fa-solid fa-user-plus"></i>
                 </button>
             </form>
             
             <p style="text-align: center; margin-top: 2rem; color: var(--text-muted); font-size: 0.95rem;">
-                Já possui uma conta ativa? <a href="login.html" style="color: var(--emerald); text-decoration: none; font-weight: 600; border-bottom: 1px dashed var(--emerald);">Efetuar Login</a>
+                Já possui uma conta activa? <a href="login.html" style="color: var(--emerald); text-decoration: none; font-weight: 600; border-bottom: 1px dashed var(--emerald);">Efetuar Login</a>
             </p>
         </div>
     </main>
 
-    <!-- Rodapé Minimalista -->
     <footer style="padding: 1.5rem 5%;">
         <p style="color: var(--text-muted); font-size: 0.85rem;">&copy; 2026 NexaVest. Dados estritamente protegidos sob as diretrizes de segurança de criptoativos.</p>
     </footer>
 
-    <!-- Script de Máscara de CPF em Tempo Real -->
     <script>
         const cpfInput = document.getElementById('cpf');
         
@@ -103,8 +93,7 @@
         });
     </script>
 
-<!-- Lógica de Conexão com Firebase, Cadastro em Nuvem e Gravação no Firestore -->
-   <script type="module">
+<script type="module">
         // Adicionados métodos de busca do Firestore: collection, query, where e getDocs
         import { auth, createUserWithEmailAndPassword, db, doc, setDoc } from "./firebase-config.js";
         import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -139,8 +128,9 @@
                     }
 
                     // VALIDAÇÃO 2: Trava de CPF Duplicado no Firestore
+                    // CORREÇÃO 2: Alterado o operador de comparação de "===" (inválido no Firestore) para "=="
                     const usersRef = collection(db, "users");
-                    const cpfQuery = query(usersRef, where("cpf", "===", cpfClean));
+                    const cpfQuery = query(usersRef, where("cpf", "==", cpfClean));
                     const cpfQuerySnapshot = await getDocs(cpfQuery);
 
                     if (!cpfQuerySnapshot.empty) {
