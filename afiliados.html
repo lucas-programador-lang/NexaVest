@@ -400,7 +400,7 @@
         <p style="color: #94a3b8; font-size: 0.85rem; text-align: center;">&copy; 2026 NexaVest. Sistema financeiro protegido por criptografia de ponta a ponta.</p>
     </footer>
 
-   <script type="module">
+  <script type="module">
     import { auth, onAuthStateChanged, db, doc, getDoc, collection, query, where, getDocs } from "./firebase-config.js";
 
     const displayNameElement = document.getElementById('user-name-display');
@@ -441,28 +441,37 @@
 
     onAuthStateChanged(auth, async (user) => {
         if (user) {
+            // ==========================================
+            // PASSO PRIORITÁRIO: GERAR O LINK DE AFILIADO
+            // ==========================================
+            // Geramos o link imediatamente antes de qualquer requisição ao banco.
+            // Se houver erros no Firestore, o link ainda funcionará perfeitamente na tela.
+            if (referralUrlField) {
+                referralUrlField.value = `${window.location.origin}/register.html?ref=${user.uid}`;
+            }
+
+            // Agora seguimos com as requisições assíncronas do banco de dados de forma segura
             try {
                 // 1. Nome do Usuário Autenticado
                 const userDocRef = doc(db, "users", user.uid);
                 const userDocSnap = await getDoc(userDocRef);
-                if (userDocSnap.exists() && userDocSnap.data().nome) {
-                    displayNameElement.innerText = userDocSnap.data().nome;
-                } else {
-                    displayNameElement.innerText = user.email ? user.email.split('@')[0] : "Investidor";
+                if (displayNameElement) {
+                    if (userDocSnap.exists() && userDocSnap.data().nome) {
+                        displayNameElement.innerText = userDocSnap.data().nome;
+                    } else {
+                        displayNameElement.innerText = user.email ? user.email.split('@')[0] : "Investidor";
+                    }
                 }
 
-                // 2. Gerar URL Dinâmica Baseada na Origem
-                referralUrlField.value = `${window.location.origin}/register.html?ref=${user.uid}`;
-
-                // 3. Buscar Usuários Indicados
+                // 2. Buscar Usuários Indicados
                 const usersRef = collection(db, "users");
                 const qReferrals = query(usersRef, where("indicado_por", "==", user.uid));
                 const referralsSnapshot = await getDocs(qReferrals);
 
                 if (!referralsSnapshot.empty) {
-                    noReferralsMessage.style.display = 'none';
-                    referralsTable.style.display = 'table';
-                    referralsTbody.innerHTML = '';
+                    if (noReferralsMessage) noReferralsMessage.style.display = 'none';
+                    if (referralsTable) referralsTable.style.display = 'table';
+                    if (referralsTbody) referralsTbody.innerHTML = '';
 
                     let totalIndicados = 0;
                     let totalAguardando = 0;
@@ -528,30 +537,32 @@
                             totalAguardando++;
                         }
 
-                        const tr = document.createElement('tr');
-                        tr.style.borderBottom = '1px solid rgba(255,255,255,0.04)';
-                        tr.innerHTML = `
-                            <td style="padding: 1.2rem 0.75rem; font-size: 0.9rem; color: #94a3b8;">${data.dataRegistro}</td>
-                            <td style="padding: 1.2rem 0.75rem; font-size: 0.9rem; font-weight: 700; color: #ffffff;">${data.nome}</td>
-                            <td style="padding: 1.2rem 0.75rem; font-size: 0.9rem; color: #94a3b8;">${data.planoNome}</td>
-                            <td style="padding: 1.2rem 0.75rem; font-size: 0.9rem; font-weight: 600; color: #ffffff;">R$ ${data.capitalAlocado.toFixed(2)}</td>
-                            <td style="padding: 1.2rem 0.75rem; font-size: 0.9rem; font-weight: 700; color: #10b981;">R$ ${data.comissaoCalculada.toFixed(2)}</td>
-                            <td style="padding: 1.2rem 0.75rem;">${data.statusBadge}</td>
-                        `;
-                        referralsTbody.appendChild(tr);
+                        if (referralsTbody) {
+                            const tr = document.createElement('tr');
+                            tr.style.borderBottom = '1px solid rgba(255,255,255,0.04)';
+                            tr.innerHTML = `
+                                <td style="padding: 1.2rem 0.75rem; font-size: 0.9rem; color: #94a3b8;">${data.dataRegistro}</td>
+                                <td style="padding: 1.2rem 0.75rem; font-size: 0.9rem; font-weight: 700; color: #ffffff;">${data.nome}</td>
+                                <td style="padding: 1.2rem 0.75rem; font-size: 0.9rem; color: #94a3b8;">${data.planoNome}</td>
+                                <td style="padding: 1.2rem 0.75rem; font-size: 0.9rem; font-weight: 600; color: #ffffff;">R$ ${data.capitalAlocado.toFixed(2)}</td>
+                                <td style="padding: 1.2rem 0.75rem; font-size: 0.9rem; font-weight: 700; color: #10b981;">R$ ${data.comissaoCalculada.toFixed(2)}</td>
+                                <td style="padding: 1.2rem 0.75rem;">${data.statusBadge}</td>
+                            `;
+                            referralsTbody.appendChild(tr);
+                        }
                     });
 
                     // Atualiza os contadores principais
-                    totalReferralsCount.innerText = totalIndicados;
-                    pendingReferralsCount.innerText = totalAguardando;
-                    totalCommissionsAmount.innerText = `R$ ${acumuladoComissoes.toFixed(2)}`;
+                    if (totalReferralsCount) totalReferralsCount.innerText = totalIndicados;
+                    if (pendingReferralsCount) pendingReferralsCount.innerText = totalAguardando;
+                    if (totalCommissionsAmount) totalCommissionsAmount.innerText = `R$ ${acumuladoComissoes.toFixed(2)}`;
 
                 } else {
                     setEmptyState();
                 }
 
             } catch (error) {
-                console.error("Erro ao processar dados de afiliados:", error);
+                console.error("Erro interno no Firestore:", error);
                 setEmptyState();
             }
         } else {
