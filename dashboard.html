@@ -103,6 +103,17 @@
             border: 1px solid rgba(16, 185, 129, 0.25);
             box-shadow: 0 8px 24px rgba(16, 185, 129, 0.05);
         }
+        
+        .sidebar-item.item-logout a {
+            color: #ef4444;
+        }
+        .sidebar-item.item-logout a:hover {
+            color: #ffffff;
+            background: #ef4444;
+            border: 1px solid transparent;
+            box-shadow: 0 8px 24px rgba(239, 68, 68, 0.15);
+        }
+
         .main-content-wrapper {
             flex: 1;
             display: flex;
@@ -147,7 +158,6 @@
         .stat-card-premium.highlighted::before {
             background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%);
         }
-        /* Estilos básicos para os Modais funcionarem caso não estejam no styles.css */
         .modal {
             display: none;
             position: fixed;
@@ -176,40 +186,6 @@
         }
         .input-premium:focus {
             border-color: #10b981;
-        }
-
-        /* Efeito Hover do botão de perfil e de sair premium */
-        .btn-premium-nav {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.85rem;
-            padding: 0.55rem 1rem;
-            border-radius: 10px;
-            transition: all 0.2s ease;
-            width: 100%;
-            box-sizing: border-box;
-        }
-        .btn-premium-nav.profile {
-            color: #ffffff;
-            background: rgba(30, 41, 59, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        .btn-premium-nav.profile:hover {
-            background: rgba(16, 185, 129, 0.1);
-            border-color: rgba(16, 185, 129, 0.3);
-        }
-        .btn-premium-nav.logout {
-            color: #ef4444;
-            background: rgba(239, 68, 68, 0.05);
-            border: 1px solid rgba(239, 68, 68, 0.1);
-        }
-        .btn-premium-nav.logout:hover {
-            background: #ef4444;
-            color: #ffffff;
-            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2);
         }
     </style>
 </head>
@@ -248,15 +224,12 @@
                 <li class="sidebar-item">
                     <a href="#" onclick="openModal('affiliatesModal')"><i class="fa-solid fa-network-wired"></i> Afiliados</a>
                 </li>
-
-                  <li class="sidebar-item">
+                <li class="sidebar-item">
                      <a href="carteira.html"><i class="fa-solid fa-briefcase"></i> Minha Carteira</a>
                 </li>
-
                 <li class="sidebar-item">
                     <a href="perfil.html"><i class="fa-regular fa-user"></i> Meu Perfil</a>
                 </li>
-
                 <li class="sidebar-item item-logout">
                     <a href="index.html"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair</a>
                 </li>
@@ -470,17 +443,22 @@
                         const userData = userDocSnap.data();
                         currentBalance = userData.saldo || 0.00;
 
+                        // CORREÇÃO DO LINK DE AFILIADO: Mapeando o ID 'affiliate-link-input' corretamente
                         const affInput = document.getElementById('affiliate-link-input');
                         if (affInput) {
                             affInput.value = `${window.location.origin}/register.html?ref=${user.uid}`;
                         }
 
-                        if (displayNameElement && userData.nome) displayNameElement.innerText = userData.nome;
+                        // CORREÇÃO DO NOME DE EXIBIÇÃO: Mapeia 'nome' ou 'name' de forma nativa e segura
+                        if (displayNameElement) {
+                            displayNameElement.innerText = userData.nome || userData.name || (user.email ? user.email.split('@')[0] : "Investidor");
+                        }
+                        
                         if (balanceDisplay) balanceDisplay.innerText = `R$ ${currentBalance.toFixed(2)}`;
                         if (yieldDisplay) yieldDisplay.innerText = `R$ ${(userData.rendimentos || 0.00).toFixed(2)}`;
                         if (referralsDisplay) referralsDisplay.innerText = userData.afiliados_ativos || 0;
                     } else {
-                        if (displayNameElement) displayNameElement.innerText = user.email.split('@')[0];
+                        if (displayNameElement) displayNameElement.innerText = user.email ? user.email.split('@')[0] : "Investidor";
                     }
                 } catch (error) {
                     console.error("Erro ao resgatar dados do perfil no Firestore:", error);
@@ -527,13 +505,11 @@
                 }
 
                 try {
-                    // 1. Deduzir o saldo imediatamente do documento do usuário por segurança
                     const userDocRef = doc(db, "users", user.uid);
                     await updateDoc(userDocRef, {
                         saldo: increment(-amount)
                     });
 
-                    // 2. Registrar o log do saque pendente
                     const withdrawRef = doc(db, "saques_solicitados", `${user.uid}_${Date.now()}`);
                     await setDoc(withdrawRef, {
                         uid: user.uid,
@@ -552,7 +528,6 @@
                     
                     closeModal('withdrawModal');
                     
-                    // Atualiza a interface local temporariamente
                     currentBalance -= amount;
                     if (balanceDisplay) balanceDisplay.innerText = `R$ ${currentBalance.toFixed(2)}`;
 
