@@ -17,6 +17,25 @@
             font-family: 'Inter', sans-serif;
             margin: 0;
         }
+        /* Estilos base para garantir a consistência da Navbar */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 5%;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .logo {
+            font-weight: 800;
+            font-size: 1.3rem;
+            letter-spacing: -0.5px;
+        }
+        .text-emerald {
+            color: #10b981;
+        }
         .dashboard-container {
             display: flex;
             width: 100%;
@@ -32,6 +51,9 @@
                 flex-direction: column;
                 padding: 1rem 1.5rem 3rem 1.5rem;
                 gap: 1.5rem;
+            }
+            .user-meta {
+                display: none !important; /* Melhora responsividade em telas muito pequenas */
             }
         }
         .sidebar-premium {
@@ -259,7 +281,7 @@
                     if (userDocSnap.exists() && userDocSnap.data().nome) {
                         displayNameElement.innerText = userDocSnap.data().nome;
                     } else {
-                        displayNameElement.innerText = user.email.split('@')[0];
+                        displayNameElement.innerText = user.email ? user.email.split('@')[0] : "Investidor";
                     }
 
                     // Buscar os investimentos ativos do usuário logado
@@ -273,15 +295,28 @@
 
                         querySnapshot.forEach((doc) => {
                             const data = doc.data();
-                            const dateFormated = data.data_compra ? new Date(data.data_compra).toLocaleDateString('pt-BR') : '---';
+                            
+                            // Correção de parsing de data segura para String ou objeto Timestamp nativo do Firebase
+                            let dateFormated = '---';
+                            if (data.data_compra) {
+                                if (typeof data.data_compra.toDate === 'function') {
+                                    dateFormated = data.data_compra.toDate().toLocaleDateString('pt-BR');
+                                } else {
+                                    dateFormated = new Date(data.data_compra).toLocaleDateString('pt-BR');
+                                }
+                            }
+                            
+                            // Sanatização para evitar quebra do método se o número vier como string ou indefinido
+                            const valorInvestido = data.valor_investido ? parseFloat(data.valor_investido) : 0;
+                            const lucroAcumulado = data.lucro_acumulado ? parseFloat(data.lucro_acumulado) : 0;
                             
                             const tr = document.createElement('tr');
                             tr.style.borderBottom = '1px solid rgba(255,255,255,0.04)';
                             tr.innerHTML = `
                                 <td style="padding: 1.2rem 0.75rem; font-size: 0.9rem; color: #94a3b8;">${dateFormated}</td>
-                                <td style="padding: 1.2rem 0.75rem; font-size: 0.9rem; font-weight: 700; color: #ffffff;">${data.plano_nome}</td>
-                                <td style="padding: 1.2rem 0.75rem; font-size: 0.9rem; font-weight: 600; color: #ffffff;">R$ ${parseFloat(data.valor_investido).toFixed(2)}</td>
-                                <td style="padding: 1.2rem 0.75rem; font-size: 0.9rem; font-weight: 700; color: #10b981;">R$ ${parseFloat(data.lucro_acumulado || 0).toFixed(2)}</td>
+                                <td style="padding: 1.2rem 0.75rem; font-size: 0.9rem; font-weight: 700; color: #ffffff;">${data.plano_nome || 'Plano'}</td>
+                                <td style="padding: 1.2rem 0.75rem; font-size: 0.9rem; font-weight: 600; color: #ffffff;">R$ ${valorInvestido.toFixed(2)}</td>
+                                <td style="padding: 1.2rem 0.75rem; font-size: 0.9rem; font-weight: 700; color: #10b981;">R$ ${lucroAcumulado.toFixed(2)}</td>
                                 <td style="padding: 1.2rem 0.75rem;"><span class="badge-status-active"><i class="fa-solid fa-circle" style="font-size: 0.5rem;"></i> Emitido</span></td>
                             `;
                             investmentsTbody.appendChild(tr);
