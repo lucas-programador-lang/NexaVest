@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexaVest | Programa de Afiliados</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            background: #070b14;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+        }
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 5%;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .logo {
+            font-weight: 800;
+            font-size: 1.3rem;
+            letter-spacing: -0.5px;
+        }
+        .text-emerald {
+            color: #10b981;
+        }
+        .dashboard-container {
+            display: flex;
+            width: 100%;
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 2rem 5% 4rem 5%;
+            gap: 2rem;
+            flex: 1;
+            box-sizing: border-box;
+        }
+        @media (max-width: 992px) {
+            .dashboard-container {
+                flex-direction: column;
+                padding: 1rem 1.5rem 3rem 1.5rem;
+                gap: 1.5rem;
+            }
+            .user-meta {
+                display: none !important;
+            }
+        }
+        .sidebar-premium {
+            width: 280px;
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 24px;
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: fit-content;
+            box-sizing: border-box;
+        }
+        @media (max-width: 992px) {
+            .sidebar-premium {
+                width: 100%;
+                padding: 1.25rem;
+            }
+        }
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        @media (max-width: 992px) {
+            .sidebar-menu {
+                flex-direction: row;
+                overflow-x: auto;
+                padding-bottom: 0.5rem;
+                gap: 0.75rem;
+            }
+            .sidebar-menu::-webkit-scrollbar {
+                height: 4px;
+            }
+            .sidebar-menu::-webkit-scrollbar-thumb {
+                background: rgba(16, 185, 129, 0.3);
+                border-radius: 10px;
+            }
+        }
+        .sidebar-item a {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.25rem;
+            color: #94a3b8;
+            text-decoration: none;
+            font-weight: 600;
+            border-radius: 14px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid transparent;
+        }
+        @media (max-width: 992px) {
+            .sidebar-item a {
+                padding: 0.75rem 1rem;
+                white-space: nowrap;
+                gap: 0.5rem;
+            }
+        }
+        .sidebar-item.active a, .sidebar-item a:hover {
+            color: #ffffff;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.03) 100%);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.05);
+        }
+        .main-content-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+        .panel-card {
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 24px;
+            padding: 2.25rem;
+        }
+        @media (max-width: 576px) {
+            .panel-card {
+                padding: 1.5rem;
+            }
+        }
+        .btn-premium-nav {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            padding: 0.55rem 1rem;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .btn-premium-nav.logout {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.05);
+            border: 1px solid rgba(239, 68, 68, 0.1);
+        }
+        .btn-premium-nav.logout:hover {
+            background: #ef4444;
+            color: #ffffff;
+        }
+
+        /* Grid de Mini Cards de Relatório de Afiliados */
+        .afiliados-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .stat-mini-card {
+            background: rgba(30, 41, 59, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+        }
+        .stat-mini-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+        .icon-blue { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+        .icon-amber { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+        .icon-emerald-box { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+
+        /* Estilo do Box de Link de Convite */
+        .referral-share-box {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+        @media (max-width: 576px) {
+            .referral-share-box {
+                flex-direction: column;
+            }
+        }
+        .referral-input {
+            flex: 1;
+            background: rgba(7, 11, 20, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 1rem 1.25rem;
+            border-radius: 14px;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .referral-input:focus {
+            border-color: rgba(16, 185, 129, 0.4);
+        }
+        .btn-copy {
+            background: #10b981;
+            color: #ffffff;
+            border: none;
+            padding: 0 1.5rem;
+            font-weight: 700;
+            border-radius: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+        }
+        @media (max-width: 576px) {
+            .btn-copy {
+                padding: 1rem;
+                justify-content: center;
+            }
+        }
+        .btn-copy:hover {
+            background: #059669;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+        }
+
+        /* Badges da Tabela */
+        .badge-status-pending {
+            background: rgba(245, 158, 11, 0.12);
+            color: #f59e0b;
+            padding: 0.35rem 0.75rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        .badge-status-complete {
+            background: rgba(16, 185, 129, 0.12);
+            color: #10b981;
+            padding: 0.35rem 0.75rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo">
+            <a href="index.html" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fa-solid fa-chart-line text-emerald"></i> NexaVest
+            </a>
+        </div>
+        <div class="nav-actions" style="display: flex; align-items: center; gap: 1.5rem;">
+            <div style="display: flex; flex-direction: column; text-align: right;" class="user-meta">
+                <span style="font-weight: 700; font-size: 0.95rem;" id="user-name-display">Carregando Investidor...</span>
+                <span style="font-size: 0.75rem; color: #10b981; font-weight: 600; letter-spacing: 0.5px;"><i class="fa-solid fa-shield-halved"></i> CONTA PREMIUM</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        
+        <aside class="sidebar-premium">
+            <ul class="sidebar-menu">
+                <li class="sidebar-item">
+                    <a href="dashboard.html"><i class="fa-solid fa-wallet"></i> Resumo Geral</a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="planos.html"><i class="fa-solid fa-chart-pie"></i> Planos de Investimento</a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="dashboard.html"><i class="fa-solid fa-money-bill-transfer"></i> Novo Depósito</a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="dashboard.html"><i class="fa-solid fa-building-columns"></i> Solicitar Saque</a>
+                </li>
+                <li class="sidebar-item active">
+                    <a href="afiliados.html"><i class="fa-solid fa-network-wired"></i> Afiliados</a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="carteira.html"><i class="fa-solid fa-briefcase"></i> Minha Carteira</a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="perfil.html"><i class="fa-regular fa-user"></i> Meu Perfil</a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="index.html" class="btn-premium-nav logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair</a>
+                </li>
+            </ul>
+        </aside>
+
+        <main class="main-content-wrapper">
+            
+            <div>
+                <h1 style="font-weight: 800; font-size: 1.8rem; letter-spacing: -0.5px; margin: 0;">Sistema de Afiliados</h1>
+                <p style="color: #94a3b8; font-size: 0.95rem; margin-top: 0.25rem; margin-bottom: 0;">Indique novos investidores e ganhe comissões recorrentes de 6% sobre qualquer alocação de capital.</p>
+            </div>
+
+            <div class="panel-card">
+                <h3 style="font-weight: 700; font-size: 1.1rem; margin: 0;">Seu Link de Convite Exclusivo</h3>
+                <p style="color: #94a3b8; font-size: 0.88rem; margin-top: 0.25rem; margin-bottom: 1rem;">Compartilhe o link abaixo para registrar novas contas sob a sua rede de indicações.</p>
+                <div class="referral-share-box">
+                    <input type="text" id="referral-url-field" class="referral-input" value="Carregando link exclusivo..." readonly>
+                    <button class="btn-copy" id="btn-copy-link">
+                        <i class="fa-solid fa-copy"></i> Copiar Link
+                    </button>
+                </div>
+            </div>
+
+            <div class="afiliados-stats-grid">
+                <div class="stat-mini-card">
+                    <div class="stat-mini-icon icon-blue">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                    <div>
+                        <span style="display: block; color: #94a3b8; font-size: 0.8rem; font-weight: 600; text-transform: uppercase;">Total Indicados</span>
+                        <span style="font-size: 1.5rem; font-weight: 700;" id="total-referrals-count">0</span>
+                    </div>
+                </div>
+                <div class="stat-mini-card">
+                    <div class="stat-mini-icon icon-amber">
+                        <i class="fa-solid fa-hourglass-half"></i>
+                    </div>
+                    <div>
+                        <span style="display: block; color: #94a3b8; font-size: 0.8rem; font-weight: 600; text-transform: uppercase;">Aguardando Plano</span>
+                        <span style="font-size: 1.5rem; font-weight: 700;" id="pending-referrals-count">0</span>
+                    </div>
+                </div>
+                <div class="stat-mini-card">
+                    <div class="stat-mini-icon icon-emerald-box">
+                        <i class="fa-solid fa-hand-holding-dollar"></i>
+                    </div>
+                    <div>
+                        <span style="display: block; color: #94a3b8; font-size: 0.8rem; font-weight: 600; text-transform: uppercase;">Total Ganho (6%)</span>
+                        <span style="font-size: 1.5rem; font-weight: 700; color: #10b981;" id="total-commissions-amount">R$ 0,00</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h3 style="font-weight: 700; font-size: 1.2rem; margin: 0;">Membros da Sua Rede</h3>
+                </div>
+                
+                <div style="overflow-x: auto;">
+                    <table class="activity-table" id="referrals-table" style="width: 100%; border-collapse: collapse; text-align: left; display: none;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+                                <th style="padding: 1rem 0.75rem; color: #94a3b8; font-weight: 600; font-size: 0.9rem;">Data de Registro</th>
+                                <th style="padding: 1rem 0.75rem; color: #94a3b8; font-weight: 600; font-size: 0.9rem;">Nome do Investidor</th>
+                                <th style="padding: 1rem 0.75rem; color: #94a3b8; font-weight: 600; font-size: 0.9rem;">Plano Adquirido</th>
+                                <th style="padding: 1rem 0.75rem; color: #94a3b8; font-weight: 600; font-size: 0.9rem;">Capital Alocado</th>
+                                <th style="padding: 1rem 0.75rem; color: #94a3b8; font-weight: 600; font-size: 0.9rem;">Sua Comissão</th>
+                                <th style="padding: 1rem 0.75rem; color: #94a3b8; font-weight: 600; font-size: 0.9rem;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="referrals-tbody">
+                        </tbody>
+                    </table>
+                    <div id="no-referrals-message" style="text-align: center; color: #94a3b8; padding: 3rem; font-size: 0.95rem;">
+                        <i class="fa-solid fa-network-wired" style="font-size: 2rem; color: #334155; margin-bottom: 0.75rem; display: block;"></i>
+                        Nenhum investidor cadastrado através do seu link até o momento.
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <footer style="margin-top: auto; padding: 1.5rem 5%; border-top: 1px solid rgba(255,255,255,0.02); background: rgba(7, 11, 20, 0.4);">
+        <p style="color: #94a3b8; font-size: 0.85rem; text-align: center;">&copy; 2026 NexaVest. Sistema financeiro protegido por criptografia de ponta a ponta.</p>
+    </footer>
+
+    <script type="module">
+        import { auth, onAuthStateChanged, db, doc, getDoc, collection, query, where, getDocs } from "./firebase-config.js";
+
+        const displayNameElement = document.getElementById('user-name-display');
+        const referralUrlField = document.getElementById('referral-url-field');
+        const btnCopyLink = document.getElementById('btn-copy-link');
+        
+        const referralsTable = document.getElementById('referrals-table');
+        const referralsTbody = document.getElementById('referrals-tbody');
+        const noReferralsMessage = document.getElementById('no-referrals-message');
+
+        const totalReferralsCount = document.getElementById('total-referrals-count');
+        const pendingReferralsCount = document.getElementById('pending-referrals-count');
+        const totalCommissionsAmount = document.getElementById('total-commissions-amount');
+
+        // Copiar Link Funcional
+        btnCopyLink.addEventListener('click', () => {
+            if (referralUrlField.value && referralUrlField.value !== "Carregando link exclusivo...") {
+                referralUrlField.select();
+                referralUrlField.setSelectionRange(0, 99999);
+                navigator.clipboard.writeText(referralUrlField.value);
+                
+                const originalText = btnCopyLink.innerHTML;
+                btnCopyLink.innerHTML = `<i class="fa-solid fa-check"></i> Copiado!`;
+                btnCopyLink.style.background = "#059669";
+                setTimeout(() => {
+                    btnCopyLink.innerHTML = originalText;
+                    btnCopyLink.style.background = "#10b981";
+                }, 2000);
+            }
+        });
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                try {
+                    // 1. Nome do Usuário Autenticado
+                    const userDocRef = doc(db, "users", user.uid);
+                    const userDocSnap = await getDoc(userDocRef);
+                    if (userDocSnap.exists() && userDocSnap.data().nome) {
+                        displayNameElement.innerText = userDocSnap.data().nome;
+                    } else {
+                        displayNameElement.innerText = user.email ? user.email.split('@')[0] : "Investidor";
+                    }
+
+                    // 2. Gerar URL Dinâmica Baseada na Origem Local ou Hospedada
+                    referralUrlField.value = `${window.location.origin}/register.html?ref=${user.uid}`;
+
+                    // 3. Buscar Usuários Indicados (onde o campo 'indicado_por' ou 'ref' é igual ao uid do logado)
+                    const usersRef = collection(db, "users");
+                    const qReferrals = query(usersRef, where("indicado_por", "==", user.uid));
+                    const referralsSnapshot = await getDocs(qReferrals);
+
+                    if (!referralsSnapshot.empty) {
+                        noReferralsMessage.style.display = 'none';
+                        referralsTable.style.display = 'table';
+                        referralsTbody.innerHTML = '';
+
+                        let totalIndicados = 0;
+                        let totalAguardando = 0;
+                        let acumuladoComissoes = 0;
+
+                        // Iterar sobre cada usuário que entrou pelo link de referência do usuário logado
+                        for (const userDoc of referralsSnapshot.docs) {
+                            const referralData = userDoc.data();
+                            totalIndicados++;
+
+                            // Buscar se este indicado específico possui investimentos ativos para calcular a comissão dinamicamente
+                            const invRef = collection(db, "user_investimentos");
+                            const qInv = query(invRef, where("uid", "==", userDoc.id));
+                            const invSnapshot = await getDocs(qInv);
+
+                            let planoNome = 'Nenhum';
+                            let capitalAlocado = 0;
+                            let comissaoCalculada = 0;
+                            let statusBadge = `<span class="badge-status-pending"><i class="fa-solid fa-clock"></i> Pendente</span>`;
+
+                            if (!invSnapshot.empty) {
+                                // Caso possua múltiplos planos, soma os capitais e calcula 6% acumulado
+                                capitalAlocado = 0;
+                                let nomesPlanos = [];
+                                
+                                invSnapshot.forEach((investmentDoc) => {
+                                    const invData = investmentDoc.data();
+                                    const valor = invData.valor_investido ? parseFloat(invData.valor_investido) : 0;
+                                    capitalAlocado += valor;
+                                    if(invData.plano_nome) nomesPlanos.push(invData.plano_nome);
+                                });
+
+                                planoNome = nomesPlanos.join(', ');
+                                comissaoCalculada = capitalAlocado * 0.06;
+                                acumuladoComissoes += comissaoCalculada;
+                                statusBadge = `<span class="badge-status-complete"><i class="fa-solid fa-circle-check"></i> Ativo</span>`;
+                            } else {
+                                totalAguardando++;
+                            }
+
+                            // Formatação de data do registro da indicação
+                            let dataRegistro = '---';
+                            if (referralData.data_cadastro) {
+                                if (typeof referralData.data_cadastro.toDate === 'function') {
+                                    dataRegistro = referralData.data_cadastro.toDate().toLocaleDateString('pt-BR');
+                                } else {
+                                    dataRegistro = new Date(referralData.data_cadastro).toLocaleDateString('pt-BR');
+                                }
+                            }
+
+                            const tr = document.createElement('tr');
+                            tr.style.borderBottom = '1px solid rgba(255,255,255,0.04)';
+                            tr.innerHTML = `
+                                <td style="padding: 1.2rem 0.75rem; font-size: 0.9rem; color: #94a3b8;">${dataRegistro}</td>
+                                <td style="padding: 1.2rem 0.75rem; font-size: 0.9rem; font-weight: 700; color: #ffffff;">${referralData.nome || 'Usuário Nexa'}</td>
+                                <td style="padding: 1.2rem 0.75rem; font-size: 0.9rem; color: #94a3b8;">${planoNome}</td>
+                                <td style="padding: 1.2rem 0.75rem; font-size: 0.9rem; font-weight: 600; color: #ffffff;">R$ ${capitalAlocado.toFixed(2)}</td>
+                                <td style="padding: 1.2rem 0.75rem; font-size: 0.9rem; font-weight: 700; color: #10b981;">R$ ${comissaoCalculada.toFixed(2)}</td>
+                                <td style="padding: 1.2rem 0.75rem;">${statusBadge}</td>
+                            `;
+                            referralsTbody.appendChild(tr);
+                        }
+
+                        // Atualização Instantânea dos contadores dos mini cards superiores
+                        totalReferralsCount.innerText = totalIndicados;
+                        pendingReferralsCount.innerText = totalAguardando;
+                        totalCommissionsAmount.innerText = `R$ ${acumuladoComissoes.toFixed(2)}`;
+
+                    } else {
+                        noReferralsMessage.style.display = 'block';
+                        referralsTable.style.display = 'none';
+                        totalReferralsCount.innerText = '0';
+                        pendingReferralsCount.innerText = '0';
+                        totalCommissionsAmount.innerText = 'R$ 0,00';
+                    }
+
+                } catch (error) {
+                    console.error("Erro ao processar dados de afiliados:", error);
+                }
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+    </script>
+</body>
+</html>
