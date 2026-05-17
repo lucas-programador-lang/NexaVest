@@ -167,6 +167,9 @@
             registerForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
 
+                // Armazena credencial temporária para caso de rollback por CPF duplicado
+                let createdUser = null;
+
                 try {
                     // Captura dinâmica dos campos
                     const emailInput = document.getElementById('email') || registerForm.querySelector('input[type="email"]');
@@ -190,27 +193,30 @@
                         return;
                     }
 
-                    // VALIDAÇÃO 2: Trava de CPF Duplicado no Firestore
-                    // CORREÇÃO 2: Alterado o operador de comparação de "===" (inválido no Firestore) para "=="
+                    // 1. Criação da conta no Firebase Authentication primeiro (Garante permissão de leitura autenticada)
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    createdUser = userCredential.user;
+
+                    // VALIDAÇÃO 2: Trava de CPF Duplicado executada sob o contexto autenticado do usuário ativo
                     const usersRef = collection(db, "users");
                     const cpfQuery = query(usersRef, where("cpf", "==", cpfClean));
                     const cpfQuerySnapshot = await getDocs(cpfQuery);
 
                     if (!cpfQuerySnapshot.empty) {
+                        // Rollback: Remove o usuário autenticado recém-criado para permitir nova tentativa limpa
+                        if (auth.currentUser) {
+                            await auth.currentUser.delete();
+                        }
                         if (typeof showToast === 'function') {
                             showToast('Este CPF já está vinculado a outra conta cadastrada.', 'danger');
                         } else {
                             alert('Erro: Este CPF já está cadastrado no sistema.');
                         }
-                        return; // Cancela o processo de registro aqui
+                        return;
                     }
-
-                    // 1. Criação da conta no Firebase Authentication (Valida E-mail Duplicado nativamente)
-                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                    const user = userCredential.user;
                     
-                    // 2. Gravação dos dados financeiros zerados no Firestore Database
-                    await setDoc(doc(db, "users", user.uid), {
+                    // 2. Gravação dos dados financeiros zerados no Firestore Database (Cria a coleção se não existir)
+                    await setDoc(doc(db, "users", createdUser.uid), {
                         nome: fullname,
                         cpf: cpfClean,
                         email: email,
