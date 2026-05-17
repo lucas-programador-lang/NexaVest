@@ -7,8 +7,45 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Estilos do Toast para eliminar o alert nativo */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+        .custom-toast {
+            background-color: #111827;
+            color: #ffffff;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 10px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            animation: slideIn 0.3s ease-out forwards;
+            border-left: 4px solid var(--emerald);
+        }
+        .custom-toast.danger {
+            border-left-color: #ef4444;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+    </style>
 </head>
 <body style="display: flex; flex-direction: column; min-height: 100vh;">
+
+    <div id="toast-container" class="toast-container"></div>
 
     <nav class="navbar">
         <div class="logo">
@@ -93,7 +130,33 @@
         });
     </script>
 
-<script type="module">
+    <script>
+        // Função global de Toast injetada mantendo o comportamento esperado pelo seu script original
+        window.showToast = function(message, type = 'danger') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `custom-toast ${type}`;
+            
+            const icon = type === 'danger' ? 'fa-circle-xmark' : 'fa-circle-check';
+            const iconColor = type === 'danger' ? '#ef4444' : 'var(--emerald)';
+            
+            toast.innerHTML = `
+                <i class="fa-solid ${icon}" style="color: ${iconColor}; font-size: 1.1rem;"></i>
+                <span>${message}</span>
+            `;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'fadeOut 0.3s ease-out forwards';
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 4000);
+        }
+    </script>
+
+    <script type="module">
         // Adicionados métodos de busca do Firestore: collection, query, where e getDocs
         import { auth, createUserWithEmailAndPassword, db, doc, setDoc } from "./firebase-config.js";
         import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
