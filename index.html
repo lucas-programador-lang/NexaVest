@@ -542,7 +542,7 @@
         <ul class="nav-links" id="nav-links">
             <li class="active"><a href="#" onclick="switchTab('home')">Início</a></li>
             <li><a href="#" onclick="switchTab('plans')">Planos</a></li>
-            <li><a href="dashboard.html">Afiliados</a></li> </ul>
+            <li><a href="login.html" id="nav-affiliates">Afiliados</a></li> </ul>
 
         <div class="nav-actions">
             <a href="login.html" class="btn btn-outline">Entrar</a>
@@ -708,18 +708,23 @@
         import { auth, onAuthStateChanged } from "./firebase-config.js";
         
         const btnPainel = document.getElementById('btn-painel');
-        if (btnPainel) {
-            btnPainel.href = 'login.html';
-            
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    // Estado Autenticado: Altera o fluxo para entrar direto no painel administrativo
-                    btnPainel.href = 'dashboard.html';
-                } else {
-                    btnPainel.href = 'login.html';
-                }
-            });
-        }
+        const linkAfiliados = document.getElementById('nav-affiliates');
+        
+        // Define os fallbacks iniciais seguros enquanto o Firebase carrega
+        if (btnPainel) btnPainel.href = 'login.html';
+        if (linkAfiliados) linkAfiliados.href = 'login.html';
+        
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // Usuário LOGADO: Destinos liberados para o painel interno
+                if (btnPainel) btnPainel.href = 'dashboard.html';
+                if (linkAfiliados) linkAfiliados.href = 'dashboard.html'; // Se tiver uma aba/página específica ex: 'dashboard.html?tab=affiliates'
+            } else {
+                // Usuário DESLOGADO: Força ir para a tela de login
+                if (btnPainel) btnPainel.href = 'login.html';
+                if (linkAfiliados) linkAfiliados.href = 'login.html';
+            }
+        });
     </script>
 </body>
 </html>
