@@ -443,26 +443,40 @@
 
     onAuthStateChanged(auth, async (user) => {
         if (user) {
-            // ==========================================
-            // PASSO PRIORITÁRIO: GERAR O LINK DE AFILIADO
-            // ==========================================
-            // Geramos o link imediatamente antes de qualquer requisição ao banco.
-            // Se houver erros no Firestore, o link ainda funcionará perfeitamente na tela.
-            if (referralUrlField) {
-                referralUrlField.value = `${window.location.origin}/register.html?ref=${user.uid}`;
-            }
-
-            // Agora seguimos com as requisições assíncronas do banco de dados de forma segura
             try {
-                // 1. Nome do Usuário Autenticado
+                // 1. Buscar Perfil do Usuário Autenticado (Nome e Código de Afiliado)
                 const userDocRef = doc(db, "users", user.uid);
                 const userDocSnap = await getDoc(userDocRef);
-                if (displayNameElement) {
-                    if (userDocSnap.exists() && userDocSnap.data().nome) {
-                        displayNameElement.innerText = userDocSnap.data().nome;
-                    } else {
+                
+                let termoReferencia = user.uid; // Fallback padrão caso o usuário não tenha o código curto ainda
+
+                if (userDocSnap.exists()) {
+                    const userData = userDocSnap.data();
+                    
+                    // Atualiza o display do nome do investidor
+                    if (displayNameElement) {
+                        displayNameElement.innerText = userData.nome || (user.email ? user.email.split('@')[0] : "Investidor");
+                    }
+
+                    // Se o usuário já tiver o novo código curto, usamos ele no link!
+                    if (userData.codigo_afiliado) {
+                        termoReferencia = userData.codigo_afiliado;
+                    }
+                } else {
+                    if (displayNameElement) {
                         displayNameElement.innerText = user.email ? user.email.split('@')[0] : "Investidor";
                     }
+                }
+
+                // ==========================================
+                // GERAÇÃO DO LINK CURTO E SEGURO
+                // ==========================================
+                if (referralUrlField) {
+                    const baseOrigin = window.location.origin && window.location.origin !== "null" 
+                        ? window.location.origin 
+                        : "https://nexavest.pages.dev"; // Fallback para produção se necessário
+
+                    referralUrlField.value = `${baseOrigin}/register.html?ref=${termoReferencia}`;
                 }
 
                 // 2. Buscar Usuários Indicados
