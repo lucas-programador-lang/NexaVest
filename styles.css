@@ -448,6 +448,8 @@ footer {
     max-width: 420px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: var(--shadow-premium);
+    position: relative; /* Garante que o card fique por cima */
+    z-index: 10;
 }
 
 /* Inputs Premium */
@@ -539,9 +541,11 @@ footer {
     flex-direction: column;
     gap: 1rem;
     z-index: 9999;
+    /* A MÁGICA ACONTECE AQUI: O container inteiro fica "atravessável" pelo toque */
+    pointer-events: none; 
 }
 
-.toast {
+.toast, .custom-toast {
     background: rgba(30, 41, 59, 0.95);
     backdrop-filter: blur(10px);
     color: #fff;
@@ -555,13 +559,15 @@ footer {
     transform: translateX(120%);
     transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
     font-weight: 500;
+    /* Faz as notificações em si serem clicáveis se necessário, mas o container invisível não */
+    pointer-events: auto;
 }
 
-.toast.show {
+.toast.show, .custom-toast.show {
     transform: translateX(0);
 }
 
-.toast.error { border-left-color: #ef4444; }
+.toast.error, .custom-toast.danger { border-left-color: #ef4444; }
 .toast.info { border-left-color: #3b82f6; }
 
 /* Responsividade Aprimorada */
@@ -579,7 +585,7 @@ footer {
     }
     
     .nav-links {
-        display: none; /* Esconde links redundantes em telas pequenas para evitar quebra */
+        display: none; 
     }
     
     .nav-actions {
@@ -590,7 +596,7 @@ footer {
     .btn {
         padding: 0.6rem 1.2rem;
         font-size: 0.85rem;
-        min-height: 44px; /* Tamanho mínimo de toque recomendado pela Apple/Google */
+        min-height: 44px; /* Tamanho mínimo de toque */
     }
 
     .hero-content h1 { font-size: 2.2rem; }
@@ -616,9 +622,13 @@ footer {
     .pricing-card.premium { transform: scale(1); }
     .pricing-card.premium:hover { transform: translateY(-5px); }
     
+    /* CORREÇÃO DO BLOQUEIO DA TELA NO MOBILE */
     #toast-container {
-        bottom: 1rem; right: 1rem; left: 1rem;
+        bottom: 1rem; 
+        right: 1rem; 
+        left: 1rem;
+        top: auto !important; /* Desativa a tag de 'top: 20px' que estava esticando o container na tela inteira */
     }
-    .toast { width: 100%; justify-content: center; }
+    .toast, .custom-toast { width: 100%; justify-content: center; }
 }
 
