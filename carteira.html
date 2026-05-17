@@ -239,7 +239,7 @@
                 </div>
                 
                 <div style="overflow-x: auto;">
-                    <table class="activity-table" style="width: 100%; border-collapse: collapse; text-align: left;">
+                    <table class="activity-table" id="investments-table" style="width: 100%; border-collapse: collapse; text-align: left; display: none;">
                         <thead>
                             <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
                                 <th style="padding: 1rem 0.75rem; color: #94a3b8; font-weight: 600; font-size: 0.9rem;">Data de Início</th>
@@ -250,7 +250,7 @@
                             </tr>
                         </thead>
                         <tbody id="investments-tbody">
-                            </tbody>
+                        </tbody>
                     </table>
                     <div id="no-investments-message" style="text-align: center; color: #94a3b8; padding: 3rem; font-size: 0.95rem;">
                         <i class="fa-solid fa-folder-open" style="font-size: 2rem; color: #334155; margin-bottom: 0.75rem; display: block;"></i>
@@ -271,6 +271,7 @@
         const displayNameElement = document.getElementById('user-name-display');
         const investmentsTbody = document.getElementById('investments-tbody');
         const noInvestmentsMessage = document.getElementById('no-investments-message');
+        const investmentsTable = document.getElementById('investments-table');
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
@@ -290,7 +291,8 @@
                     const querySnapshot = await getDocs(q);
 
                     if (!querySnapshot.empty) {
-                        noInvestmentsMessage.style.display = 'none';
+                        noInvestmentsMessage.style.style.display = 'none';
+                        investmentsTable.style.display = 'table';
                         investmentsTbody.innerHTML = '';
 
                         querySnapshot.forEach((doc) => {
@@ -321,6 +323,9 @@
                             `;
                             investmentsTbody.appendChild(tr);
                         });
+                    } else {
+                        noInvestmentsMessage.style.display = 'block';
+                        investmentsTable.style.display = 'none';
                     }
                 } catch (error) {
                     console.error("Erro ao carregar investimentos:", error);
