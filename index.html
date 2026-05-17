@@ -4,25 +4,556 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NexaVest | Inteligência em Investimentos</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
+    
+    <style>
+        /* Variáveis de Design Premium NexaVest */
+        :root {
+            --bg-dark-pure: #070a12;
+            --bg-dark-card: #0f1524;
+            --bg-dark-gradient: radial-gradient(circle at top, #131c31 0%, #070a12 100%);
+            --emerald-premium: #10b981;
+            --emerald-glow: rgba(16, 185, 129, 0.15);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-glass: rgba(255, 255, 255, 0.05);
+            --glass-card: rgba(15, 21, 36, 0.7);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: var(--bg-dark-pure);
+            background-image: var(--bg-dark-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Navbar Responsiva Premium */
+        .navbar {
+            background: rgba(7, 10, 18, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-glass);
+            padding: 1.2rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            letter-spacing: -0.5px;
+        }
+
+        .logo i {
+            color: var(--emerald-premium);
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover, .nav-links li.active a {
+            color: var(--text-main);
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* Botões Modificados */
+        .btn {
+            padding: 0.65rem 1.3rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--emerald-premium);
+            color: #000000;
+            border: none;
+            box-shadow: 0 4px 14px var(--emerald-glow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
+            background: #12d393;
+        }
+
+        .btn-outline {
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-main);
+            border: 1px solid var(--border-glass);
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* Menu Mobile - Hamburguer Icon */
+        .menu-toggle {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            z-index: 1100;
+        }
+
+        .menu-toggle span {
+            width: 25px;
+            height: 2px;
+            background: var(--text-main);
+            transition: all 0.3s ease;
+        }
+
+        /* Controle de Abas Dinâmicas */
+        main {
+            flex: 1;
+            margin-top: 80px; /* Evita que a navbar fixa cubra o conteúdo */
+        }
+
+        .view {
+            display: none;
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 6rem 5% 4rem 5%;
+            text-align: center;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .hero h1 {
+            font-size: 3.2rem;
+            font-weight: 800;
+            line-height: 1.15;
+            margin-bottom: 1.5rem;
+            letter-spacing: -1px;
+            background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            margin-bottom: 2.5rem;
+            line-height: 1.6;
+        }
+
+        /* Grid de Features (Vantagens) */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            padding: 2rem 5% 6rem 5%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background: var(--glass-card);
+            border: 1px solid var(--border-glass);
+            padding: 2.5rem 2rem;
+            border-radius: 16px;
+            backdrop-filter: blur(8px);
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            border-color: rgba(16, 185, 129, 0.2);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .feature-card i {
+            font-size: 2rem;
+            color: var(--emerald-premium);
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+        }
+
+        .feature-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        /* Seção Planos & Precificação */
+        .section-header {
+            text-align: center;
+            padding: 4rem 5% 2rem 5%;
+        }
+
+        .section-header h2 {
+            font-size: 2.4rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            padding: 0 5% 6rem 5%;
+            max-width: 1200px;
+            margin: 0 auto;
+            align-items: center;
+        }
+
+        .pricing-card {
+            background: var(--glass-card);
+            border: 1px solid var(--border-glass);
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .pricing-card:hover {
+            transform: scale(1.02);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Card Destaque Premium */
+        .pricing-card.premium {
+            border: 2px solid var(--emerald-premium);
+            background: linear-gradient(180deg, rgba(15, 21, 36, 0.9) 0%, rgba(7, 10, 18, 0.9) 100%);
+            box-shadow: 0 10px 40px rgba(16, 185, 129, 0.08);
+            padding: 3.5rem 2rem;
+        }
+
+        .pricing-card .badge {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--emerald-premium);
+            color: #000000;
+            padding: 0.35rem 1rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .pricing-card h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .pricing-card .price {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+        }
+
+        .pricing-card .price span {
+            font-size: 1rem;
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        .pricing-card ul {
+            list-style: none;
+            margin-bottom: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .pricing-card ul li {
+            font-size: 0.95rem;
+            color: #cbd5e1;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .pricing-card ul li i {
+            color: var(--emerald-premium);
+            font-size: 0.9rem;
+        }
+
+        /* Modais Modernizados */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(4, 6, 10, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-dark-card);
+            border: 1px solid var(--border-glass);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 500px;
+            padding: 2.5rem;
+            position: relative;
+            animation: modalScale 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        @keyframes modalScale {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .close-modal:hover {
+            color: var(--text-main);
+        }
+
+        /* Inputs Premium */
+        .input-group {
+            margin-bottom: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            text-align: left;
+        }
+
+        .input-group label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .input-premium {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-glass);
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            color: var(--text-main);
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .input-premium:focus {
+            border-color: var(--emerald-premium);
+            background: rgba(16, 185, 129, 0.02);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        /* Footer */
+        footer {
+            border-top: 1px solid var(--border-glass);
+            padding: 3rem 5%;
+            text-align: center;
+            background: #04060a;
+        }
+
+        .footer-content p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* ==========================================================================
+           MEDIA QUERIES - RESPONSIVIDADE TOTAL (MOBILE & TABLET)
+           ========================================================================== */
+        
+        @important-responsive-rule { }
+
+        @media (max-width: 1024px) {
+            .pricing-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1.5rem;
+            }
+            .pricing-card.premium {
+                grid-column: span 2;
+                order: -1; /* Traz o mais popular para o topo no tablet */
+            }
+            .features {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: flex;
+            }
+
+            /* Transforma a lista de links em menu lateral móvel completo */
+            .nav-links {
+                position: fixed;
+                top: 0;
+                right: -100%;
+                width: 280px;
+                height: 100vh;
+                background: #0a0e1a;
+                border-left: 1px solid var(--border-glass);
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 6rem 2.5rem 2rem 2.5rem;
+                gap: 2rem;
+                transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+                box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+            }
+
+            .nav-links.active {
+                right: 0;
+            }
+
+            /* Efeito de rotação do ícone hambúrguer ativo */
+            .menu-toggle.active span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+            .menu-toggle.active span:nth-child(2) { opacity: 0; }
+            .menu-toggle.active span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+            .nav-actions {
+                margin-right: 1.5rem;
+            }
+
+            .hero h1 {
+                font-size: 2.2rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .features, .pricing-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .pricing-card.premium {
+                grid-column: span 1;
+                padding: 3rem 1.5rem;
+            }
+            
+            .modal-content {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .nav-actions {
+                display: none; /* Em telas muito pequenas oculta ações extras para dar foco ao menu */
+            }
+            .navbar {
+                padding: 1rem 5%;
+            }
+        }
+    </style>
 </head>
 <body>
+
+    <div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
     <nav class="navbar" id="main-nav">
         <div class="logo">
             <i class="fa-solid fa-chart-line"></i> NexaVest
         </div>
-        <ul class="nav-links">
-            <li><a href="#" onclick="switchTab('home')">Início</a></li>
+        
+        <ul class="nav-links" id="nav-links">
+            <li class="active"><a href="#" onclick="switchTab('home')">Início</a></li>
             <li><a href="#" onclick="switchTab('plans')">Planos</a></li>
-            <li><a href="#" onclick="switchTab('affiliates')">Afiliados</a></li>
-        </ul>
-        <div class="nav-actions" style="display: flex; gap: 10px;">
-            <a href="login.html" class="btn btn-outline" style="text-decoration: none; display: flex; align-items: center;">Entrar</a>
-            <a href="register.html" class="btn btn-outline" style="text-decoration: none; display: flex; align-items: center;">Registrar</a>
-            <a href="login.html" id="btn-painel" class="btn btn-primary" style="text-decoration: none; display: flex; align-items: center;">Painel</a>
+            <li><a href="dashboard.html">Afiliados</a></li> </ul>
+
+        <div class="nav-actions">
+            <a href="login.html" class="btn btn-outline">Entrar</a>
+            <a href="login.html" id="btn-painel" class="btn btn-primary">Painel <i class="fa-solid fa-wallet"></i></a>
         </div>
+
+        <button class="menu-toggle" id="menu-toggle" aria-label="Abrir Menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
     </nav>
 
     <main id="app-content">
@@ -31,26 +562,26 @@
             <header class="hero">
                 <div class="hero-content">
                     <h1>Multiplique seu capital com tecnologia de ponta</h1>
-                    <p>Ecossistema automatizado de rendimentos com saques instantâneos via PIX e ciclos diários de rentabilidade.</p>
-                    <button class="btn btn-primary" onclick="switchTab('plans')">Conheça os Planos</button>
+                    <p>Ecossistema automatizado de rendimentos com saques instantâneos via PIX e ciclos diários de rentabilidade real configurados de forma segura.</p>
+                    <button class="btn btn-primary" onclick="switchTab('plans')">Conheça os Planos de Rendimento <i class="fa-solid fa-arrow-right"></i></button>
                 </div>
             </header>
             
             <div class="features">
                 <div class="feature-card">
                     <i class="fa-solid fa-bolt"></i>
-                    <h3>Liquidez Diária</h3>
-                    <p>Ciclos de rendimento processados automaticamente todos os dias às 23:00.</p>
+                    <h3>Liquidez Recorrente</h3>
+                    <p>Ciclos de rendimento calculados e processados em conta de forma automatizada rigorosamente às 23:00.</p>
                 </div>
                 <div class="feature-card">
                     <i class="fa-brands fa-pix"></i>
                     <h3>Saque e Depósito PIX</h3>
-                    <p>Integração fluida e instantânea para movimentar seus fundos sem burocracia.</p>
+                    <p>Integração de pagamento imediata e automatizada para movimentar suas frações financeiras sem travas.</p>
                 </div>
                 <div class="feature-card">
                     <i class="fa-solid fa-users"></i>
-                    <h3>Rede de Afiliados</h3>
-                    <p>Ganhe comissões estruturadas indicando novos investidores para a plataforma.</p>
+                    <h3>Rede Segura de Afiliados</h3>
+                    <p>Ganhe comissões estruturadas em até 6% indicando novos parceiros investidores.</p>
                 </div>
             </div>
         </section>
@@ -58,92 +589,119 @@
         <section id="plans" class="view">
             <div class="section-header">
                 <h2>Planos de Investimento</h2>
-                <p>Escolha o ciclo de rendimento que se adapta ao seu perfil</p>
+                <p>Alocações automatizadas inteligentes para aceleração e escala patrimonial.</p>
             </div>
+            
             <div class="pricing-grid">
                 <div class="pricing-card">
                     <h3>Start</h3>
                     <div class="price">R$ 100<span>/mínimo</span></div>
                     <ul>
                         <li><i class="fa-solid fa-check"></i> Rendimento de 1.5% ao dia</li>
-                        <li><i class="fa-solid fa-check"></i> Contrato de 30 dias</li>
-                        <li><i class="fa-solid fa-check"></i> Saque Semanal</li>
+                        <li><i class="fa-solid fa-check"></i> Contrato estrutural de 30 dias</li>
+                        <li><i class="fa-solid fa-check"></i> Solicitação de Saque Semanal</li>
                     </ul>
-                    <button class="btn btn-outline" style="width: 100%;">Investir Agora</button>
+                    <a href="login.html" class="btn btn-outline" style="width: 100%; justify-content: center;">Investir Agora</a>
                 </div>
+                
                 <div class="pricing-card premium">
-                    <div class="badge">Mais Popular</div>
+                    <div class="badge">Mais Selecionado</div>
                     <h3>Pro Yield</h3>
                     <div class="price">R$ 1.000<span>/mínimo</span></div>
                     <ul>
-                        <li><i class="fa-solid fa-check"></i> Rendimento de 2.2% ao dia</li>
-                        <li><i class="fa-solid fa-check"></i> Contrato de 45 dias</li>
-                        <li><i class="fa-solid fa-check"></i> Saque Diário via PIX</li>
-                        <li><i class="fa-solid fa-check"></i> Bônus de Afiliado Nível 2</li>
+                        <li><i class="fa-solid fa-check"></i> Rendimento escalado de 2.2% ao dia</li>
+                        <li><i class="fa-solid fa-check"></i> Contrato de performance de 45 dias</li>
+                        <li><i class="fa-solid fa-check"></i> Saques diários rápidos via PIX</li>
+                        <li><i class="fa-solid fa-check"></i> Bônus de Afiliado habilitado</li>
                     </ul>
-                    <button class="btn btn-primary" style="width: 100%;">Investir Agora</button>
+                    <a href="login.html" class="btn btn-primary" style="width: 100%; justify-content: center;">Investir Agora</a>
                 </div>
+                
                 <div class="pricing-card">
                     <h3>Enterprise</h3>
                     <div class="price">R$ 5.000<span>/mínimo</span></div>
                     <ul>
-                        <li><i class="fa-solid fa-check"></i> Rendimento de 3.0% ao dia</li>
-                        <li><i class="fa-solid fa-check"></i> Contrato de 60 dias</li>
-                        <li><i class="fa-solid fa-check"></i> Saque Diário Ilimitado</li>
-                        <li><i class="fa-solid fa-check"></i> Gerente VIP</li>
+                        <li><i class="fa-solid fa-check"></i> Rendimento institucional de 3.0% ao dia</li>
+                        <li><i class="fa-solid fa-check"></i> Contrato de alta escala por 60 dias</li>
+                        <li><i class="fa-solid fa-check"></i> Retiradas diárias ilimitadas integradas</li>
+                        <li><i class="fa-solid fa-check"></i> Gerente e suporte VIP dedicados</li>
                     </ul>
-                    <button class="btn btn-outline" style="width: 100%;">Investir Agora</button>
+                    <a href="login.html" class="btn btn-outline" style="width: 100%; justify-content: center;">Investir Agora</a>
                 </div>
             </div>
         </section>
 
-        </main>
-
-    <div id="depositModal" class="modal">
-        <div class="modal-content">
-            <span class="close-modal" onclick="closeModal('depositModal')">&times;</span>
-            <h2 style="margin-bottom: 1rem;"><i class="fa-brands fa-pix text-emerald"></i> Depósito Inteligente</h2>
-            <p style="color: var(--text-muted); margin-bottom: 2rem;">Gere seu código PIX Copia e Cola para creditar instantaneamente na sua conta.</p>
-            
-            <div class="input-group">
-                <label>Valor do Depósito (R$)</label>
-                <input type="number" class="input-premium" placeholder="0,00" value="1000">
-            </div>
-            
-            <div class="qr-container" style="text-align: center; margin: 2rem 0; padding: 2rem; background: var(--bg-dark); border-radius: 12px; border: 1px dashed var(--border-color);">
-                <i class="fa-solid fa-qrcode" style="font-size: 5rem; color: var(--emerald); opacity: 0.8;"></i>
-                <p style="margin-top: 1rem; font-size: 0.9rem;">QR Code gerado com sucesso</p>
-            </div>
-
-            <div class="input-group">
-                <label>PIX Copia e Cola</label>
-                <div style="display: flex; gap: 10px;">
-                    <input type="text" class="input-premium" value="00020126580014br.gov.bcb.pix..." readonly>
-                    <button class="btn btn-primary" onclick="showToast('Código PIX copiado!', 'success')"><i class="fa-regular fa-copy"></i></button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="toast-container"></div>
+    </main>
 
     <footer>
         <div class="footer-content">
-            <div class="logo" style="justify-content: center;"><i class="fa-solid fa-chart-line"></i> NexaVest</div>
-            <p style="margin-top: 1rem; color: var(--text-muted);">&copy; 2026 NexaVest. Inteligência e Alta Performance.</p>
+            <div class="logo" style="justify-content: center; margin-bottom: 1rem;"><i class="fa-solid fa-chart-line"></i> NexaVest</div>
+            <p>&copy; 2026 NexaVest. Alta Performance de Capital com Segurança Criptográfica de Ponta a Ponta.</p>
         </div>
     </footer>
 
-    <script src="script.js"></script>
-
     <script>
-        window.addEventListener('DOMContentLoaded', () => {
-            const params = new URLSearchParams(window.location.search);
-            if (params.get('action') === 'login') {
-                // Redireciona o fluxo de login capturado na URL diretamente para o novo arquivo físico
-                window.location.href = 'dashboard.html';
+        // Função do Menu Hamburguer Mobile
+        const menuToggle = document.getElementById('menu-toggle');
+        const navLinksContainer = document.getElementById('nav-links');
+
+        if (menuToggle && navLinksContainer) {
+            menuToggle.addEventListener('click', () => {
+                menuToggle.classList.toggle('active');
+                navLinksContainer.classList.toggle('active');
+            });
+        }
+
+        // Sistema Limpo de Abas (Tabs Switcher)
+        function switchTab(tabId) {
+            // Remove classe active de todas as seções e itens do menu
+            document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
+            document.querySelectorAll('.nav-links li').forEach(li => li.classList.remove('active'));
+            
+            // Ativa a seção selecionada
+            const targetView = document.getElementById(tabId);
+            if (targetView) targetView.classList.add('active');
+
+            // Ativa o link correspondente no menu
+            const links = document.querySelectorAll('.nav-links a');
+            links.forEach(link => {
+                if (link.getAttribute('onclick') && link.getAttribute('onclick').includes(tabId)) {
+                    link.parentElement.classList.add('active');
+                }
+            });
+
+            // Fecha o menu lateral caso esteja no mobile após clicar
+            if (navLinksContainer && navLinksContainer.classList.contains('active')) {
+                menuToggle.classList.remove('active');
+                navLinksContainer.classList.remove('active');
             }
-        });
+        }
+
+        // Injeção limpa de Mensagens Toast (Substitui alerts invasivos)
+        window.showToast = function(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            if(!container) return;
+            
+            const toast = document.createElement('div');
+            toast.style.background = '#111827';
+            toast.style.color = '#fff';
+            toast.style.padding = '1rem 1.5rem';
+            toast.style.borderRadius = '8px';
+            toast.style.marginBottom = '10px';
+            toast.style.borderLeft = `4px solid ${type === 'success' ? '#10b981' : '#ef4444'}`;
+            toast.style.boxShadow = '0 10px 15px rgba(0,0,0,0.4)';
+            toast.style.fontSize = '0.9rem';
+            toast.style.display = 'flex';
+            toast.style.alignItems = 'center';
+            toast.style.gap = '10px';
+            
+            toast.innerHTML = `
+                <i class="fa-solid ${type === 'success' ? 'fa-circle-check' : 'fa-circle-xmark'}" style="color: ${type === 'success' ? '#10b981' : '#ef4444'}"></i>
+                <span>${message}</span>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3500);
+        }
     </script>
 
     <script type="module">
@@ -151,15 +709,13 @@
         
         const btnPainel = document.getElementById('btn-painel');
         if (btnPainel) {
-            // Deixa o padrão apontando para login.html caso a resposta da rede demore
             btnPainel.href = 'login.html';
             
             onAuthStateChanged(auth, (user) => {
                 if (user) {
-                    // Se o usuário já possuir sessão activa no navegador, o botão altera para ir direto ao painel
+                    // Estado Autenticado: Altera o fluxo para entrar direto no painel administrativo
                     btnPainel.href = 'dashboard.html';
                 } else {
-                    // Se não estiver logado, redireciona estritamente para tela de login
                     btnPainel.href = 'login.html';
                 }
             });
