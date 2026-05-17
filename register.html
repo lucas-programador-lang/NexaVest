@@ -111,134 +111,95 @@
         <p style="color: var(--text-muted); font-size: 0.85rem;">&copy; 2026 NexaVest. Dados estritamente protegidos sob as diretrizes de segurança de criptoativos.</p>
     </footer>
 
-    <script>
-        const cpfInput = document.getElementById('cpf');
-        
-        cpfInput.addEventListener('input', (e) => {
-            let value = e.target.value.replace(/\D/g, ''); 
-            
-            if (value.length > 3 && value.length <= 6) {
-                value = value.substring(0,3) + '.' + value.substring(3);
-            } else if (value.length > 6 && value.length <= 9) {
-                value = value.substring(0,3) + '.' + value.substring(3,6) + '.' + value.substring(6);
-            } else if (value.length > 9) {
-                value = value.substring(0,3) + '.' + value.substring(3,6) + '.' + value.substring(6,9) + '-' + value.substring(9,11);
-            }
-            
-            e.target.value = value;
-        });
-    </script>
-
-    <script>
-        window.showToast = function(message, type = 'danger') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = `custom-toast ${type}`;
-            
-            const icon = type === 'danger' ? 'fa-circle-xmark' : 'fa-circle-check';
-            const iconColor = type === 'danger' ? '#ef4444' : 'var(--emerald)';
-            
-            toast.innerHTML = `
-                <i class="fa-solid ${icon}" style="color: ${iconColor}; font-size: 1.1rem;"></i>
-                <span>${message}</span>
-            `;
-            
-            container.appendChild(toast);
-            
-            setTimeout(() => {
-                toast.style.animation = 'fadeOut 0.3s ease-out forwards';
-                setTimeout(() => {
-                    toast.remove();
-                }, 300);
-            }, 4000);
-        }
-    </script>
-
     <script type="module">
-        import { auth, createUserWithEmailAndPassword, db, doc, setDoc } from "./firebase-config.js";
-        import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { auth, createUserWithEmailAndPassword, db, doc, setDoc } from "./firebase-config.js";
+    import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        const registerForm = document.getElementById('register-form') || document.querySelector('form');
+    // CAPTURA O INDICADOR DA URL: Lê se existe "?ref=XXXX" na barra de endereços
+    const urlParams = new URLSearchParams(window.location.search);
+    const indicadorUid = urlParams.get('ref') || null;
 
-        if (registerForm) {
-            registerForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                let createdUser = null;
+    const registerForm = document.getElementById('register-form') || document.querySelector('form');
 
-                try {
-                    const emailInput = document.getElementById('email') || registerForm.querySelector('input[type="email"]');
-                    const passwordInput = document.getElementById('password') || registerForm.querySelector('input[type="password"]');
-                    const fullnameInput = document.getElementById('fullname') || registerForm.querySelector('input[type="text"]:not(#cpf)');
-                    const cpfInput = document.getElementById('cpf');
+    if (registerForm) {
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            let createdUser = null;
 
-                    if (!emailInput || !passwordInput || !cpfInput) {
-                        throw new Error("Campos obrigatórios de cadastro não foram localizados no HTML.");
-                    }
+            try {
+                const emailInput = document.getElementById('email') || registerForm.querySelector('input[type="email"]');
+                const passwordInput = document.getElementById('password') || registerForm.querySelector('input[type="password"]');
+                const fullnameInput = document.getElementById('fullname') || registerForm.querySelector('input[type="text"]:not(#cpf)');
+                const cpfInput = document.getElementById('cpf');
 
-                    const email = emailInput.value.trim().toLowerCase();
-                    const password = passwordInput.value;
-                    const fullname = fullnameInput ? fullnameInput.value.trim() : "Investidor NexaVest";
-                    const cpfClean = cpfInput.value.replace(/\D/g, ''); 
-
-                    if (cpfClean.length !== 11) {
-                        showToast('Por favor, insira um CPF válido com 11 dígitos.', 'danger');
-                        return;
-                    }
-
-                    // 1. CHECAGEM DE CPF ANTES DE CRIAR O AUTH:
-                    // Fazemos a busca primeiro. Para isso funcionar, as regras do Firebase precisam permitir "list"
-                    const usersRef = collection(db, "users");
-                    const cpfQuery = query(usersRef, where("cpf", "==", cpfClean));
-                    const cpfQuerySnapshot = await getDocs(cpfQuery);
-
-                    if (!cpfQuerySnapshot.empty) {
-                        showToast('Este CPF já está vinculado a outra conta cadastrada.', 'danger');
-                        return;
-                    }
-
-                    // 2. Se o CPF está livre, cria o usuário no Auth
-                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                    createdUser = userCredential.user;
-                    
-                    // 3. Gravação dos dados no Firestore utilizando o UID do usuário recém-criado
-                    await setDoc(doc(db, "users", createdUser.uid), {
-                        nome: fullname,
-                        cpf: cpfClean,
-                        email: email,
-                        saldo: 0.00,
-                        rendimentos: 0.00,
-                        afiliados_ativos: 0,
-                        data_cadastro: new Date().toISOString()
-                    });
-                    
-                    window.location.href = 'login.html?action=registered';
-
-                } catch (error) {
-                    console.error("Erro completo no processo de cadastro:", error);
-                    
-                    // Se salvou o Auth mas falhou no Firestore, limpa a sujeira do Auth
-                    if (createdUser && auth.currentUser) {
-                        await auth.currentUser.delete();
-                    }
-                    
-                    let userMessage = 'Erro ao realizar o cadastro. Tente outra combinação.';
-                    
-                    if (error.code === 'auth/email-already-in-use') {
-                        userMessage = 'Este endereço de e-mail já está cadastrado no sistema.';
-                    } else if (error.code === 'auth/weak-password') {
-                        userMessage = 'A senha escolhida é muito fraca. Use pelo menos 6 caracteres.';
-                    } else if (error.code === 'auth/invalid-email') {
-                        userMessage = 'O formato do e-mail inserido é inválido.';
-                    } else if (error.substring && error.substring(0,17) === 'FirebaseError: [') {
-                        userMessage = 'Erro de permissão no servidor. Verifique as regras do Firestore.';
-                    }
-                    
-                    showToast(userMessage, 'danger');
+                if (!emailInput || !passwordInput || !cpfInput) {
+                    throw new Error("Campos obrigatórios de cadastro não foram localizados no HTML.");
                 }
-            });
-        } else {
-            alert("Erro crítico: O formulário de registro não foi encontrado na árvore DOM.");
-        }
-    </script>
+
+                const email = emailInput.value.trim().toLowerCase();
+                const password = passwordInput.value;
+                const fullname = fullnameInput ? fullnameInput.value.trim() : "Investidor NexaVest";
+                const cpfClean = cpfInput.value.replace(/\D/g, ''); 
+
+                if (cpfClean.length !== 11) {
+                    showToast('Por favor, insira um CPF válido com 11 dígitos.', 'danger');
+                    return;
+                }
+
+                // 1. CHECAGEM DE CPF ANTES DE CRIAR O AUTH:
+                const usersRef = collection(db, "users");
+                const cpfQuery = query(usersRef, where("cpf", "==", cpfClean));
+                const cpfQuerySnapshot = await getDocs(cpfQuery);
+
+                if (!cpfQuerySnapshot.empty) {
+                    showToast('Este CPF já está vinculado a outra conta cadastrada.', 'danger');
+                    return;
+                }
+
+                // 2. Se o CPF está livre, cria o usuário no Auth
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                createdUser = userCredential.user;
+                
+                // 3. Gravação dos dados no Firestore vinculando o indicador
+                await setDoc(doc(db, "users", createdUser.uid), {
+                    nome: fullname,
+                    cpf: cpfClean,
+                    email: email,
+                    saldo: 0.00,
+                    rendimentos: 0.00,
+                    afiliados_ativos: 0,
+                    indicado_por: indicadorUid, // Salva o UID do padrinho se houver, ou null
+                    data_cadastro: new Date().toISOString()
+                });
+                
+                window.location.href = 'login.html?action=registered';
+
+            } catch (error) {
+                console.error("Erro completo no processo de cadastro:", error);
+                
+                // Se salvou o Auth mas falhou no Firestore, limpa a sujeira do Auth
+                if (createdUser && auth.currentUser) {
+                    await auth.currentUser.delete();
+                }
+                
+                let userMessage = 'Erro ao realizar o cadastro. Tente outra combinação.';
+                
+                if (error.code === 'auth/email-already-in-use') {
+                    userMessage = 'Este endereço de e-mail já está cadastrado no sistema.';
+                } else if (error.code === 'auth/weak-password') {
+                    userMessage = 'A senha escolhida é muito fraca. Use pelo menos 6 caracteres.';
+                } else if (error.code === 'auth/invalid-email') {
+                    userMessage = 'O formato do e-mail inserido é inválido.';
+                } else if (error.substring && error.substring(0,17) === 'FirebaseError: [') {
+                    userMessage = 'Erro de permissão no servidor. Verifique as regras do Firestore.';
+                }
+                
+                showToast(userMessage, 'danger');
+            }
+        });
+    } else {
+        alert("Erro crítico: O formulário de registro não foi encontrado na árvore DOM.");
+    }
+</script>
 </body>
 </html>
