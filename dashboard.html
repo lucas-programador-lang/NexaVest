@@ -20,15 +20,13 @@
         }
         .navbar {
             display: flex;
-            justify-between: space-between;
+            justify-content: space-between;
             align-items: center;
             padding: 1.25rem 5%;
             background: rgba(15, 23, 42, 0.6);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            display: flex;
-            justify-content: space-between;
         }
         .logo {
             font-weight: 800;
@@ -68,7 +66,7 @@
             padding: 2rem 1.5rem;
             display: flex;
             flex-direction: column;
-            justify-between: space-between;
+            justify-content: space-between;
             height: fit-content;
             box-sizing: border-box;
         }
@@ -274,8 +272,8 @@
                     <a href="#" onclick="openModal('withdrawModal')"><i class="fa-solid fa-building-columns"></i> Solicitar Saque</a>
                 </li>
                 <li class="sidebar-item">
-                    <a href="afiliados.html"><i class="fa-solid fa-network-wired"></i> Afiliados</a>
-                </li>
+                    <a href="afiliados.html"><i class="fa-solid fa-network-wired"></i> Afiliados</a>
+                </li>
                 <li class="sidebar-item">
                      <a href="carteira.html"><i class="fa-solid fa-briefcase"></i> Minha Carteira</a>
                 </li>
@@ -477,13 +475,12 @@
                         const userData = userDocSnap.data();
                         currentBalance = userData.saldo || 0.00;
 
-                        // CORREÇÃO DO LINK DE AFILIADO: Mapeando o ID 'affiliate-link-input' corretamente
+                        // Validação segura para evitar quebra caso o input de link de afiliado não esteja nesta view
                         const affInput = document.getElementById('affiliate-link-input');
                         if (affInput) {
                             affInput.value = `${window.location.origin}/register.html?ref=${user.uid}`;
                         }
 
-                        // CORREÇÃO DO NOME DE EXIBIÇÃO: Mapeia 'nome' ou 'name' de forma nativa e segura
                         if (displayNameElement) {
                             displayNameElement.innerText = userData.nome || userData.name || (user.email ? user.email.split('@')[0] : "Investidor");
                         }
@@ -572,5 +569,5 @@
             });
         }
     </script>
-</body>
+</body> 
 </html>
