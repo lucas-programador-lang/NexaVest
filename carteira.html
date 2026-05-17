@@ -226,8 +226,8 @@
         <li class="sidebar-item">
             <a href="perfil.html"><i class="fa-regular fa-user"></i> Meu Perfil</a>
         </li>
-        <li class="sidebar-item item-logout">
-            <a href="index.html"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair</a>
+        <li class="sidebar-item">
+            <a href="index.html" class="btn-premium-nav logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair</a>
         </li>
     </ul>
 </aside>
@@ -236,7 +236,7 @@
             
             <div>
                 <h1 style="font-weight: 800; font-size: 1.8rem; letter-spacing: -0.5px; margin: 0;">Meus Ativos & Contratos</h1>
-                <p style="color: #94a3b8; font-size: 0.95rem; margin-top: 0.25rem; margin-bottom: 0;">Acompanhe a evolução das suas alocações de capital operando no sistema.</p>
+                <p style="color: #94a3b8; font-size: 0.95rem; margin-top: 0.25rem; margin-bottom: 0;">Acompanhe a evolução das suas alocações de capital operando no system.</p>
             </div>
 
             <div class="panel-card">
@@ -297,7 +297,7 @@
                     const querySnapshot = await getDocs(q);
 
                     if (!querySnapshot.empty) {
-                        noInvestmentsMessage.style.style.display = 'none';
+                        noInvestmentsMessage.style.display = 'none';
                         investmentsTable.style.display = 'table';
                         investmentsTbody.innerHTML = '';
 
