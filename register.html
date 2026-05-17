@@ -111,15 +111,25 @@
         <p style="color: var(--text-muted); font-size: 0.85rem;">&copy; 2026 NexaVest. Dados estritamente protegidos sob as diretrizes de segurança de criptoativos.</p>
     </footer>
 
-    <script type="module">
+   <script type="module">
     import { auth, createUserWithEmailAndPassword, db, doc, setDoc } from "./firebase-config.js";
     import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // CAPTURA O INDICADOR DA URL: Lê se existe "?ref=XXXX" na barra de endereços
+    // CAPTURA O INDICADOR DA URL: Lê se existe "?ref=XXXX" na barra de endereços (agora pode ser um código curto)
     const urlParams = new URLSearchParams(window.location.search);
-    const indicadorUid = urlParams.get('ref') || null;
+    const indicadorRef = urlParams.get('ref') || null;
 
     const registerForm = document.getElementById('register-form') || document.querySelector('form');
+
+    // Função para gerar um código aleatório curto de 6 caracteres (Prefixo NX + 4 alfanuméricos)
+    function gerarCodigoAfiliado() {
+        const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let resultado = 'NX'; 
+        for (let i = 0; i < 4; i++) {
+            resultado += caracteres.charAt(Math.floor(Math.random() * caracteres.length));
+        }
+        return resultado;
+    }
 
     if (registerForm) {
         registerForm.addEventListener('submit', async (e) => {
@@ -156,11 +166,39 @@
                     return;
                 }
 
-                // 2. Se o CPF está livre, cria o usuário no Auth
+                // 2. RASTREAMENTO DO PADRINHO (CONVERSÃO DE CÓDIGO CURTO PARA UID REAL)
+                let uidPadrinho = null;
+                if (indicadorRef) {
+                    try {
+                        // Faz uma busca no Firestore para achar quem tem esse 'codigo_afiliado'
+                        const qIndicador = query(usersRef, where("codigo_afiliado", "==", indicadorRef.toUpperCase().trim()));
+                        const indicadorSnapshot = await getDocs(qIndicador);
+
+                        if (!indicadorSnapshot.empty) {
+                            // Encontrou! Pegamos o ID (UID) do documento dele
+                            uidPadrinho = indicadorSnapshot.docs[0].id;
+                        } else {
+                            // Fallback de segurança: Se o parâmetro não for um código curto, mas sim um UID antigo, 
+                            // verificamos se esse UID existe direto como ID do documento
+                            const fallbackQuery = query(usersRef, where("__name__", "==", indicadorRef));
+                            const fallbackSnapshot = await getDocs(fallbackQuery);
+                            if (!fallbackSnapshot.empty) {
+                                uidPadrinho = indicadorRef;
+                            }
+                        }
+                    } catch (err) {
+                        console.error("Erro ao converter código de indicação:", err);
+                    }
+                }
+
+                // 3. Se o CPF está livre, cria o usuário no Auth
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 createdUser = userCredential.user;
                 
-                // 3. Gravação dos dados no Firestore vinculando o indicador
+                // Gera o código curto exclusivo para este novo usuário
+                const novoCodigoAfiliado = gerarCodigoAfiliado();
+                
+                // 4. Gravação dos dados no Firestore vinculando o UID real do padrinho
                 await setDoc(doc(db, "users", createdUser.uid), {
                     nome: fullname,
                     cpf: cpfClean,
@@ -168,7 +206,8 @@
                     saldo: 0.00,
                     rendimentos: 0.00,
                     afiliados_ativos: 0,
-                    indicado_por: indicadorUid, // Salva o UID do padrinho se houver, ou null
+                    codigo_afiliado: novoCodigoAfiliado, // <-- Salva o novo código curto dele aqui
+                    indicado_por: uidPadrinho,           // <-- Salva o UID real convertido do padrinho (ou null)
                     data_cadastro: new Date().toISOString()
                 });
                 
