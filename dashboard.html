@@ -576,7 +576,8 @@
                         // Proteção: Busca o elemento do nome apenas dentro do evento para evitar quebras
                         const displayNameElement = document.getElementById('user-name-display');
                         if (displayNameElement) {
-                            displayNameElement.innerText = userData.nome || userData.Nome || userData.name || (user.email ? user.email.split('@')[0] : "Investidor");
+                            const nomeUsuario = userData.nome || userData.Nome || userData.name || (user.email ? user.email.split('@')[0] : "Investidor");
+                            displayNameElement.innerHTML = `${nomeUsuario} <span style="color: #10b981; font-weight: bold; font-size: 0.8rem; margin-left: 5px;">• CONTA PREMIUM</span>`;
                         }
                         
                         // Proteção Individual: Se um ID não existir no HTML, os outros continuam funcionando normalmente
@@ -590,8 +591,11 @@
                         if (referralsDisplay) referralsDisplay.innerText = userData.afiliados_ativos || 0;
                     } else {
                         const displayNameElement = document.getElementById('user-name-display');
-                        if (displayNameElement) displayNameElement.innerText = user.email ? user.email.split('@')[0] : "Investidor";
-                    }
+                        if (displayNameElement) {
+                        const nomeUsuario = user.email ? user.email.split('@')[0] : "Investidor";
+                       displayNameElement.innerHTML = `${nomeUsuario} <span class="badge-premium" style="color: #10b981; font-weight: bold; font-size: 0.8rem; margin-left: 5px;">CONTA PREMIUM</span>`;
+                      }
+                   }
                 } catch (error) {
                     console.error("Erro ao resgatar dados do perfil no Firestore:", error);
                 }
