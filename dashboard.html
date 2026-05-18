@@ -548,14 +548,11 @@
     <script src="script.js"></script>
 <script type="module">
         // 1. IMPORTAÇÕES CORRIGIDAS (Igual à carteira.html)
-        // Do seu arquivo local, trazemos APENAS as instâncias configuradas
         import { auth, db } from "./firebase-config.js";
-
-        // Métodos operacionais nativos direto das CDNs oficiais
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { doc, getDoc, updateDoc, setDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // Expor funções de modal no escopo global para o onclick funcionar com type="module"
+        // Expor funções de modal no escopo global para o onclick continuar funcionando
         window.openModal = function(modalId) {
             const modal = document.getElementById(modalId);
             if (modal) modal.classList.add('active');
@@ -573,7 +570,6 @@
                     const userDocRef = doc(db, "users", user.uid);
                     const userDocSnap = await getDoc(userDocRef);
 
-                    // Extração do nome do banco de forma segura
                     let nomeUsuario = "Investidor";
                     if (userDocSnap.exists()) {
                         const userData = userDocSnap.data();
@@ -581,7 +577,7 @@
                         
                         currentBalance = userData.saldo || 0.00;
 
-                        // Atualiza os inputs e dados se os elementos existirem na tela
+                        // Atualiza os dados financeiros do Dashboard se existirem
                         const affInput = document.getElementById('affiliate-link-input');
                         if (affInput) {
                             affInput.value = `${window.location.origin}/register.html?ref=${user.uid}`;
@@ -599,15 +595,19 @@
                         nomeUsuario = user.email ? user.email.split('@')[0] : "Investidor";
                     }
 
-                    // Injeção do Nome na Tela
+                    // 2. INJEÇÃO SEGURA DO NOME (Sem quebrar o DOM e sem destruir eventos)
                     const displayNameElement = document.getElementById('user-name-display');
                     if (displayNameElement) {
                         displayNameElement.innerText = nomeUsuario;
                     } else {
-                        // Se o ID específico não for encontrado, limpa o texto bruto de carregamento da página
-                        const bodyHtml = document.body.innerHTML;
-                        if (bodyHtml.includes("Carregando Investidor...")) {
-                            document.body.innerHTML = bodyHtml.replace("Carregando Investidor...", nomeUsuario);
+                        // Procurar por qualquer tag que tenha exatamente a frase padrão e alterá-la cirurgicamente
+                        const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+                        let node;
+                        while (node = walker.nextNode()) {
+                            if (node.nodeValue.includes("Carregando Investidor...")) {
+                                node.nodeValue = node.nodeValue.replace("Carregando Investidor...", nomeUsuario);
+                                break; // Encontrou e alterou sem quebrar os eventos da página
+                            }
                         }
                     }
 
