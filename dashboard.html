@@ -547,9 +547,61 @@
 
     <script src="script.js"></script>
 <script type="module">
-        import { auth, onAuthStateChanged, db, doc, getDoc, setDoc, updateDoc, increment } from "./firebase-config.js";
+        // 1. IMPORTAÇÃO IGUAL À CARTEIRA.HTML (Apenas instâncias locais)
+        import { auth, db } from "./firebase-config.js";
 
-        // Expor funções de modal no escopo global para o onclick funcionar com type="module"
+        // Métodos operacionais nativos direto da CDN oficial, igual na carteira
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { doc, getDoc, updateDoc, setDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // Elementos capturados de forma isolada para garantir estabilidade
+        const displayNameElement = document.getElementById('user-name-display');
+        const balanceDisplay = document.getElementById('balance-display');
+        const yieldDisplay = document.getElementById('yield-display');
+        const referralsDisplay = document.getElementById('referrals-display');
+        
+        let currentBalance = 0.00;
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                try {
+                    // Carregar Dados do Usuário no Topo (Lógica idêntica à carteira.html)
+                    const userDocRef = doc(db, "users", user.uid);
+                    const userDocSnap = await getDoc(userDocRef);
+
+                    if (userDocSnap.exists()) {
+                        const userData = userDocSnap.data();
+                        currentBalance = userData.saldo || 0.00;
+
+                        // Atualiza o link de afiliado se o input existir
+                        const affInput = document.getElementById('affiliate-link-input');
+                        if (affInput) {
+                            affInput.value = `${window.location.origin}/register.html?ref=${user.uid}`;
+                        }
+
+                        // Injeta o nome na tela sem travar a renderização
+                        if (displayNameElement) {
+                            displayNameElement.innerText = userData.nome || userData.Nome || userData.name || (user.email ? user.email.split('@')[0] : "Investidor");
+                        }
+                        
+                        // Preenche as métricas financeiras do Dashboard
+                        if (balanceDisplay) balanceDisplay.innerText = `R$ ${currentBalance.toFixed(2)}`;
+                        if (yieldDisplay) yieldDisplay.innerText = `R$ ${(userData.rendimentos || 0.00).toFixed(2)}`;
+                        if (referralsDisplay) referralsDisplay.innerText = userData.afiliados_ativos || 0;
+                    } else {
+                        if (displayNameElement) displayNameElement.innerText = user.email ? user.email.split('@')[0] : "Investidor";
+                    }
+                } catch (error) {
+                    console.error("Erro ao resgatar dados do perfil no Firestore:", error);
+                }
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+
+        // ==========================================
+        // ESCOPO GLOBAL PARA BOTÕES DE MODAL (onclick)
+        // ==========================================
         window.openModal = function(modalId) {
             const modal = document.getElementById(modalId);
             if (modal) modal.classList.add('active');
@@ -559,63 +611,9 @@
             if (modal) modal.classList.remove('active');
         }
 
-        let currentBalance = 0.00;
-
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                try {
-                    const userDocRef = doc(db, "users", user.uid);
-                    const userDocSnap = await getDoc(userDocRef);
-
-                    // 1. EXTRAÇÃO DO NOME DO BANCO (Igual ao afiliados.html)
-                    let nomeUsuario = "Investidor";
-                    if (userDocSnap.exists()) {
-                        const userData = userDocSnap.data();
-                        nomeUsuario = userData.nome || userData.Nome || userData.name || (user.email ? user.email.split('@')[0] : "Investidor");
-                        
-                        currentBalance = userData.saldo || 0.00;
-
-                        // Atualiza os inputs e dados se os elementos existirem
-                        const affInput = document.getElementById('affiliate-link-input');
-                        if (affInput) {
-                            affInput.value = `${window.location.origin}/register.html?ref=${user.uid}`;
-                        }
-
-                        const balanceDisplay = document.getElementById('balance-display');
-                        if (balanceDisplay) balanceDisplay.innerText = `R$ ${currentBalance.toFixed(2)}`;
-                        
-                        const yieldDisplay = document.getElementById('yield-display');
-                        if (yieldDisplay) yieldDisplay.innerText = `R$ ${(userData.rendimentos || 0.00).toFixed(2)}`;
-                        
-                        const referralsDisplay = document.getElementById('referrals-display');
-                        if (referralsDisplay) referralsDisplay.innerText = userData.afiliados_ativos || 0;
-                    } else {
-                        nomeUsuario = user.email ? user.email.split('@')[0] : "Investidor";
-                    }
-
-                    // 2. FORÇAR A INJEÇÃO DO NOME NA TELA (Evita o travamento do "Carregando...")
-                    const displayNameElement = document.getElementById('user-name-display');
-                    if (displayNameElement) {
-                        displayNameElement.innerText = nomeUsuario;
-                    } else {
-                        // Se o ID não foi encontrado, varre a página procurando o texto de carregamento para substituí-lo
-                        const bodyHtml = document.body.innerHTML;
-                        if (bodyHtml.includes("Carregando Investidor...")) {
-                            document.body.innerHTML = bodyHtml.replace("Carregando Investidor...", nomeUsuario);
-                        }
-                    }
-
-                } catch (error) {
-                    console.error("Erro crítico ao carregar dados no Dashboard:", error);
-                    // Fallback de segurança em caso de erro no Firestore para liberar a tela
-                    const displayNameElement = document.getElementById('user-name-display');
-                    if (displayNameElement) displayNameElement.innerText = user.email ? user.email.split('@')[0] : "Investidor";
-                }
-            } else {
-                window.location.href = 'login.html';
-            }
-        });
-
+        // ==========================================
+        // SISTEMA E EVENTOS DE RETIRADA (SAQUE)
+        // ==========================================
         const withdrawAmountInput = document.getElementById('withdraw-amount');
         const withdrawTaxDisplay = document.getElementById('withdraw-tax-display');
         const withdrawLiquidDisplay = document.getElementById('withdraw-liquid-display');
@@ -683,7 +681,6 @@
                     if (typeof closeModal === 'function') closeModal('withdrawModal');
                     
                     currentBalance -= amount;
-                    const balanceDisplay = document.getElementById('balance-display');
                     if (balanceDisplay) balanceDisplay.innerText = `R$ ${currentBalance.toFixed(2)}`;
                     
                     withdrawForm.reset();
