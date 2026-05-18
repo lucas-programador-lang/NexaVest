@@ -544,54 +544,96 @@
 
     <script src="script.js"></script>
 <script type="module">
-        import { auth, onAuthStateChanged, db, doc, getDoc, setDoc, updateDoc, increment } from "./firebase-config.js";
+        import { auth, db } from "./firebase-config.js";
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { doc, getDoc, updateDoc, setDoc, increment, collection, onSnapshot, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // Expor funções de modal no escopo global para o onclick funcionar com type="module"
+        // Variáveis de Controle Global do Script
+        let currentBalance = 0.00;
+        let unsubTransacoes = null;
+        let currentUser = null;
+
+        // 1. Controle dos Modais (Expostos imediatamente no escopo global)
         window.openModal = function(modalId) {
             const modal = document.getElementById(modalId);
             if (modal) modal.classList.add('active');
-        }
+        };
+
         window.closeModal = function(modalId) {
             const modal = document.getElementById(modalId);
             if (modal) modal.classList.remove('active');
+        };
+
+        // 2. Inicialização de Funções de Interface e Listeners
+        function initUIListeners() {
+            // Vincula o fechamento dos modais nos botões de fechar (X)
+            const closeButtons = document.querySelectorAll('.modal span');
+            closeButtons.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const modal = e.target.closest('.modal');
+                    if (modal) modal.classList.remove('active');
+                });
+            });
+
+            // Lógica para atualizar tempo real das taxas no formulário de saque
+            const withdrawAmountInput = document.getElementById('withdraw-amount');
+            const withdrawTaxDisplay = document.getElementById('withdraw-tax-display');
+            const withdrawLiquidDisplay = document.getElementById('withdraw-liquid-display');
+
+            if (withdrawAmountInput) {
+                withdrawAmountInput.addEventListener('input', (e) => {
+                    const val = parseFloat(e.target.value) || 0;
+                    const tax = val * 0.10;
+                    const liquid = val - tax;
+
+                    if (withdrawTaxDisplay) {
+                        withdrawTaxDisplay.innerText = `R$ ${tax.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                    }
+                    if (withdrawLiquidDisplay) {
+                        withdrawLiquidDisplay.innerText = `R$ ${(liquid > 0 ? liquid : 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                    }
+                });
+            }
         }
 
-        let currentBalance = 0.00;
+        // Executa os listeners de UI assim que o script carrega (com segurança para o ecossistema Module)
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initUIListeners);
+        } else {
+            initUIListeners();
+        }
 
+        // 3. Listener de Autenticação do Usuário
         onAuthStateChanged(auth, async (user) => {
             if (user) {
+                currentUser = user;
                 try {
                     const userDocRef = doc(db, "users", user.uid);
                     const userDocSnap = await getDoc(userDocRef);
+
+                    // Gerar o link de afiliados dinâmico se o input existir na tela
+                    const affInput = document.getElementById('affiliate-link-input');
+                    if (affInput) {
+                        affInput.value = `${window.location.origin}/register.html?ref=${user.uid}`;
+                    }
 
                     if (userDocSnap.exists()) {
                         const userData = userDocSnap.data();
                         currentBalance = userData.saldo || 0.00;
 
-                        const affInput = document.getElementById('affiliate-link-input');
-                        if (affInput) {
-                            affInput.value = `${window.location.origin}/register.html?ref=${user.uid}`;
-                        }
-
-                        // Proteção: Busca o elemento do nome apenas dentro do evento para evitar quebras
                         const displayNameElement = document.getElementById('user-name-display');
                         if (displayNameElement) {
                             displayNameElement.innerText = userData.nome || userData.Nome || userData.name || (user.email ? user.email.split('@')[0] : "Investidor");
                         }
                         
-                        // Proteção Individual: Se um ID não existir no HTML, os outros continuam funcionando normalmente
-                        const balanceDisplay = document.getElementById('balance-display');
-                        if (balanceDisplay) balanceDisplay.innerText = `R$ ${currentBalance.toFixed(2)}`;
-                        
-                        const yieldDisplay = document.getElementById('yield-display');
-                        if (yieldDisplay) yieldDisplay.innerText = `R$ ${(userData.rendimentos || 0.00).toFixed(2)}`;
-                        
-                        const referralsDisplay = document.getElementById('referrals-display');
-                        if (referralsDisplay) referralsDisplay.innerText = userData.afiliados_ativos || 0;
+                        updateDashboardMetrics(userData);
                     } else {
                         const displayNameElement = document.getElementById('user-name-display');
                         if (displayNameElement) displayNameElement.innerText = user.email ? user.email.split('@')[0] : "Investidor";
                     }
+
+                    setupTransactionsListener(user.uid);
+
                 } catch (error) {
                     console.error("Erro ao resgatar dados do perfil no Firestore:", error);
                 }
@@ -600,57 +642,168 @@
             }
         });
 
-        const withdrawAmountInput = document.getElementById('withdraw-amount');
-        const withdrawTaxDisplay = document.getElementById('withdraw-tax-display');
-        const withdrawLiquidDisplay = document.getElementById('withdraw-liquid-display');
-        const withdrawForm = document.getElementById('withdraw-form');
-
-        if (withdrawAmountInput) {
-            withdrawAmountInput.addEventListener('input', (e) => {
-                const amount = parseFloat(e.target.value) || 0;
-                const tax = amount * 0.10;
-                const liquid = amount - tax;
-
-                if (withdrawTaxDisplay) withdrawTaxDisplay.innerText = `R$ ${tax.toFixed(2)}`;
-                if (withdrawLiquidDisplay) withdrawLiquidDisplay.innerText = `R$ ${liquid > 0 ? liquid.toFixed(2) : '0,00'}`;
-            });
+        // 4. Atualização das Métricas Visuais do Painel
+        function updateDashboardMetrics(data) {
+            const balanceDisplay = document.getElementById('balance-display');
+            if (balanceDisplay) balanceDisplay.innerText = `R$ ${(data.saldo || 0.00).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            
+            const yieldDisplay = document.getElementById('yield-display');
+            if (yieldDisplay) yieldDisplay.innerText = `R$ ${(data.rendimentos || 0.00).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            
+            const referralsDisplay = document.getElementById('referrals-display');
+            if (referralsDisplay) referralsDisplay.innerText = data.afiliados_ativos || 0;
         }
 
-        if (withdrawForm) {
-            withdrawForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const user = auth.currentUser;
-                if (!user) return;
+        // 5. Escuta em Tempo Real do Histórico de Transações
+        function setupTransactionsListener(uid) {
+            const trRef = collection(db, "users", uid, "historico");
+            const q = query(trRef, orderBy("data", "desc"), limit(10));
 
-                const amountInput = document.getElementById('withdraw-amount');
-                const pixTypeInput = document.getElementById('withdraw-pix-type');
-                const pixKeyInput = document.getElementById('withdraw-pix-key');
+            unsubTransacoes = onSnapshot(q, (snapshot) => {
+                const tbody = document.getElementById('transactions-tbody');
+                const noMessage = document.getElementById('no-transactions-message');
+                
+                if (!tbody) return;
+                tbody.innerHTML = "";
 
-                if (!amountInput || !pixTypeInput || !pixKeyInput) return;
-
-                const amount = parseFloat(amountInput.value);
-                const pixType = pixTypeInput.value;
-                const pixKey = pixKeyInput.value;
-
-                if (amount < 90) {
-                    if (typeof showToast === 'function') showToast('O valor mínimo de saque é R$ 90,00.', 'error');
+                if (snapshot.empty) {
+                    if (noMessage) noMessage.style.display = 'block';
                     return;
                 }
 
-                if (amount > currentBalance) {
-                    if (typeof showToast === 'function') showToast('Saldo insuficiente para processar essa retirada.', 'error');
+                if (noMessage) noMessage.style.display = 'none';
+
+                snapshot.forEach((docSnap) => {
+                    const trData = docSnap.data();
+                    const row = document.createElement('tr');
+                    row.style.borderBottom = "1px solid rgba(255,255,255,0.02)";
+                    
+                    let dataFormatada = "---";
+                    if (trData.data) {
+                        const d = new Date(trData.data);
+                        dataFormatada = d.toLocaleDateString('pt-BR') + " " + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                    }
+
+                    let statusBadge = `<span style="padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.75rem; font-weight: 700; background: rgba(234,179,8,0.1); color: #eab308;">Pendente</span>`;
+                    if (trData.status === "sucesso" || trData.status === "aprovado") {
+                        statusBadge = `<span style="padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.75rem; font-weight: 700; background: rgba(16,185,129,0.1); color: var(--emerald-premium, #10b981);">Concluído</span>`;
+                    } else if (trData.status === "falhou" || trData.status === "recusado") {
+                        statusBadge = `<span style="padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.75rem; font-weight: 700; background: rgba(239,68,68,0.1); color: #ef4444;">Cancelado</span>`;
+                    }
+
+                    row.innerHTML = `
+                        <td style="padding: 1rem 0.75rem; font-size: 0.9rem; color: var(--text-muted);">${dataFormatada}</td>
+                        <td style="padding: 1rem 0.75rem; font-size: 0.9rem; font-weight: 600;">${trData.tipo || "Movimentação"}</td>
+                        <td style="padding: 1rem 0.75rem; font-size: 0.9rem; font-weight: 700; color: ${trData.tipo === 'Depósito' || trData.tipo === 'Rendimento' ? 'var(--emerald-premium, #10b981)' : '#ffffff'}">
+                            R$ ${(trData.valor || 0.00).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </td>
+                        <td style="padding: 1rem 0.75rem;">${statusBadge}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }, (error) => {
+                console.error("Erro no listener de transações: ", error);
+            });
+        }
+
+        // 6. Envio do Formulário de Depósito
+        const depositForm = document.getElementById('deposit-form');
+        if (depositForm) {
+            depositForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const amount = parseFloat(document.getElementById('deposit-amount').value);
+                const btnSubmit = document.getElementById('btn-submit-deposit');
+
+                if (!amount || amount < 20) {
+                    alert("O valor mínimo para depósito é de R$ 20,00");
                     return;
                 }
 
                 try {
-                    const userDocRef = doc(db, "users", user.uid);
+                    btnSubmit.disabled = true;
+                    btnSubmit.innerText = "Processando API...";
+
+                    if (currentUser) {
+                        const histRef = doc(collection(db, "users", currentUser.uid, "historico"));
+                        await setDoc(histRef, {
+                            tipo: "Depósito",
+                            valor: amount,
+                            status: "pendente",
+                            data: Date.now()
+                        });
+                    }
+
+                    document.getElementById('qr-response-area').style.display = 'block';
+                    document.getElementById('pix-copia-cola').value = "00020101021226830014br.gov.bcb.pix2561api.nexavest.com/v2/cob/payload" + Math.random().toString(36).substring(7);
+                    
+                    btnSubmit.innerText = "Ordem de Depósito Gerada";
+                } catch (err) {
+                    console.error(err);
+                    alert("Erro ao processar requisição de depósito.");
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerText = "Gerar Copia e Cola / QR Code";
+                }
+            });
+        }
+
+        // Botão de copiar código PIX
+        const btnCopyPix = document.getElementById('btn-copy-pix');
+        if (btnCopyPix) {
+            btnCopyPix.addEventListener('click', () => {
+                const pixInput = document.getElementById('pix-copia-cola');
+                if (pixInput) {
+                    pixInput.select();
+                    pixInput.setSelectionRange(0, 99999);
+                    navigator.clipboard.writeText(pixInput.value);
+                    alert("Código PIX copiado com sucesso!");
+                }
+            });
+        }
+
+        // 7. Envio do Formulário de Saque (Retirada)
+        const withdrawForm = document.getElementById('withdraw-form');
+        if (withdrawForm) {
+            withdrawForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const amount = parseFloat(document.getElementById('withdraw-amount').value);
+                const pixType = document.getElementById('withdraw-pix-type').value;
+                const pixKey = document.getElementById('withdraw-pix-key').value;
+
+                if (!currentUser) return;
+                
+                if (amount < 90) {
+                    alert("O valor mínimo para saque é R$ 90,00");
+                    return;
+                }
+
+                if (amount > currentBalance) {
+                    alert("Saldo insuficiente para realizar este saque.");
+                    return;
+                }
+
+                try {
+                    const userDocRef = doc(db, "users", currentUser.uid);
+                    
+                    // Atualiza saldo local e remove imediatamente do Firestore para segurança
                     await updateDoc(userDocRef, {
                         saldo: increment(-amount)
                     });
 
-                    const withdrawRef = doc(db, "saques_solicitados", `${user.uid}_${Date.now()}`);
+                    // Registra na subcoleção de histórico de transações do usuário
+                    const histRef = doc(collection(db, "users", currentUser.uid, "historico"));
+                    await setDoc(histRef, {
+                        tipo: "Saque",
+                        valor: amount,
+                        status: "pendente",
+                        chave_pix: pixKey,
+                        tipo_chave: pixType,
+                        data: Date.now()
+                    });
+
+                    // Duplicado opcional: Se você ainda precisar da coleção global para o painel Admin aprovar saques:
+                    const withdrawRef = doc(db, "saques_solicitados", `${currentUser.uid}_${Date.now()}`);
                     await setDoc(withdrawRef, {
-                        uid: user.uid,
+                        uid: currentUser.uid,
                         valor_solicitado: amount,
                         taxa_aplicada: amount * 0.10,
                         valor_liquido: amount * 0.90,
@@ -660,24 +813,36 @@
                         data_solicitacao: new Date().toISOString()
                     });
 
-                    if (typeof showToast === 'function') {
-                        showToast('Saque solicitado e saldo reservado!', 'success');
-                    }
+                    alert("Solicitação de saque enviada com sucesso! Aguarde o processamento.");
+                    closeModal('withdrawModal');
                     
-                    if (typeof closeModal === 'function') closeModal('withdrawModal');
-                    
-                    currentBalance -= amount;
-                    const balanceDisplay = document.getElementById('balance-display');
-                    if (balanceDisplay) balanceDisplay.innerText = `R$ ${currentBalance.toFixed(2)}`;
-                    
+                    // Reset do Formulário e das Labels
                     withdrawForm.reset();
-                    if (withdrawTaxDisplay) withdrawTaxDisplay.innerText = 'R$ 0,00';
-                    if (withdrawLiquidDisplay) withdrawLiquidDisplay.innerText = 'R$ 0,00';
+                    currentBalance -= amount;
+                    
+                    const balanceDisplay = document.getElementById('balance-display');
+                    if (balanceDisplay) balanceDisplay.innerText = `R$ ${currentBalance.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-                } catch (error) {
-                    console.error("Erro ao solicitar saque:", error);
-                    if (typeof showToast === 'function') showToast('Erro interno ao processar a retirada.', 'error');
+                    const taxDisp = document.getElementById('withdraw-tax-display');
+                    const liqDisp = document.getElementById('withdraw-liquid-display');
+                    if (taxDisp) taxDisp.innerText = "R$ 0,00";
+                    if (liqDisp) liqDisp.innerText = "R$ 0,00";
+
+                } catch (err) {
+                    console.error("Erro ao processar o saque: ", err);
+                    alert("Houve um erro operacional ao processar sua retirada.");
                 }
+            });
+        }
+
+        // 8. Evento de Logout
+        const btnLogout = document.getElementById('btn-logout-sidebar');
+        if (btnLogout) {
+            btnLogout.addEventListener('click', async (e) => {
+                e.preventDefault();
+                if (unsubTransacoes) unsubTransacoes(); // Desativa o listener em tempo real antes de deslogar
+                await signOut(auth);
+                window.location.href = 'index.html';
             });
         }
 </script>
