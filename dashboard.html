@@ -559,11 +559,6 @@
             if (modal) modal.classList.remove('active');
         }
 
-        const displayNameElement = document.getElementById('user-name-display');
-        const balanceDisplay = document.getElementById('balance-display');
-        const yieldDisplay = document.getElementById('yield-display');
-        const referralsDisplay = document.getElementById('referrals-display');
-        
         let currentBalance = 0.00;
 
         onAuthStateChanged(auth, async (user) => {
@@ -581,16 +576,23 @@
                             affInput.value = `${window.location.origin}/register.html?ref=${user.uid}`;
                         }
 
+                        // Proteção: Busca o elemento do nome apenas dentro do evento para evitar quebras
+                        const displayNameElement = document.getElementById('user-name-display');
                         if (displayNameElement) {
-                            // AJUSTE SEGURO: Se houver "nome" no banco ele usa, senão tenta variações ou o e-mail, igualzinho ao afiliados
                             displayNameElement.innerText = userData.nome || userData.Nome || userData.name || (user.email ? user.email.split('@')[0] : "Investidor");
                         }
                         
-                        // CORREÇÃO: Adicionado verificações de existência antes de injetar o texto para não quebrar o script
+                        // Proteção Individual: Se um ID não existir no HTML, os outros continuam funcionando normalmente
+                        const balanceDisplay = document.getElementById('balance-display');
                         if (balanceDisplay) balanceDisplay.innerText = `R$ ${currentBalance.toFixed(2)}`;
+                        
+                        const yieldDisplay = document.getElementById('yield-display');
                         if (yieldDisplay) yieldDisplay.innerText = `R$ ${(userData.rendimentos || 0.00).toFixed(2)}`;
+                        
+                        const referralsDisplay = document.getElementById('referrals-display');
                         if (referralsDisplay) referralsDisplay.innerText = userData.afiliados_ativos || 0;
                     } else {
+                        const displayNameElement = document.getElementById('user-name-display');
                         if (displayNameElement) displayNameElement.innerText = user.email ? user.email.split('@')[0] : "Investidor";
                     }
                 } catch (error) {
@@ -606,7 +608,6 @@
         const withdrawLiquidDisplay = document.getElementById('withdraw-liquid-display');
         const withdrawForm = document.getElementById('withdraw-form');
 
-        // CORREÇÃO: Proteção para o input de saque
         if (withdrawAmountInput) {
             withdrawAmountInput.addEventListener('input', (e) => {
                 const amount = parseFloat(e.target.value) || 0;
@@ -618,7 +619,6 @@
             });
         }
 
-        // CORREÇÃO: Proteção para o formulário de saque
         if (withdrawForm) {
             withdrawForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -670,6 +670,7 @@
                     if (typeof closeModal === 'function') closeModal('withdrawModal');
                     
                     currentBalance -= amount;
+                    const balanceDisplay = document.getElementById('balance-display');
                     if (balanceDisplay) balanceDisplay.innerText = `R$ ${currentBalance.toFixed(2)}`;
                     
                     withdrawForm.reset();
