@@ -547,12 +547,12 @@
 
     <script src="script.js"></script>
 <script type="module">
-        // 1. IMPORTAÇÕES CORRIGIDAS (Igual à carteira.html)
+        // 1. IMPORTAÇÕES CORRIGIDAS E ESTÁVEIS (Baseadas na carteira.html)
         import { auth, db } from "./firebase-config.js";
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { doc, getDoc, updateDoc, setDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // Expor funções de modal no escopo global para o onclick continuar funcionando
+        // Expor funções de modal no escopo global para o onclick voltar a funcionar imediatamente
         window.openModal = function(modalId) {
             const modal = document.getElementById(modalId);
             if (modal) modal.classList.add('active');
@@ -570,19 +570,22 @@
                     const userDocRef = doc(db, "users", user.uid);
                     const userDocSnap = await getDoc(userDocRef);
 
-                    let nomeUsuario = "Investidor";
                     if (userDocSnap.exists()) {
                         const userData = userDocSnap.data();
-                        nomeUsuario = userData.nome || userData.Nome || userData.name || (user.email ? user.email.split('@')[0] : "Investidor");
-                        
                         currentBalance = userData.saldo || 0.00;
 
-                        // Atualiza os dados financeiros do Dashboard se existirem
                         const affInput = document.getElementById('affiliate-link-input');
                         if (affInput) {
                             affInput.value = `${window.location.origin}/register.html?ref=${user.uid}`;
                         }
 
+                        // Proteção Original: Busca o elemento do nome de forma direta e substitui o texto estático
+                        const displayNameElement = document.getElementById('user-name-display');
+                        if (displayNameElement) {
+                            displayNameElement.innerText = userData.nome || userData.Nome || userData.name || (user.email ? user.email.split('@')[0] : "Investidor");
+                        }
+                        
+                        // Atualiza as métricas financeiras do Dashboard de forma segura
                         const balanceDisplay = document.getElementById('balance-display');
                         if (balanceDisplay) balanceDisplay.innerText = `R$ ${currentBalance.toFixed(2)}`;
                         
@@ -592,29 +595,11 @@
                         const referralsDisplay = document.getElementById('referrals-display');
                         if (referralsDisplay) referralsDisplay.innerText = userData.afiliados_ativos || 0;
                     } else {
-                        nomeUsuario = user.email ? user.email.split('@')[0] : "Investidor";
+                        const displayNameElement = document.getElementById('user-name-display');
+                        if (displayNameElement) displayNameElement.innerText = user.email ? user.email.split('@')[0] : "Investidor";
                     }
-
-                    // 2. INJEÇÃO SEGURA DO NOME (Sem quebrar o DOM e sem destruir eventos)
-                    const displayNameElement = document.getElementById('user-name-display');
-                    if (displayNameElement) {
-                        displayNameElement.innerText = nomeUsuario;
-                    } else {
-                        // Procurar por qualquer tag que tenha exatamente a frase padrão e alterá-la cirurgicamente
-                        const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
-                        let node;
-                        while (node = walker.nextNode()) {
-                            if (node.nodeValue.includes("Carregando Investidor...")) {
-                                node.nodeValue = node.nodeValue.replace("Carregando Investidor...", nomeUsuario);
-                                break; // Encontrou e alterou sem quebrar os eventos da página
-                            }
-                        }
-                    }
-
                 } catch (error) {
-                    console.error("Erro crítico ao carregar dados no Dashboard:", error);
-                    const displayNameElement = document.getElementById('user-name-display');
-                    if (displayNameElement) displayNameElement.innerText = user.email ? user.email.split('@')[0] : "Investidor";
+                    console.error("Erro ao resgatar dados do perfil no Firestore:", error);
                 }
             } else {
                 window.location.href = 'login.html';
