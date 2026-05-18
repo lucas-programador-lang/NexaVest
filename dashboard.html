@@ -1,4 +1,552 @@
-<script type="module">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexaVest | Painel do Investidor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Ajustes específicos e refinamentos exclusivos para a Dashboard Premium */
+        :root {
+            --bg-primary: #040711;
+            --bg-surface: rgba(15, 23, 42, 0.45);
+            --bg-surface-hover: rgba(30, 41, 59, 0.7);
+            --emerald-premium: #10b981;
+            --emerald-glow: rgba(16, 185, 129, 0.15);
+            --border-premium: rgba(255, 255, 255, 0.06);
+            --text-muted: #94a3b8;
+        }
+
+        body {
+            background: var(--bg-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        /* Navbar Customizada */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 5%;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-premium);
+            position: sticky;
+            top: 0;
+            z-index: 99;
+        }
+        .logo {
+            font-weight: 800;
+            font-size: 1.4rem;
+            letter-spacing: -0.5px;
+        }
+        .text-emerald {
+            color: var(--emerald-premium);
+        }
+
+        /* Container Principal */
+        .dashboard-container {
+            display: flex;
+            width: 100%;
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 2rem 5% 6rem 5%;
+            gap: 2rem;
+            flex: 1;
+            box-sizing: border-box;
+        }
+
+        /* Sidebar Premium */
+        .sidebar-premium {
+            width: 280px;
+            background: var(--bg-surface);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-premium);
+            border-radius: 24px;
+            padding: 1.75rem 1.25rem;
+            display: flex;
+            flex-direction: column;
+            height: fit-content;
+            box-sizing: border-box;
+            position: sticky;
+            top: 6rem;
+        }
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .sidebar-item a {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.9rem 1.25rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border-radius: 14px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid transparent;
+        }
+        .sidebar-item.active a, .sidebar-item a:hover {
+            color: #ffffff;
+            background: linear-gradient(135deg, var(--emerald-glow) 0%, rgba(16, 185, 129, 0.02) 100%);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.04);
+        }
+        .sidebar-item.item-logout a {
+            color: #ef4444;
+            margin-top: 1rem;
+        }
+        .sidebar-item.item-logout a:hover {
+            color: #ffffff;
+            background: #ef4444;
+            border: 1px solid transparent;
+            box-shadow: 0 8px 24px rgba(239, 68, 68, 0.15);
+        }
+
+        /* Área de Conteúdo */
+        .main-content-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            min-width: 0;
+        }
+
+        /* Cards estruturais */
+        .panel-card {
+            background: var(--bg-surface);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-premium);
+            border-radius: 24px;
+            padding: 2rem;
+        }
+
+        /* Grid de Cards de Estatísticas */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .stat-card-premium {
+            background: linear-gradient(145deg, rgba(20, 30, 55, 0.4) 0%, rgba(10, 15, 30, 0.6) 100%);
+            border: 1px solid var(--border-premium);
+            border-radius: 20px;
+            padding: 1.75rem;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .stat-card-premium:hover {
+            transform: translateY(-4px);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+        .stat-card-premium::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 120px;
+            height: 120px;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.06) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .stat-card-premium.highlighted {
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            background: linear-gradient(145deg, rgba(16, 185, 129, 0.03) 0%, rgba(10, 15, 30, 0.65) 100%);
+        }
+        .stat-card-premium.highlighted::before {
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.12) 0%, transparent 70%);
+        }
+
+        /* Inputs Premium */
+        .input-premium, select.input-premium {
+            background: #090d1a;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: white;
+            padding: 0.85rem 1.15rem;
+            border-radius: 14px;
+            box-sizing: border-box;
+            outline: none;
+            transition: all 0.3s;
+            font-size: 0.95rem;
+            width: 100%;
+        }
+        .input-premium:focus {
+            border-color: var(--emerald-premium);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+        }
+
+        /* Botões */
+        .btn {
+            padding: 0.85rem 1.75rem;
+            border-radius: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-primary {
+            background: var(--emerald-premium);
+            color: #040711;
+            font-weight: 700;
+        }
+        .btn-primary:hover {
+            background: #34d399;
+            transform: translateY(-1px);
+        }
+        .btn-sm {
+            padding: 0.6rem 1.2rem;
+            font-size: 0.85rem;
+            border-radius: 10px;
+        }
+        .btn-outline {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+        }
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Modals Modernizados */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(4, 7, 13, 0.85);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            box-sizing: border-box;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            max-width: 480px;
+            width: 100%;
+            padding: 2.25rem;
+            background: #0b1120;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 28px;
+            position: relative;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            box-sizing: border-box;
+        }
+
+        /* Responsivo Geral Avançado (Mobile & Tablet) */
+        @media (max-width: 1024px) {
+            .dashboard-container {
+                flex-direction: column;
+                padding: 1.5rem 1rem 7rem 1rem;
+                gap: 1.5rem;
+            }
+            .sidebar-premium {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                top: auto;
+                width: 100%;
+                height: auto;
+                border-radius: 24px 24px 0 0;
+                padding: 0.75rem 1rem;
+                background: rgba(11, 17, 32, 0.9);
+                backdrop-filter: blur(24px);
+                -webkit-backdrop-filter: blur(24px);
+                z-index: 999;
+                border-top: 1px solid var(--border-premium);
+                border-left: none;
+                border-right: none;
+                border-bottom: none;
+            }
+            .sidebar-menu {
+                flex-direction: row;
+                justify-content: space-around;
+                overflow-x: auto;
+                gap: 0.25rem;
+                scrollbar-width: none;
+            }
+            .sidebar-menu::-webkit-scrollbar {
+                display: none;
+            }
+            .sidebar-item a {
+                flex-direction: column;
+                gap: 0.35rem;
+                padding: 0.6rem 0.75rem;
+                font-size: 0.7rem;
+                font-weight: 500;
+                border-radius: 10px;
+                white-space: nowrap;
+            }
+            .sidebar-item a i {
+                font-size: 1.1rem;
+            }
+            .sidebar-item.item-logout a {
+                margin-top: 0;
+            }
+            .user-meta {
+                display: none !important;
+            }
+            .panel-card {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .navbar {
+                padding: 1rem;
+            }
+            .main-content-wrapper > div:first-child {
+                flex-direction: column;
+                align-items: flex-start !important;
+            }
+            .main-content-wrapper > div:first-child button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo">
+            <a href="index.html" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fa-solid fa-chart-line text-emerald"></i> NexaVest
+            </a>
+        </div>
+        <div class="nav-actions">
+            <div style="display: flex; flex-direction: column; text-align: right;" class="user-meta">
+                <span style="font-weight: 700; font-size: 0.95rem;" id="user-name-display">Carregando Investidor...</span>
+                <span style="font-size: 0.75rem; color: var(--emerald-premium); font-weight: 600; letter-spacing: 0.5px;"><i class="fa-solid fa-shield-halved"></i> CONTA PREMIUM</span>
+            </div>        
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        
+        <aside class="sidebar-premium">
+            <ul class="sidebar-menu">
+                <li class="sidebar-item active">
+                    <a href="#"><i class="fa-solid fa-wallet"></i> Resumo</a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="planos.html"><i class="fa-solid fa-chart-pie"></i> Planos</a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="#" onclick="openModal('depositModal')"><i class="fa-solid fa-money-bill-transfer"></i> Depósito</a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="#" onclick="openModal('withdrawModal')"><i class="fa-solid fa-building-columns"></i> Saque</a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="afiliados.html"><i class="fa-solid fa-network-wired"></i> Afiliados</a>
+                </li>
+                <li class="sidebar-item">
+                     <a href="carteira.html"><i class="fa-solid fa-briefcase"></i> Carteira</a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="perfil.html"><i class="fa-regular fa-user"></i> Perfil</a>
+                </li>
+                <li class="sidebar-item item-logout">
+                    <a href="#" id="btn-sidebar-logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair</a>
+                </li>
+            </ul>
+        </aside>
+
+        <main class="main-content-wrapper">
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <h1 style="font-weight: 800; font-size: 1.8rem; letter-spacing: -0.5px; margin: 0;">Painel de Controle Financeiro</h1>
+                    <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0.25rem; margin-bottom: 0;">Monitore seus ciclos e gerencie seus lucros operacionais.</p>
+                </div>
+                <button class="btn btn-primary" onclick="openModal('depositModal')" style="display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 8px 25px rgba(16, 185, 129, 0.25);">
+                    <i class="fa-brands fa-pix"></i> Adicionar Fundos
+                </button>
+            </div>
+
+            <div class="stats-grid">
+                
+                <div class="stat-card-premium">
+                    <h4 style="color: var(--text-muted); font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; margin: 0;">Saldo Disponível</h4>
+                    <div id="balance-display" style="font-size: 2rem; font-weight: 800; margin: 0.75rem 0; letter-spacing: -0.5px;">R$ 0,00</div>
+                    <button class="btn btn-sm btn-outline" onclick="openModal('withdrawModal')" style="width: 100%; border-radius: 10px; font-weight: 600;">
+                        Sacar para Conta PIX
+                    </button>
+                </div>
+
+                <div class="stat-card-premium highlighted">
+                    <h4 style="color: var(--emerald-premium); font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; margin: 0;">Rendimentos Acumulados</h4>
+                    <div class="text-emerald" id="yield-display" style="font-size: 2rem; font-weight: 800; margin: 0.75rem 0; letter-spacing: -0.5px;">R$ 0,00</div>
+                    <span style="color: var(--emerald-premium); font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 0.4rem;">
+                        <i class="fa-solid fa-arrow-trend-up"></i> Atualizações automáticas às 23h
+                    </span>
+                </div>
+
+                <div class="stat-card-premium">
+                    <h4 style="color: var(--text-muted); font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; margin: 0;">Afiliados Ativos</h4>
+                    <div id="referrals-display" style="font-size: 2rem; font-weight: 800; margin: 0.75rem 0; letter-spacing: -0.5px;">0</div>
+                    <span style="color: var(--text-muted); font-size: 0.85rem; font-weight: 500;">
+                        <i class="fa-solid fa-users"></i> Programa de indicações diretas
+                    </span>
+                </div>
+            </div>
+
+            <div class="panel-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.5rem;">
+                    <h3 style="font-weight: 700; font-size: 1.2rem; margin: 0;">Extrato de Operações Recentes</h3>
+                    <span style="font-size: 0.85rem; color: var(--text-muted); background: rgba(255,255,255,0.02); padding: 0.4rem 0.8rem; border-radius: 8px; border: 1px solid var(--border-premium);">
+                        Sincronizado com o Livro de Registro
+                    </span>
+                </div>
+                
+                <div style="overflow-x: auto; width: 100%;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left; min-width: 500px;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+                                <th style="padding: 1rem 0.75rem; color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">Data/Hora</th>
+                                <th style="padding: 1rem 0.75rem; color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">Operação</th>
+                                <th style="padding: 1rem 0.75rem; color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">Valor</th>
+                                <th style="padding: 1rem 0.75rem; color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactions-tbody"></tbody>
+                    </table>
+                    <div id="no-transactions-message" style="text-align: center; color: var(--text-muted); padding: 2.5rem; font-size: 0.95rem;">
+                        Nenhuma movimentação financeira registrada até o momento.
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="depositModal" class="modal">
+        <div class="modal-content">
+            <span onclick="closeModal('depositModal')" style="font-size: 1.75rem; cursor: pointer; position: absolute; top: 1.25rem; right: 1.5rem; color: var(--text-muted);">&times;</span>
+            <h2 style="margin-top: 0; margin-bottom: 0.5rem; font-weight: 800; font-size: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fa-brands fa-pix" style="color: var(--emerald-premium);"></i> Depósito Instantâneo
+            </h2>
+            <p style="color: var(--text-muted); margin-bottom: 2rem; font-size: 0.9rem;">Insira o valor do aporte para gerar um faturamento dinâmico via API Workers.</p>
+            
+            <form id="deposit-form">
+                <div style="margin-bottom: 1.5rem; display: flex; flex-direction: column;">
+                    <label style="font-weight: 600; font-size: 0.85rem; margin-bottom: 0.5rem; color: #e2e8f0;">Defina o Valor do Aporte (R$)</label>
+                    <input type="number" id="deposit-amount" class="input-premium" placeholder="Ex: 500" min="20" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 1.5rem;">
+                    Gerar Copia e Cola / QR Code
+                </button>
+            </form>
+
+            <div id="qr-response-area" style="display: none;">
+                <div style="text-align: center; margin: 1.5rem 0; padding: 2rem; background: rgba(7, 11, 20, 0.5); border-radius: 16px; border: 1px dashed rgba(16, 185, 129, 0.3);">
+                    <i class="fa-solid fa-qrcode" style="font-size: 5rem; color: var(--emerald-premium); opacity: 0.9; text-shadow: 0 0 20px rgba(16,185,129,0.2);"></i>
+                    <p style="margin-top: 1rem; font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">Sincronizado e aguardando processamento da API</p>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label style="font-weight: 600; font-size: 0.85rem; color: #e2e8f0;">Código PIX Copia e Cola</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="pix-copia-cola" class="input-premium" value="Aguardando geração..." readonly style="flex: 1; font-size: 0.85rem;">
+                        <button class="btn btn-primary" id="btn-copy-pix" style="padding: 0 1.25rem;">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="withdrawModal" class="modal">
+        <div class="modal-content">
+            <span onclick="closeModal('withdrawModal')" style="font-size: 1.75rem; cursor: pointer; position: absolute; top: 1.25rem; right: 1.5rem; color: var(--text-muted);">&times;</span>
+            <h2 style="margin-top: 0; margin-bottom: 0.5rem; font-weight: 800; font-size: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fa-solid fa-building-columns" style="color: var(--emerald-premium);"></i> Retirada de Lucros
+            </h2>
+            <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.9rem;">Saque mínimo: <strong>R$ 90,00</strong> | Taxa de processamento: <strong>10%</strong></p>
+            
+            <form id="withdraw-form">
+                <div style="margin-bottom: 1.25rem; display: flex; flex-direction: column;">
+                    <label style="font-weight: 600; font-size: 0.85rem; margin-bottom: 0.5rem; color: #e2e8f0;">Tipo de Chave PIX</label>
+                    <select id="withdraw-pix-type" class="input-premium" required>
+                        <option value="" disabled selected>Selecione o tipo de chave</option>
+                        <option value="CPF">CPF</option>
+                        <option value="Email">E-mail</option>
+                        <option value="Telefone">Telefone / Número</option>
+                        <option value="ChaveAleatoria">Chave Aleatória (EVP)</option>
+                    </select>
+                </div>
+
+                <div style="margin-bottom: 1.25rem; display: flex; flex-direction: column;">
+                    <label style="font-weight: 600; font-size: 0.85rem; margin-bottom: 0.5rem; color: #e2e8f0;">Insira a Chave PIX Destinatária</label>
+                    <input type="text" id="withdraw-pix-key" class="input-premium" placeholder="Preencha exatamente a chave" required>
+                </div>
+
+                <div style="margin-bottom: 1rem; display: flex; flex-direction: column;">
+                    <label style="font-weight: 600; font-size: 0.85rem; margin-bottom: 0.5rem; color: #e2e8f0;">Valor do Resgate (R$)</label>
+                    <input type="number" id="withdraw-amount" class="input-premium" placeholder="Mínimo 90" min="90" required>
+                </div>
+
+                <div style="background: rgba(7, 11, 20, 0.5); padding: 1rem; border-radius: 14px; margin-bottom: 1.5rem; font-size: 0.85rem; display: flex; flex-direction: column; gap: 0.4rem; border: 1px solid rgba(255,255,255,0.03);">
+                    <div style="display: flex; justify-content: space-between; color: var(--text-muted);">
+                        <span>Desconto de Taxa (10%):</span>
+                        <span id="withdraw-tax-display">R$ 0,00</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-weight: 700; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.4rem;">
+                        <span>Líquido a Receber:</span>
+                        <span style="color: var(--emerald-premium);" id="withdraw-liquid-display">R$ 0,00</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    Confirmar Saque Imediato
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div id="toast-container"></div>
+
+    <footer style="margin-top: auto; padding: 1.5rem 5%; border-top: 1px solid rgba(255,255,255,0.02); background: rgba(7, 11, 20, 0.4);">
+        <p style="color: var(--text-muted); font-size: 0.85rem; text-align: center;">&copy; 2026 NexaVest. Sistema financeiro protegido por criptografia de ponta a ponta.</p>
+    </footer>
+
+    <script src="script.js"></script>
+   <script type="module">
     // 1. IMPORTAÇÕES CORRIGIDAS: Apenas a instância configurada do auth e do db vêm do seu arquivo local
     import { auth, db } from "./firebase-config.js";
     
@@ -140,3 +688,5 @@
         });
     }
 </script>
+</body>
+</html>
