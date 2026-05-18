@@ -546,147 +546,126 @@
     </footer>
 
     <script src="script.js"></script>
-   <script type="module">
-    // 1. IMPORTAÇÕES CORRIGIDAS: Apenas a instância configurada do auth e do db vêm do seu arquivo local
-    import { auth, db } from "./firebase-config.js";
-    
-    // As funções nativas do Firebase precisam ser puxadas diretamente da CDN oficial
-    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { doc, getDoc, setDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    <script type="module">
+        import { auth, onAuthStateChanged, db, doc, getDoc, setDoc, updateDoc, increment } from "./firebase-config.js";
 
-    window.openModal = function(modalId) {
-        document.getElementById(modalId).classList.add('active');
-    }
-    window.closeModal = function(modalId) {
-        document.getElementById(modalId).classList.remove('active');
-    }
+        // Expor funções de modal no escopo global para o onclick funcionar com type="module"
+        window.openModal = function(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+        window.closeModal = function(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
 
-    const displayNameElement = document.getElementById('user-name-display');
-    const balanceDisplay = document.getElementById('balance-display');
-    const yieldDisplay = document.getElementById('yield-display');
-    const referralsDisplay = document.getElementById('referrals-display');
-    
-    let currentBalance = 0.00;
+        const displayNameElement = document.getElementById('user-name-display');
+        const balanceDisplay = document.getElementById('balance-display');
+        const yieldDisplay = document.getElementById('yield-display');
+        const referralsDisplay = document.getElementById('referrals-display');
+        
+        let currentBalance = 0.00;
 
-    onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            try {
-                const userDocRef = doc(db, "users", user.uid);
-                const userDocSnap = await getDoc(userDocRef);
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                try {
+                    const userDocRef = doc(db, "users", user.uid);
+                    const userDocSnap = await getDoc(userDocRef);
 
-                if (userDocSnap.exists()) {
-                    const userData = userDocSnap.data();
-                    currentBalance = userData.saldo || 0.00;
+                    if (userDocSnap.exists()) {
+                        const userData = userDocSnap.data();
+                        currentBalance = userData.saldo || 0.00;
 
-                    // Verificação com proteção para evitar travar se o input não estiver na tela
-                    const affInput = document.getElementById('affiliate-link-input');
-                    if (affInput) {
-                        affInput.value = `${window.location.origin}/register.html?ref=${user.uid}`;
+                        const affInput = document.getElementById('affiliate-link-input');
+                        if (affInput) {
+                            affInput.value = `${window.location.origin}/register.html?ref=${user.uid}`;
+                        }
+
+                        if (displayNameElement) {
+                            displayNameElement.innerText = userData.nome || userData.name || (user.email ? user.email.split('@')[0] : "Investidor");
+                        }
+                        
+                        if (balanceDisplay) balanceDisplay.innerText = `R$ ${currentBalance.toFixed(2)}`;
+                        if (yieldDisplay) yieldDisplay.innerText = `R$ ${(userData.rendimentos || 0.00).toFixed(2)}`;
+                        if (referralsDisplay) referralsDisplay.innerText = userData.afiliados_ativos || 0;
+                    } else {
+                        if (displayNameElement) displayNameElement.innerText = user.email ? user.email.split('@')[0] : "Investidor";
                     }
+                } catch (error) {
+                    console.error("Erro ao resgatar dados do perfil no Firestore:", error);
+                }
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
 
-                    if (displayNameElement) {
-                        // Resgata o nome real salvo no Firestore
-                        displayNameElement.innerText = userData.nome || userData.name || user.displayName || (user.email ? user.email.split('@')[0] : "Investidor");
+        const withdrawAmountInput = document.getElementById('withdraw-amount');
+        const withdrawTaxDisplay = document.getElementById('withdraw-tax-display');
+        const withdrawLiquidDisplay = document.getElementById('withdraw-liquid-display');
+        const withdrawForm = document.getElementById('withdraw-form');
+
+        if (withdrawAmountInput) {
+            withdrawAmountInput.addEventListener('input', (e) => {
+                const amount = parseFloat(e.target.value) || 0;
+                const tax = amount * 0.10;
+                const liquid = amount - tax;
+
+                withdrawTaxDisplay.innerText = `R$ ${tax.toFixed(2)}`;
+                withdrawLiquidDisplay.innerText = `R$ ${liquid > 0 ? liquid.toFixed(2) : '0,00'}`;
+            });
+        }
+
+        if (withdrawForm) {
+            withdrawForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const user = auth.currentUser;
+                if (!user) return;
+
+                const amount = parseFloat(document.getElementById('withdraw-amount').value);
+                const pixType = document.getElementById('withdraw-pix-type').value;
+                const pixKey = document.getElementById('withdraw-pix-key').value;
+
+                if (amount < 90) {
+                    if (typeof showToast === 'function') showToast('O valor mínimo de saque é R$ 90,00.', 'error');
+                    return;
+                }
+
+                if (amount > currentBalance) {
+                    if (typeof showToast === 'function') showToast('Saldo insuficiente para processar essa retirada.', 'error');
+                    return;
+                }
+
+                try {
+                    const userDocRef = doc(db, "users", user.uid);
+                    await updateDoc(userDocRef, {
+                        saldo: increment(-amount)
+                    });
+
+                    const withdrawRef = doc(db, "saques_solicitados", `${user.uid}_${Date.now()}`);
+                    await setDoc(withdrawRef, {
+                        uid: user.uid,
+                        valor_solicitado: amount,
+                        taxa_aplicada: amount * 0.10,
+                        valor_liquido: amount * 0.90,
+                        tipo_chave: pixType,
+                        chave_pix: pixKey,
+                        status: "pendente",
+                        data_solicitacao: new Date().toISOString()
+                    });
+
+                    if (typeof showToast === 'function') {
+                        showToast('Saque solicitado e saldo reservado!', 'success');
                     }
                     
+                    closeModal('withdrawModal');
+                    
+                    currentBalance -= amount;
                     if (balanceDisplay) balanceDisplay.innerText = `R$ ${currentBalance.toFixed(2)}`;
-                    if (yieldDisplay) yieldDisplay.innerText = `R$ ${(userData.rendimentos || 0.00).toFixed(2)}`;
-                    if (referralsDisplay) referralsDisplay.innerText = userData.afiliados_ativos || 0;
-                } else {
-                    if (displayNameElement) displayNameElement.innerText = user.displayName || (user.email ? user.email.split('@')[0] : "Investidor");
+
+                } catch (error) {
+                    console.error("Erro ao solicitar saque:", error);
+                    if (typeof showToast === 'function') showToast('Erro interno ao processar a retirada.', 'error');
                 }
-            } catch (error) {
-                console.error("Erro ao resgatar dados do perfil no Firestore:", error);
-                if (displayNameElement) displayNameElement.innerText = "Investidor";
-            }
-        } else {
-            window.location.href = 'login.html';
+            });
         }
-    });
-
-    // Gerenciamento seguro do botão de Sair da Sidebar
-    const btnLogout = document.getElementById('btn-sidebar-logout');
-    if (btnLogout) {
-        btnLogout.addEventListener('click', async (e) => {
-            e.preventDefault();
-            try {
-                await signOut(auth);
-                window.location.href = 'login.html';
-            } catch (error) {
-                console.error("Erro ao deslogar:", error);
-            }
-        });
-    }
-
-    const withdrawAmountInput = document.getElementById('withdraw-amount');
-    const withdrawTaxDisplay = document.getElementById('withdraw-tax-display');
-    const withdrawLiquidDisplay = document.getElementById('withdraw-liquid-display');
-    const withdrawForm = document.getElementById('withdraw-form');
-
-    if (withdrawAmountInput) {
-        withdrawAmountInput.addEventListener('input', (e) => {
-            const amount = parseFloat(e.target.value) || 0;
-            const tax = amount * 0.10;
-            const liquid = amount - tax;
-
-            withdrawTaxDisplay.innerText = `R$ ${tax.toFixed(2)}`;
-            withdrawLiquidDisplay.innerText = `R$ ${liquid > 0 ? liquid.toFixed(2) : '0,00'}`;
-        });
-    }
-
-    if (withdrawForm) {
-        withdrawForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const user = auth.currentUser;
-            if (!user) return;
-
-            const amount = parseFloat(document.getElementById('withdraw-amount').value);
-            const pixType = document.getElementById('withdraw-pix-type').value;
-            const pixKey = document.getElementById('withdraw-pix-key').value;
-
-            if (amount < 90) {
-                if (typeof showToast === 'function') showToast('O valor mínimo de saque é R$ 90,00.', 'error');
-                return;
-            }
-
-            if (amount > currentBalance) {
-                if (typeof showToast === 'function') showToast('Saldo insuficiente para processar essa retirada.', 'error');
-                return;
-            }
-
-            try {
-                const userDocRef = doc(db, "users", user.uid);
-                await updateDoc(userDocRef, {
-                    saldo: increment(-amount)
-                });
-
-                const withdrawRef = doc(db, "saques_solicitados", `${user.uid}_${Date.now()}`);
-                await setDoc(withdrawRef, {
-                    uid: user.uid,
-                    valor_solicitado: amount,
-                    taxa_aplicada: amount * 0.10,
-                    valor_liquido: amount * 0.90,
-                    tipo_chave: pixType,
-                    chave_pix: pixKey,
-                    status: "pendente",
-                    data_solicitacao: new Date().toISOString()
-                });
-
-                if (typeof showToast === 'function') {
-                    showToast('Saque solicitado e saldo reservado!', 'success');
-                }
-                
-                closeModal('withdrawModal');
-                
-                currentBalance -= amount;
-                if (balanceDisplay) balanceDisplay.innerText = `R$ ${currentBalance.toFixed(2)}`;
-
-            } catch (error) {
-                console.error("Erro ao solicitar saque:", error);
-                if (typeof showToast === 'function') showToast('Erro interno ao processar a retirada.', 'error');
-            }
-        });
-    }
-</script>
+    </script>
 </body> 
 </html>
