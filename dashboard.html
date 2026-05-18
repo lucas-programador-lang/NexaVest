@@ -546,7 +546,7 @@
     </footer>
 
     <script src="script.js"></script>
-    <script type="module">
+  <script type="module">
         import { auth, onAuthStateChanged, db, doc, getDoc, setDoc, updateDoc, increment } from "./firebase-config.js";
 
         // Expor funções de modal no escopo global para o onclick funcionar com type="module"
@@ -659,6 +659,11 @@
                     
                     currentBalance -= amount;
                     if (balanceDisplay) balanceDisplay.innerText = `R$ ${currentBalance.toFixed(2)}`;
+                    
+                    // CORREÇÃO 2: Limpar os campos do formulário após o sucesso do saque
+                    withdrawForm.reset();
+                    if (withdrawTaxDisplay) withdrawTaxDisplay.innerText = 'R$ 0,00';
+                    if (withdrawLiquidDisplay) withdrawLiquidDisplay.innerText = 'R$ 0,00';
 
                 } catch (error) {
                     console.error("Erro ao solicitar saque:", error);
