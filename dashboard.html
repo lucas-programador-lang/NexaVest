@@ -564,23 +564,23 @@
                     const userDocRef = doc(db, "users", user.uid);
                     const userDocSnap = await getDoc(userDocRef);
 
+                    const affInput = document.getElementById('affiliate-link-input');
+                    if (affInput) {
+                        affInput.value = `${window.location.origin}/register.html?ref=${user.uid}`;
+                    }
+
                     if (userDocSnap.exists()) {
                         const userData = userDocSnap.data();
                         currentBalance = userData.saldo || 0.00;
 
-                        const affInput = document.getElementById('affiliate-link-input');
-                        if (affInput) {
-                            affInput.value = `${window.location.origin}/register.html?ref=${user.uid}`;
-                        }
-
-                        // Proteção: Busca o elemento do nome apenas dentro do evento para evitar quebras
+                        // Atualiza o nome vindo do documento do Firestore com o selo Premium
                         const displayNameElement = document.getElementById('user-name-display');
                         if (displayNameElement) {
                             const nomeUsuario = userData.nome || userData.Nome || userData.name || (user.email ? user.email.split('@')[0] : "Investidor");
                             displayNameElement.innerHTML = `${nomeUsuario} <span style="color: #10b981; font-weight: bold; font-size: 0.8rem; margin-left: 5px;">• CONTA PREMIUM</span>`;
                         }
                         
-                        // Proteção Individual: Se um ID não existir no HTML, os outros continuam funcionando normalmente
+                        // Atualização dos demais elementos do painel
                         const balanceDisplay = document.getElementById('balance-display');
                         if (balanceDisplay) balanceDisplay.innerText = `R$ ${currentBalance.toFixed(2)}`;
                         
@@ -590,12 +590,13 @@
                         const referralsDisplay = document.getElementById('referrals-display');
                         if (referralsDisplay) referralsDisplay.innerText = userData.afiliados_ativos || 0;
                     } else {
+                        // Atualiza caso o usuário não tenha um documento criado ainda (Fallback)
                         const displayNameElement = document.getElementById('user-name-display');
                         if (displayNameElement) {
-                        const nomeUsuario = user.email ? user.email.split('@')[0] : "Investidor";
-                       displayNameElement.innerHTML = `${nomeUsuario} <span class="badge-premium" style="color: #10b981; font-weight: bold; font-size: 0.8rem; margin-left: 5px;">CONTA PREMIUM</span>`;
-                      }
-                   }
+                            const nomeUsuario = user.email ? user.email.split('@')[0] : "Investidor";
+                            displayNameElement.innerHTML = `${nomeUsuario} <span class="badge-premium" style="color: #10b981; font-weight: bold; font-size: 0.8rem; margin-left: 5px;">• CONTA PREMIUM</span>`;
+                        }
+                    }
                 } catch (error) {
                     console.error("Erro ao resgatar dados do perfil no Firestore:", error);
                 }
@@ -604,6 +605,7 @@
             }
         });
 
+        // Controle de input e cálculo de taxas para o saque
         const withdrawAmountInput = document.getElementById('withdraw-amount');
         const withdrawTaxDisplay = document.getElementById('withdraw-tax-display');
         const withdrawLiquidDisplay = document.getElementById('withdraw-liquid-display');
@@ -620,6 +622,7 @@
             });
         }
 
+        // Submissão do formulário de retirada
         if (withdrawForm) {
             withdrawForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
