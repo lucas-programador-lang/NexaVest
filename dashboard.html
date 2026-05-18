@@ -567,22 +567,20 @@
                     const userDocRef = doc(db, "users", user.uid);
                     const userDocSnap = await getDoc(userDocRef);
 
+                    // 1. EXTRAÇÃO DO NOME DO BANCO (Igual ao afiliados.html)
+                    let nomeUsuario = "Investidor";
                     if (userDocSnap.exists()) {
                         const userData = userDocSnap.data();
+                        nomeUsuario = userData.nome || userData.Nome || userData.name || (user.email ? user.email.split('@')[0] : "Investidor");
+                        
                         currentBalance = userData.saldo || 0.00;
 
+                        // Atualiza os inputs e dados se os elementos existirem
                         const affInput = document.getElementById('affiliate-link-input');
                         if (affInput) {
                             affInput.value = `${window.location.origin}/register.html?ref=${user.uid}`;
                         }
 
-                        // Proteção: Busca o elemento do nome apenas dentro do evento para evitar quebras
-                        const displayNameElement = document.getElementById('user-name-display');
-                        if (displayNameElement) {
-                            displayNameElement.innerText = userData.nome || userData.Nome || userData.name || (user.email ? user.email.split('@')[0] : "Investidor");
-                        }
-                        
-                        // Proteção Individual: Se um ID não existir no HTML, os outros continuam funcionando normalmente
                         const balanceDisplay = document.getElementById('balance-display');
                         if (balanceDisplay) balanceDisplay.innerText = `R$ ${currentBalance.toFixed(2)}`;
                         
@@ -592,11 +590,26 @@
                         const referralsDisplay = document.getElementById('referrals-display');
                         if (referralsDisplay) referralsDisplay.innerText = userData.afiliados_ativos || 0;
                     } else {
-                        const displayNameElement = document.getElementById('user-name-display');
-                        if (displayNameElement) displayNameElement.innerText = user.email ? user.email.split('@')[0] : "Investidor";
+                        nomeUsuario = user.email ? user.email.split('@')[0] : "Investidor";
                     }
+
+                    // 2. FORÇAR A INJEÇÃO DO NOME NA TELA (Evita o travamento do "Carregando...")
+                    const displayNameElement = document.getElementById('user-name-display');
+                    if (displayNameElement) {
+                        displayNameElement.innerText = nomeUsuario;
+                    } else {
+                        // Se o ID não foi encontrado, varre a página procurando o texto de carregamento para substituí-lo
+                        const bodyHtml = document.body.innerHTML;
+                        if (bodyHtml.includes("Carregando Investidor...")) {
+                            document.body.innerHTML = bodyHtml.replace("Carregando Investidor...", nomeUsuario);
+                        }
+                    }
+
                 } catch (error) {
-                    console.error("Erro ao resgatar dados do perfil no Firestore:", error);
+                    console.error("Erro crítico ao carregar dados no Dashboard:", error);
+                    // Fallback de segurança em caso de erro no Firestore para liberar a tela
+                    const displayNameElement = document.getElementById('user-name-display');
+                    if (displayNameElement) displayNameElement.innerText = user.email ? user.email.split('@')[0] : "Investidor";
                 }
             } else {
                 window.location.href = 'login.html';
