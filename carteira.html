@@ -345,73 +345,78 @@
     </footer>
 
     <script type="module">
-        import { auth, onAuthStateChanged, db, doc, getDoc, collection, query, where, getDocs } from "./firebase-config.js";
+    // 1. IMPORTAÇÕES CORRIGIDAS: Apenas as instâncias configuradas vêm do seu arquivo local
+    import { auth, db } from "./firebase-config.js";
 
-        const displayNameElement = document.getElementById('user-name-display');
-        const investmentsTbody = document.getElementById('investments-tbody');
-        const noInvestmentsMessage = document.getElementById('no-investments-message');
-        const investmentsTable = document.getElementById('investments-table');
+    // Os métodos operacionais nativos devem vir direto das CDNs oficiais do Firebase
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { doc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                try {
-                    // Carregar Nome do Usuário
-                    const userDocRef = doc(db, "users", user.uid);
-                    const userDocSnap = await getDoc(userDocRef);
-                    if (userDocSnap.exists() && userDocSnap.data().nome) {
-                        displayNameElement.innerText = userDocSnap.data().nome;
-                    } else {
-                        displayNameElement.innerText = user.email ? user.email.split('@')[0] : "Investidor";
-                    }
+    const displayNameElement = document.getElementById('user-name-display');
+    const investmentsTbody = document.getElementById('investments-tbody');
+    const noInvestmentsMessage = document.getElementById('no-investments-message');
+    const investmentsTable = document.getElementById('investments-table');
 
-                    // Buscar os investimentos ativos do usuário logado
-                    const invCollectionRef = collection(db, "user_investimentos");
-                    const q = query(invCollectionRef, where("uid", "==", user.uid));
-                    const querySnapshot = await getDocs(q);
-
-                    if (!querySnapshot.empty) {
-                        noInvestmentsMessage.style.display = 'none';
-                        investmentsTable.style.display = 'table';
-                        investmentsTbody.innerHTML = '';
-
-                        querySnapshot.forEach((doc) => {
-                            const data = doc.data();
-                            
-                            // Correção de parsing de data segura para String ou objeto Timestamp nativo do Firebase
-                            let dateFormated = '---';
-                            if (data.data_compra) {
-                                if (typeof data.data_compra.toDate === 'function') {
-                                    dateFormated = data.data_compra.toDate().toLocaleDateString('pt-BR');
-                                } else {
-                                    dateFormated = new Date(data.data_compra).toLocaleDateString('pt-BR');
-                                }
-                            }
-                            
-                            // Sanatização para evitar quebra do método se o número vier como string ou indefinido
-                            const valorInvestido = data.valor_investido ? parseFloat(data.valor_investido) : 0;
-                            const lucroAcumulado = data.lucro_acumulado ? parseFloat(data.lucro_acumulado) : 0;
-                            
-                            const tr = document.createElement('tr');
-                            tr.innerHTML = `
-                                <td style="color: #cbd5e1;">${dateFormated}</td>
-                                <td style="font-weight: 700; color: #ffffff;">${data.plano_nome || 'Plano'}</td>
-                                <td style="font-weight: 600; color: #f1f5f9;">R$ ${valorInvestido.toFixed(2)}</td>
-                                <td style="font-weight: 700; color: #10b981;">R$ ${lucroAcumulado.toFixed(2)}</td>
-                                <td><span class="badge-status-active"><i class="fa-solid fa-circle"></i> Emitido</span></td>
-                            `;
-                            investmentsTbody.appendChild(tr);
-                        });
-                    } else {
-                        noInvestmentsMessage.style.display = 'block';
-                        investmentsTable.style.display = 'none';
-                    }
-                } catch (error) {
-                    console.error("Erro ao carregar investimentos:", error);
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            try {
+                // Carregar Nome do Usuário no Topo
+                const userDocRef = doc(db, "users", user.uid);
+                const userDocSnap = await getDoc(userDocRef);
+                if (userDocSnap.exists() && userDocSnap.data().nome) {
+                    displayNameElement.innerText = userDocSnap.data().nome;
+                } else {
+                    displayNameElement.innerText = user.email ? user.email.split('@')[0] : "Investidor";
                 }
-            } else {
-                window.location.href = 'login.html';
+
+                // Buscar os investimentos ativos do usuário logado
+                const invCollectionRef = collection(db, "user_investimentos");
+                const q = query(invCollectionRef, where("uid", "==", user.uid));
+                const querySnapshot = await getDocs(q);
+
+                if (!querySnapshot.empty) {
+                    noInvestmentsMessage.style.display = 'none';
+                    investmentsTable.style.display = 'table';
+                    investmentsTbody.innerHTML = '';
+
+                    querySnapshot.forEach((doc) => {
+                        const data = doc.data();
+                        
+                        // Correção de parsing de data segura para String ou objeto Timestamp nativo do Firebase
+                        let dateFormated = '---';
+                        if (data.data_compra) {
+                            if (typeof data.data_compra.toDate === 'function') {
+                                dateFormated = data.data_compra.toDate().toLocaleDateString('pt-BR');
+                            } else {
+                                dateFormated = new Date(data.data_compra).toLocaleDateString('pt-BR');
+                            }
+                        }
+                        
+                        // Sanatização para evitar quebra do método se o número vier como string ou indefinido
+                        const valorInvestido = data.valor_investido ? parseFloat(data.valor_investido) : 0;
+                        const lucroAcumulado = data.lucro_acumulado ? parseFloat(data.lucro_acumulado) : 0;
+                        
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td style="color: #cbd5e1;">${dateFormated}</td>
+                            <td style="font-weight: 700; color: #ffffff;">${data.plano_nome || 'Plano'}</td>
+                            <td style="font-weight: 600; color: #f1f5f9;">R$ ${valorInvestido.toFixed(2)}</td>
+                            <td style="font-weight: 700; color: #10b981;">R$ ${lucroAcumulado.toFixed(2)}</td>
+                            <td><span class="badge-status-active"><i class="fa-solid fa-circle"></i> Emitido</span></td>
+                        `;
+                        investmentsTbody.appendChild(tr);
+                    });
+                } else {
+                    noInvestmentsMessage.style.display = 'block';
+                    investmentsTable.style.display = 'none';
+                }
+            } catch (error) {
+                console.error("Erro ao carregar investimentos:", error);
             }
-        });
-    </script>
+        } else {
+            window.location.href = 'login.html';
+        }
+    });
+</script>
 </body>
 </html>
