@@ -543,7 +543,7 @@
     </footer>
 
     <script src="script.js"></script>
-   <script type="module">
+  <script type="module">
         import { auth, db } from "./firebase-config.js";
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { doc, getDoc, updateDoc, setDoc, increment, collection, onSnapshot, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -561,7 +561,7 @@
 
         // 2. Mapeamento de todos os botões de gatilho por seletores (Sem precisar de onclick no HTML)
         document.addEventListener("DOMContentLoaded", () => {
-            // Delegação ou escuta direta de cliques para fechar modais ao clicar no X (&times;)
+            // CORREÇÃO 1: Removido o caractere inválido "}" que quebrava o script bem aqui
             document.querySelectorAll('.modal [onclick]').forEach(el => {
                 el.removeAttribute('onclick'); // Limpa o atributo antigo para evitar conflito
             });
@@ -677,7 +677,89 @@
             });
         }
 
-        // Lógica do formulário de Depósito (Início da reconstrução segura)
+        // CORREÇÃO 2: Readicionado o bloco completo de escuta e envio do formulário de Saque (Retirada) que havia sumido na migração
+        const withdrawAmountInput = document.getElementById('withdraw-amount');
+        const withdrawTaxDisplay = document.getElementById('withdraw-tax-display');
+        const withdrawLiquidDisplay = document.getElementById('withdraw-liquid-display');
+        const withdrawForm = document.getElementById('withdraw-form');
+
+        if (withdrawAmountInput) {
+            withdrawAmountInput.addEventListener('input', (e) => {
+                const amount = parseFloat(e.target.value) || 0;
+                const tax = amount * 0.10;
+                const liquid = amount - tax;
+
+                if (withdrawTaxDisplay) withdrawTaxDisplay.innerText = `R$ ${tax.toFixed(2)}`;
+                if (withdrawLiquidDisplay) withdrawLiquidDisplay.innerText = `R$ ${liquid > 0 ? liquid.toFixed(2) : '0,00'}`;
+            });
+        }
+
+        if (withdrawForm) {
+            withdrawForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const user = auth.currentUser;
+                if (!user) return;
+
+                const amountInput = document.getElementById('withdraw-amount');
+                const pixTypeInput = document.getElementById('withdraw-pix-type');
+                const pixKeyInput = document.getElementById('withdraw-pix-key');
+
+                if (!amountInput || !pixTypeInput || !pixKeyInput) return;
+
+                const amount = parseFloat(amountInput.value);
+                const pixType = pixTypeInput.value;
+                const pixKey = pixKeyInput.value;
+
+                if (amount < 90) {
+                    if (typeof showToast === 'function') showToast('O valor mínimo de saque é R$ 90,00.', 'error');
+                    return;
+                }
+
+                if (amount > currentBalance) {
+                    if (typeof showToast === 'function') showToast('Saldo insuficiente para processar essa retirada.', 'error');
+                    return;
+                }
+
+                try {
+                    const userDocRef = doc(db, "users", user.uid);
+                    await updateDoc(userDocRef, {
+                        saldo: increment(-amount)
+                    });
+
+                    const withdrawRef = doc(db, "saques_solicitados", `${user.uid}_${Date.now()}`);
+                    await setDoc(withdrawRef, {
+                        uid: user.uid,
+                        valor_solicitado: amount,
+                        taxa_aplicada: amount * 0.10,
+                        valor_liquido: amount * 0.90,
+                        tipo_chave: pixType,
+                        chave_pix: pixKey,
+                        status: "pendente",
+                        data_solicitacao: new Date().toISOString()
+                    });
+
+                    if (typeof showToast === 'function') {
+                        showToast('Saque solicitado e saldo reservado!', 'success');
+                    }
+                    
+                    if (typeof closeModal === 'function') closeModal('withdrawModal');
+                    
+                    currentBalance -= amount;
+                    const balanceDisplay = document.getElementById('balance-display');
+                    if (balanceDisplay) balanceDisplay.innerText = `R$ ${currentBalance.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                    
+                    withdrawForm.reset();
+                    if (withdrawTaxDisplay) withdrawTaxDisplay.innerText = 'R$ 0,00';
+                    if (withdrawLiquidDisplay) withdrawLiquidDisplay.innerText = 'R$ 0,00';
+
+                } catch (error) {
+                    console.error("Erro ao solicitar saque:", error);
+                    if (typeof showToast === 'function') showToast('Erro interno ao processar a retirada.', 'error');
+                }
+            });
+        }
+
+        // Lógica do formulário de Depósito
         const depositForm = document.getElementById('deposit-form');
         if (depositForm) {
             depositForm.addEventListener('submit', async (e) => {
@@ -700,7 +782,6 @@
                 }
 
                 try {
-                    // Aqui você pode continuar adicionando a chamada do seu Cloudflare Worker para o Mercado Pago / AbacatePay
                     console.log(`Gerando PIX de R$ ${amount} para o UID: ${user.uid}`);
                 } catch (err) {
                     console.error(err);
@@ -711,6 +792,6 @@
                 }
             });
         }
-    </script>
+</script>
 </body> 
 </html>
