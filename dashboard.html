@@ -687,6 +687,35 @@
             }
         });
     }
+
+    // --- CORREÇÕES ADICIONADAS AQUI ---
+
+    // Correção Bug 1: Prevenir que o formulário de depósito dê refresh na página inteira
+    const depositForm = document.getElementById('deposit-form');
+    if (depositForm) {
+        depositForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            // A lógica de integração com sua API Workers para o PIX deverá ser inserida aqui
+            console.log("Submit do depósito interceptado com sucesso. Evitando reload da página.");
+        });
+    }
+
+    // Correção Bug 2: Fazer o botão de copiar o código PIX funcionar
+    const btnCopyPix = document.getElementById('btn-copy-pix');
+    if (btnCopyPix) {
+        btnCopyPix.addEventListener('click', (e) => {
+            e.preventDefault();
+            const pixInput = document.getElementById('pix-copia-cola');
+            if (pixInput && pixInput.value && pixInput.value !== "Aguardando geração...") {
+                navigator.clipboard.writeText(pixInput.value)
+                    .then(() => {
+                        if (typeof showToast === 'function') showToast('Código PIX copiado!', 'success');
+                    })
+                    .catch(err => console.error('Falha ao copiar PIX:', err));
+            }
+        });
+    }
+
 </script>
 </body>
 </html>
