@@ -546,7 +546,7 @@
     </footer>
 
     <script src="script.js"></script>
-  <script type="module">
+ <script type="module">
         import { auth, onAuthStateChanged, db, doc, getDoc, setDoc, updateDoc, increment } from "./firebase-config.js";
 
         // Expor funções de modal no escopo global para o onclick funcionar com type="module"
@@ -580,7 +580,8 @@
                         }
 
                         if (displayNameElement) {
-                            displayNameElement.innerText = userData.nome || userData.name || (user.email ? user.email.split('@')[0] : "Investidor");
+                            // CORREÇÃO: Mapeia Nome, nome ou name para evitar o travamento em "Investidor" ou "Carregando"
+                            displayNameElement.innerText = userData.nome || userData.Nome || userData.name || (user.email ? user.email.split('@')[0] : "Investidor");
                         }
                         
                         if (balanceDisplay) balanceDisplay.innerText = `R$ ${currentBalance.toFixed(2)}`;
@@ -671,6 +672,6 @@
                 }
             });
         }
-    </script>
+</script>
 </body> 
 </html>
