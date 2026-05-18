@@ -547,7 +547,12 @@
 
     <script src="script.js"></script>
 <script type="module">
-        import { auth, onAuthStateChanged, db, doc, getDoc, setDoc, updateDoc, increment } from "./firebase-config.js";
+        // 1. IMPORTAÇÕES ALINHADAS COM O AFILIADOS.HTML
+        import { auth, db } from "./firebase-config.js";
+
+        // Os métodos operacionais nativos devem vir direto das CDNs oficiais do Firebase
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { doc, getDoc, setDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         // Expor funções de modal no escopo global para o onclick funcionar com type="module"
         window.openModal = function(modalId) {
