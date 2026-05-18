@@ -543,12 +543,12 @@
     </footer>
 
     <script src="script.js"></script>
-  <script type="module">
+ <script type="module">
         import { auth, db } from "./firebase-config.js";
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { doc, getDoc, updateDoc, setDoc, increment, collection, onSnapshot, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // 1. Controle dos Modais (Funções locais internas do módulo)
+        // 1. Controle dos Modais
         function openModal(modalId) {
             const modal = document.getElementById(modalId);
             if (modal) modal.classList.add('active');
@@ -559,13 +559,12 @@
             if (modal) modal.classList.remove('active');
         }
 
-        // 2. Mapeamento de todos os botões de gatilho por seletores (Sem precisar de onclick no HTML)
-        document.addEventListener("DOMContentLoaded", () => {
-            // CORREÇÃO 1: Removido o caractere inválido "}" que quebrava o script bem aqui
-            document.querySelectorAll('.modal [onclick]').forEach(el => {
-                el.removeAttribute('onclick'); // Limpa o atributo antigo para evitar conflito
-            });
+        // Expor para o escopo global para garantir que os 'onclick' do HTML funcionem perfeitamente
+        window.openModal = openModal;
+        window.closeModal = closeModal;
 
+        // 2. Mapeamento de Eventos e Elementos Dinâmicos
+        document.addEventListener("DOMContentLoaded", () => {
             // Vincula o fechamento dos modais nos botões de fechar (X)
             const closeButtons = document.querySelectorAll('.modal span');
             closeButtons.forEach(btn => {
@@ -574,18 +573,29 @@
                     if (modal) modal.classList.remove('active');
                 });
             });
-        });
 
-        // Expor para o escopo global (Garantia extra de fallback caso queira manter o onclick em páginas legadas)
-        window.openModal = openModal;
-        window.closeModal = closeModal;
+            // Lógica para atualizar tempo real das taxas no formulário de saque
+            const withdrawAmountInput = document.getElementById('withdraw-amount');
+            if (withdrawAmountInput) {
+                withdrawAmountInput.addEventListener('input', (e) => {
+                    const val = parseFloat(e.target.value) || 0;
+                    const tax = val * 0.10;
+                    const liquid = val - tax;
+
+                    document.getElementById('withdraw-tax-display').innerText = `R$ ${tax.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                    document.getElementById('withdraw-liquid-display').innerText = `R$ ${(liquid > 0 ? liquid : 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                });
+            }
+        });
 
         let currentBalance = 0.00;
         let unsubTransacoes = null;
+        let currentUser = null;
 
         // Listener de Autenticação
         onAuthStateChanged(auth, async (user) => {
             if (user) {
+                currentUser = user;
                 try {
                     const userDocRef = doc(db, "users", user.uid);
                     const userDocSnap = await getDoc(userDocRef);
@@ -677,121 +687,122 @@
             });
         }
 
-        // CORREÇÃO 2: Readicionado o bloco completo de escuta e envio do formulário de Saque (Retirada) que havia sumido na migração
-        const withdrawAmountInput = document.getElementById('withdraw-amount');
-        const withdrawTaxDisplay = document.getElementById('withdraw-tax-display');
-        const withdrawLiquidDisplay = document.getElementById('withdraw-liquid-display');
-        const withdrawForm = document.getElementById('withdraw-form');
-
-        if (withdrawAmountInput) {
-            withdrawAmountInput.addEventListener('input', (e) => {
-                const amount = parseFloat(e.target.value) || 0;
-                const tax = amount * 0.10;
-                const liquid = amount - tax;
-
-                if (withdrawTaxDisplay) withdrawTaxDisplay.innerText = `R$ ${tax.toFixed(2)}`;
-                if (withdrawLiquidDisplay) withdrawLiquidDisplay.innerText = `R$ ${liquid > 0 ? liquid.toFixed(2) : '0,00'}`;
-            });
-        }
-
-        if (withdrawForm) {
-            withdrawForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const user = auth.currentUser;
-                if (!user) return;
-
-                const amountInput = document.getElementById('withdraw-amount');
-                const pixTypeInput = document.getElementById('withdraw-pix-type');
-                const pixKeyInput = document.getElementById('withdraw-pix-key');
-
-                if (!amountInput || !pixTypeInput || !pixKeyInput) return;
-
-                const amount = parseFloat(amountInput.value);
-                const pixType = pixTypeInput.value;
-                const pixKey = pixKeyInput.value;
-
-                if (amount < 90) {
-                    if (typeof showToast === 'function') showToast('O valor mínimo de saque é R$ 90,00.', 'error');
-                    return;
-                }
-
-                if (amount > currentBalance) {
-                    if (typeof showToast === 'function') showToast('Saldo insuficiente para processar essa retirada.', 'error');
-                    return;
-                }
-
-                try {
-                    const userDocRef = doc(db, "users", user.uid);
-                    await updateDoc(userDocRef, {
-                        saldo: increment(-amount)
-                    });
-
-                    const withdrawRef = doc(db, "saques_solicitados", `${user.uid}_${Date.now()}`);
-                    await setDoc(withdrawRef, {
-                        uid: user.uid,
-                        valor_solicitado: amount,
-                        taxa_aplicada: amount * 0.10,
-                        valor_liquido: amount * 0.90,
-                        tipo_chave: pixType,
-                        chave_pix: pixKey,
-                        status: "pendente",
-                        data_solicitacao: new Date().toISOString()
-                    });
-
-                    if (typeof showToast === 'function') {
-                        showToast('Saque solicitado e saldo reservado!', 'success');
-                    }
-                    
-                    if (typeof closeModal === 'function') closeModal('withdrawModal');
-                    
-                    currentBalance -= amount;
-                    const balanceDisplay = document.getElementById('balance-display');
-                    if (balanceDisplay) balanceDisplay.innerText = `R$ ${currentBalance.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-                    
-                    withdrawForm.reset();
-                    if (withdrawTaxDisplay) withdrawTaxDisplay.innerText = 'R$ 0,00';
-                    if (withdrawLiquidDisplay) withdrawLiquidDisplay.innerText = 'R$ 0,00';
-
-                } catch (error) {
-                    console.error("Erro ao solicitar saque:", error);
-                    if (typeof showToast === 'function') showToast('Erro interno ao processar a retirada.', 'error');
-                }
-            });
-        }
-
-        // Lógica do formulário de Depósito
+        // 3. Envio do Formulário de Depósito
         const depositForm = document.getElementById('deposit-form');
         if (depositForm) {
             depositForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const user = auth.currentUser;
-                if (!user) return;
+                const amount = parseFloat(document.getElementById('deposit-amount').value);
+                const btnSubmit = document.getElementById('btn-submit-deposit');
 
-                const amountInput = document.getElementById('deposit-amount');
-                const amount = parseFloat(amountInput.value);
-
-                if (amount < 20) {
-                    if (typeof showToast === 'function') showToast('O valor mínimo para depósito é R$ 20,00.', 'error');
+                if (!amount || amount < 20) {
+                    alert("O valor mínimo para depósito é de R$ 20,00");
                     return;
                 }
 
-                const btnSubmit = document.getElementById('btn-submit-deposit');
-                if (btnSubmit) {
-                    btnSubmit.innerText = "Processando API...";
-                    btnSubmit.disabled = true;
-                }
-
                 try {
-                    console.log(`Gerando PIX de R$ ${amount} para o UID: ${user.uid}`);
+                    btnSubmit.disabled = true;
+                    btnSubmit.innerText = "Processando API...";
+
+                    // Criando registro pendente no histórico do Firestore
+                    if (currentUser) {
+                        const histRef = doc(collection(db, "users", currentUser.uid, "historico"));
+                        await setDoc(histRef, {
+                            tipo: "Depósito",
+                            valor: amount,
+                            status: "pendente",
+                            data: Date.now()
+                        });
+                    }
+
+                    // Exibe a área do QR Code simulada/API
+                    document.getElementById('qr-response-area').style.display = 'block';
+                    document.getElementById('pix-copia-cola').value = "00020101021226830014br.gov.bcb.pix2561api.nexavest.com/v2/cob/payload" + Math.random().toString(36).substring(7);
+                    
+                    btnSubmit.innerText = "Ordem de Depósito Gerada";
                 } catch (err) {
                     console.error(err);
-                    if (btnSubmit) {
-                        btnSubmit.innerText = "Gerar Copia e Cola / QR Code";
-                        btnSubmit.disabled = false;
-                    }
+                    alert("Erro ao processar requisição de depósito.");
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerText = "Gerar Copia e Cola / QR Code";
                 }
             });
         }
-</script>
+
+        // Botão de copiar código PIX
+        const btnCopyPix = document.getElementById('btn-copy-pix');
+        if (btnCopyPix) {
+            btnCopyPix.addEventListener('click', () => {
+                const pixInput = document.getElementById('pix-copia-cola');
+                pixInput.select();
+                pixInput.setSelectionRange(0, 99999);
+                navigator.clipboard.writeText(pixInput.value);
+                alert("Código PIX copiado com sucesso!");
+            });
+        }
+
+        // 4. Envio do Formulário de Saque (Retirada)
+        const withdrawForm = document.getElementById('withdraw-form');
+        if (withdrawForm) {
+            withdrawForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const amount = parseFloat(document.getElementById('withdraw-amount').value);
+                const pixType = document.getElementById('withdraw-pix-type').value;
+                const pixKey = document.getElementById('withdraw-pix-key').value;
+
+                if (!currentUser) return;
+                if (amount < 90) {
+                    alert("O valor mínimo para saque é R$ 90,00");
+                    return;
+                }
+
+                if (amount > currentBalance) {
+                    alert("Saldo insuficiente para realizar este saque.");
+                    return;
+                }
+
+                try {
+                    const userDocRef = doc(db, "users", currentUser.uid);
+                    
+                    // Deduz o saldo do usuário imediatamente (Proteção contra Double Spending)
+                    await updateDoc(userDocRef, {
+                        saldo: increment(-amount)
+                    });
+
+                    // Grava no histórico de transações
+                    const histRef = doc(collection(db, "users", currentUser.uid, "historico"));
+                    await setDoc(histRef, {
+                        tipo: "Saque",
+                        valor: amount,
+                        status: "pendente",
+                        chave_pix: pixKey,
+                        tipo_chave: pixType,
+                        data: Date.now()
+                    });
+
+                    alert("Solicitação de saque enviada com sucesso! Aguarde o processamento.");
+                    closeModal('withdrawModal');
+                    withdrawForm.reset();
+                    
+                    document.getElementById('withdraw-tax-display').innerText = "R$ 0,00";
+                    document.getElementById('withdraw-liquid-display').innerText = "R$ 0,00";
+
+                } catch (err) {
+                    console.error("Erro ao processar o saque: ", err);
+                    alert("Houve um erro operacional ao processar sua retirada.");
+                }
+            });
+        }
+
+        // Evento de Logout
+        const btnLogout = document.getElementById('btn-logout-sidebar');
+        if (btnLogout) {
+            btnLogout.addEventListener('click', async (e) => {
+                e.preventDefault();
+                await signOut(auth);
+                window.location.href = 'index.html';
+            });
+        }
+    </script>
 </body> 
 </html>
