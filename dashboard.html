@@ -544,7 +544,10 @@
 
     <script src="script.js"></script>
 <script type="module">
-        import { auth, onAuthStateChanged, db, doc, getDoc, setDoc, updateDoc, increment } from "./firebase-config.js";
+        // 1. IMPORTAÇÕES UNIFICADAS: Importando tudo das CDNs oficiais para evitar conflitos de escopo
+        import { auth, db } from "./firebase-config.js";
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { doc, getDoc, updateDoc, setDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         // Expor funções de modal no escopo global para o onclick funcionar com type="module"
         window.openModal = function(modalId) {
@@ -576,6 +579,7 @@
                         // Atualiza o nome vindo do documento do Firestore com o selo Premium
                         const displayNameElement = document.getElementById('user-name-display');
                         if (displayNameElement) {
+                            // Puxa o campo '.nome' exatamente como na sua carteira.html
                             const nomeUsuario = userData.nome || userData.Nome || userData.name || (user.email ? user.email.split('@')[0] : "Investidor");
                             displayNameElement.innerHTML = `${nomeUsuario} <span style="color: #10b981; font-weight: bold; font-size: 0.8rem; margin-left: 5px;">• CONTA PREMIUM</span>`;
                         }
