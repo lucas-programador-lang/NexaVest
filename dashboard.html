@@ -546,15 +546,17 @@
     </footer>
 
     <script src="script.js"></script>
- <script type="module">
+<script type="module">
         import { auth, onAuthStateChanged, db, doc, getDoc, setDoc, updateDoc, increment } from "./firebase-config.js";
 
         // Expor funções de modal no escopo global para o onclick funcionar com type="module"
         window.openModal = function(modalId) {
-            document.getElementById(modalId).classList.add('active');
+            const modal = document.getElementById(modalId);
+            if (modal) modal.classList.add('active');
         }
         window.closeModal = function(modalId) {
-            document.getElementById(modalId).classList.remove('active');
+            const modal = document.getElementById(modalId);
+            if (modal) modal.classList.remove('active');
         }
 
         const displayNameElement = document.getElementById('user-name-display');
@@ -580,10 +582,10 @@
                         }
 
                         if (displayNameElement) {
-                            // CORREÇÃO: Mapeia Nome, nome ou name para evitar o travamento em "Investidor" ou "Carregando"
                             displayNameElement.innerText = userData.nome || userData.Nome || userData.name || (user.email ? user.email.split('@')[0] : "Investidor");
                         }
                         
+                        // CORREÇÃO: Adicionado verificações de existência antes de injetar o texto para não quebrar o script
                         if (balanceDisplay) balanceDisplay.innerText = `R$ ${currentBalance.toFixed(2)}`;
                         if (yieldDisplay) yieldDisplay.innerText = `R$ ${(userData.rendimentos || 0.00).toFixed(2)}`;
                         if (referralsDisplay) referralsDisplay.innerText = userData.afiliados_ativos || 0;
@@ -603,26 +605,34 @@
         const withdrawLiquidDisplay = document.getElementById('withdraw-liquid-display');
         const withdrawForm = document.getElementById('withdraw-form');
 
+        // CORREÇÃO: Proteção para o input de saque
         if (withdrawAmountInput) {
             withdrawAmountInput.addEventListener('input', (e) => {
                 const amount = parseFloat(e.target.value) || 0;
                 const tax = amount * 0.10;
                 const liquid = amount - tax;
 
-                withdrawTaxDisplay.innerText = `R$ ${tax.toFixed(2)}`;
-                withdrawLiquidDisplay.innerText = `R$ ${liquid > 0 ? liquid.toFixed(2) : '0,00'}`;
+                if (withdrawTaxDisplay) withdrawTaxDisplay.innerText = `R$ ${tax.toFixed(2)}`;
+                if (withdrawLiquidDisplay) withdrawLiquidDisplay.innerText = `R$ ${liquid > 0 ? liquid.toFixed(2) : '0,00'}`;
             });
         }
 
+        // CORREÇÃO: Proteção para o formulário de saque
         if (withdrawForm) {
             withdrawForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const user = auth.currentUser;
                 if (!user) return;
 
-                const amount = parseFloat(document.getElementById('withdraw-amount').value);
-                const pixType = document.getElementById('withdraw-pix-type').value;
-                const pixKey = document.getElementById('withdraw-pix-key').value;
+                const amountInput = document.getElementById('withdraw-amount');
+                const pixTypeInput = document.getElementById('withdraw-pix-type');
+                const pixKeyInput = document.getElementById('withdraw-pix-key');
+
+                if (!amountInput || !pixTypeInput || !pixKeyInput) return;
+
+                const amount = parseFloat(amountInput.value);
+                const pixType = pixTypeInput.value;
+                const pixKey = pixKeyInput.value;
 
                 if (amount < 90) {
                     if (typeof showToast === 'function') showToast('O valor mínimo de saque é R$ 90,00.', 'error');
@@ -656,12 +666,11 @@
                         showToast('Saque solicitado e saldo reservado!', 'success');
                     }
                     
-                    closeModal('withdrawModal');
+                    if (typeof closeModal === 'function') closeModal('withdrawModal');
                     
                     currentBalance -= amount;
                     if (balanceDisplay) balanceDisplay.innerText = `R$ ${currentBalance.toFixed(2)}`;
                     
-                    // CORREÇÃO 2: Limpar os campos do formulário após o sucesso do saque
                     withdrawForm.reset();
                     if (withdrawTaxDisplay) withdrawTaxDisplay.innerText = 'R$ 0,00';
                     if (withdrawLiquidDisplay) withdrawLiquidDisplay.innerText = 'R$ 0,00';
