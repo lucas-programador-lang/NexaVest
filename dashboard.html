@@ -547,13 +547,19 @@
     import { auth, onAuthStateChanged, db, doc, getDoc, setDoc, updateDoc, increment } from "./firebase-config.js";
 
     // Expor funções de modal no escopo global para o onclick funcionar com type="module"
-    window.openModal = function(modalId) {
+   window.openModal = function(modalId) {
         const modal = document.getElementById(modalId);
-        if (modal) modal.classList.add('active');
+        if (modal) {
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Bloqueia scroll
+        }
     }
     window.closeModal = function(modalId) {
         const modal = document.getElementById(modalId);
-        if (modal) modal.classList.remove('active');
+        if (modal) {
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto'; // Restaura scroll
+        }
     }
 
     let currentBalance = 0.00;
