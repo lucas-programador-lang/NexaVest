@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NexaVest | Criar Conta Premium</title>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
@@ -95,6 +96,10 @@
                         Eu aceito e concordo com os <a href="#" style="color: var(--emerald); text-decoration: none; font-weight: 600;">Termos de Serviço</a> e as <a href="#" style="color: var(--emerald); text-decoration: none; font-weight: 600;">Políticas de Privacidade</a> de rendimento da NexaVest.
                     </label>
                 </div>
+
+                <div class="input-group" style="display: flex; justify-content: center; margin-bottom: 1.5rem;">
+                    <div class="g-recaptcha" data-sitekey="6LeTzfIsAAAAAL1p9Woaau-RtK4yVgFPoeYu74aA"></div>
+                </div>
                 
                 <button type="submit" class="btn btn-primary" style="width: 100%;">
                     Concluir Cadastro <i class="fa-solid fa-user-plus"></i>
@@ -111,7 +116,7 @@
         <p style="color: var(--text-muted); font-size: 0.85rem;">&copy; 2026 NexaVest. Dados estritamente protegidos sob as diretrizes de segurança de criptoativos.</p>
     </footer>
 
-  <script type="module">
+ <script type="module">
     import { auth, createUserWithEmailAndPassword, db, doc, setDoc, updateDoc, increment } from "./firebase-config.js";
     import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
@@ -134,6 +139,15 @@
     if (registerForm) {
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            
+            // --- INÍCIO DA SEGURANÇA: VALIDAÇÃO CAPTCHA ---
+            const recaptchaResponse = grecaptcha.getResponse();
+            if (recaptchaResponse.length === 0) {
+                showToast('Por favor, complete o desafio "Não sou robô".', 'danger');
+                return;
+            }
+            // --- FIM DA SEGURANÇA ---
+
             let createdUser = null;
 
             try {
@@ -163,23 +177,20 @@
 
                 if (!cpfQuerySnapshot.empty) {
                     showToast('Este CPF já está vinculado a outra conta cadastrada.', 'danger');
+                    grecaptcha.reset(); // Reseta o captcha em caso de erro
                     return;
                 }
 
-                // 2. RASTREAMENTO DO PADRINHO (CONVERSÃO DE CÓDIGO CURTO PARA UID REAL)
+                // 2. RASTREAMENTO DO PADRINHO
                 let uidPadrinho = null;
                 if (indicadorRef) {
                     try {
-                        // Faz uma busca no Firestore para achar quem tem esse 'codigo_afiliado'
                         const qIndicador = query(usersRef, where("codigo_afiliado", "==", indicadorRef.toUpperCase().trim()));
                         const indicadorSnapshot = await getDocs(qIndicador);
 
                         if (!indicadorSnapshot.empty) {
-                            // Encontrou! Pegamos o ID (UID) do documento dele
                             uidPadrinho = indicadorSnapshot.docs[0].id;
                         } else {
-                            // Fallback de segurança: Se o parâmetro não for um código curto, mas sim um UID antigo, 
-                            // verificamos se esse UID existe direto como ID do documento
                             const fallbackQuery = query(usersRef, where("__name__", "==", indicadorRef));
                             const fallbackSnapshot = await getDocs(fallbackQuery);
                             if (!fallbackSnapshot.empty) {
@@ -198,7 +209,7 @@
                 // Gera o código curto exclusivo para este novo usuário
                 const novoCodigoAfiliado = gerarCodigoAfiliado();
                 
-                // 4. Gravação dos dados no Firestore vinculando o UID real do padrinho
+                // 4. Gravação dos dados no Firestore
                 await setDoc(doc(db, "users", createdUser.uid), {
                     nome: fullname,
                     cpf: cpfClean,
@@ -211,7 +222,6 @@
                     data_cadastro: new Date().toISOString()
                 });
 
-                // CORREÇÃO: Incrementa o contador do padrinho no Firestore se o cadastro foi realizado com indicação
                 if (uidPadrinho) {
                     try {
                         const padrinhoRef = doc(db, "users", uidPadrinho);
@@ -228,7 +238,9 @@
             } catch (error) {
                 console.error("Erro completo no processo de cadastro:", error);
                 
-                // Se salvou o Auth mas falhou no Firestore, limpa a sujeira do Auth
+                // Em caso de erro, resetar o captcha
+                grecaptcha.reset();
+                
                 if (createdUser && auth.currentUser) {
                     await auth.currentUser.delete();
                 }
