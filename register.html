@@ -111,8 +111,8 @@
         <p style="color: var(--text-muted); font-size: 0.85rem;">&copy; 2026 NexaVest. Dados estritamente protegidos sob as diretrizes de segurança de criptoativos.</p>
     </footer>
 
-   <script type="module">
-    import { auth, createUserWithEmailAndPassword, db, doc, setDoc } from "./firebase-config.js";
+  <script type="module">
+    import { auth, createUserWithEmailAndPassword, db, doc, setDoc, updateDoc, increment } from "./firebase-config.js";
     import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     // CAPTURA O INDICADOR DA URL: Lê se existe "?ref=XXXX" na barra de endereços (agora pode ser um código curto)
@@ -206,10 +206,22 @@
                     saldo: 0.00,
                     rendimentos: 0.00,
                     afiliados_ativos: 0,
-                    codigo_afiliado: novoCodigoAfiliado, // <-- Salva o novo código curto dele aqui
-                    indicado_por: uidPadrinho,           // <-- Salva o UID real convertido do padrinho (ou null)
+                    codigo_afiliado: novoCodigoAfiliado,
+                    indicado_por: uidPadrinho,
                     data_cadastro: new Date().toISOString()
                 });
+
+                // CORREÇÃO: Incrementa o contador do padrinho no Firestore se o cadastro foi realizado com indicação
+                if (uidPadrinho) {
+                    try {
+                        const padrinhoRef = doc(db, "users", uidPadrinho);
+                        await updateDoc(padrinhoRef, {
+                            afiliados_ativos: increment(1)
+                        });
+                    } catch (err) {
+                        console.error("Erro ao incrementar contador de afiliados do padrinho:", err);
+                    }
+                }
                 
                 window.location.href = 'login.html?action=registered';
 
