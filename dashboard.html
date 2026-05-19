@@ -546,21 +546,33 @@
 <script type="module">
     import { auth, onAuthStateChanged, db, doc, getDoc, setDoc, updateDoc, increment } from "./firebase-config.js";
 
-    // Expor funções de modal no escopo global para o onclick funcionar com type="module"
-   window.openModal = function(modalId) {
+   // EXPOR AS FUNÇÕES PARA O WINDOW DE FORMA DEFINITIVA
+    window.openModal = function(modalId) {
         const modal = document.getElementById(modalId);
         if (modal) {
             modal.classList.add('active');
-            document.body.style.overflow = 'hidden'; // Bloqueia scroll
+            document.body.style.overflow = 'hidden';
         }
-    }
+    };
+
     window.closeModal = function(modalId) {
         const modal = document.getElementById(modalId);
         if (modal) {
             modal.classList.remove('active');
-            document.body.style.overflow = 'auto'; // Restaura scroll
+            document.body.style.overflow = 'auto';
         }
-    }
+    };
+    
+    // GARANTIR QUE O CLIQUE FORA DO MODAL TAMBÉM FECHE
+    window.addEventListener('click', function(event) {
+        const modals = document.querySelectorAll('.modal');
+        modals.forEach(modal => {
+            if (event.target === modal) {
+                modal.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
+        });
+    });
 
     let currentBalance = 0.00;
 
