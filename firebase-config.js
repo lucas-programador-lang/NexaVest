@@ -31,5 +31,6 @@ export {
   doc,
   setDoc,
   getDoc,
-  updateDoc
+  updateDoc,
+  increment
 };
