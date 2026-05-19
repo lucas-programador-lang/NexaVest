@@ -400,7 +400,7 @@
         <p style="color: #94a3b8; font-size: 0.85rem; text-align: center;">&copy; 2026 NexaVest. Sistema financeiro protegido por criptografia de ponta a ponta.</p>
     </footer>
 
-  <script type="module">
+<script type="module">
     import { auth, db } from "./firebase-config.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js"; 
     import { doc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -417,23 +417,19 @@
     const pendingReferralsCount = document.getElementById('pending-referrals-count');
     const totalCommissionsAmount = document.getElementById('total-commissions-amount');
 
-    // Copiar Link Funcional com tratamento de API moderna
     if (btnCopyLink && referralUrlField) {
         btnCopyLink.addEventListener('click', async () => {
             if (referralUrlField.value && referralUrlField.value !== "Carregando link exclusivo...") {
                 try {
                     await navigator.clipboard.writeText(referralUrlField.value);
-                    
                     const originalText = btnCopyLink.innerHTML;
                     btnCopyLink.innerHTML = `<i class="fa-solid fa-check"></i> Copiado!`;
                     btnCopyLink.style.background = "#059669";
-                    
                     setTimeout(() => {
                         btnCopyLink.innerHTML = originalText;
                         btnCopyLink.style.background = "#10b981";
                     }, 2000);
                 } catch (err) {
-                    // Fallback para navegadores legados/WebViews rígidas
                     referralUrlField.select();
                     document.execCommand('copy');
                 }
@@ -444,21 +440,16 @@
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             try {
-                // 1. Buscar Perfil do Usuário Autenticado (Nome e Código de Afiliado)
                 const userDocRef = doc(db, "users", user.uid);
                 const userDocSnap = await getDoc(userDocRef);
                 
-                let termoReferencia = user.uid; // Fallback padrão caso o usuário não tenha o código curto ainda
+                let termoReferencia = user.uid;
 
                 if (userDocSnap.exists()) {
                     const userData = userDocSnap.data();
-                    
-                    // Atualiza o display do nome do investidor
                     if (displayNameElement) {
                         displayNameElement.innerText = userData.nome || (user.email ? user.email.split('@')[0] : "Investidor");
                     }
-
-                    // Se o usuário já tiver o novo código curto, usamos ele no link!
                     if (userData.codigo_afiliado) {
                         termoReferencia = userData.codigo_afiliado;
                     }
@@ -468,18 +459,13 @@
                     }
                 }
 
-                // ==========================================
-                // GERAÇÃO DO LINK CURTO E SEGURO
-                // ==========================================
                 if (referralUrlField) {
                     const baseOrigin = window.location.origin && window.location.origin !== "null" 
                         ? window.location.origin 
-                        : "https://nexavest.pages.dev"; // Fallback para produção se necessário
-
+                        : "https://nexavest.pages.dev";
                     referralUrlField.value = `${baseOrigin}/register.html?ref=${termoReferencia}`;
                 }
 
-                // 2. Buscar Usuários Indicados
                 const usersRef = collection(db, "users");
                 const qReferrals = query(usersRef, where("indicado_por", "==", user.uid));
                 const referralsSnapshot = await getDocs(qReferrals);
@@ -493,12 +479,10 @@
                     let totalAguardando = 0;
                     let acumuladoComissoes = 0;
 
-                    // Mapeia os documentos para criar promessas em paralelo, otimizando performance
                     const referralPromises = referralsSnapshot.docs.map(async (userDoc) => {
                         const referralData = userDoc.data();
                         const uidIndicado = userDoc.id;
 
-                        // Busca investimentos ativos do indicado
                         const invRef = collection(db, "user_investimentos");
                         const qInv = query(invRef, where("uid", "==", uidIndicado));
                         const invSnapshot = await getDocs(qInv);
@@ -516,13 +500,11 @@
                                 capitalAlocado += valor;
                                 if (invData.plano_nome) nomesPlanos.push(invData.plano_nome);
                             });
-
                             planoNome = nomesPlanos.join(', ');
                             comissaoCalculada = capitalAlocado * 0.06;
                             statusBadge = `<span class="badge-status-complete" style="color: #10b981;"><i class="fa-solid fa-circle-check"></i> Ativo</span>`;
                         }
 
-                        // Tratamento seguro de datas
                         let dataRegistro = '---';
                         if (referralData.data_cadastro) {
                             if (typeof referralData.data_cadastro.toDate === 'function') {
@@ -532,6 +514,7 @@
                             }
                         }
 
+                        // CORREÇÃO: O objeto é retornado mesmo sem investimento
                         return {
                             dataRegistro,
                             nome: referralData.nome || 'Usuário Nexa',
@@ -542,10 +525,8 @@
                         };
                     });
 
-                    // Resolve todas as leituras de subcoleções de uma só vez
                     const resolvedReferrals = await Promise.all(referralPromises);
 
-                    // Renderização limpa no DOM após a resolução dos dados
                     resolvedReferrals.forEach(data => {
                         totalIndicados++;
                         acumuladoComissoes += data.comissaoCalculada;
@@ -568,9 +549,8 @@
                         }
                     });
 
-                    // Atualiza os contadores principais
                     if (totalReferralsCount) totalReferralsCount.innerText = totalIndicados;
-                    if (pendingReferralsCount) pendingReferralsCount.innerText = totalAguardando;
+                    if (pendingReferralsCount) totalReferralsCount.innerText = totalAguardando;
                     if (totalCommissionsAmount) totalCommissionsAmount.innerText = `R$ ${acumuladoComissoes.toFixed(2)}`;
 
                 } else {
