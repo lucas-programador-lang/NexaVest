@@ -85,6 +85,10 @@
                     <input type="checkbox" id="remember" style="accent-color: var(--emerald); cursor: pointer;">
                     <label for="remember" style="color: var(--text-muted); font-size: 0.85rem; cursor: pointer; user-select: none;">Manter-me conectado</label>
                 </div>
+
+                <div class="input-group" style="display: flex; justify-content: center; margin-bottom: 1.5rem;">
+                    <div class="g-recaptcha" data-sitekey="6LeTzfIsAAAAAL1p9Woaau-RtK4yVgFPoeYu74aA"></div>
+                </div>
                 
                 <button type="submit" class="btn btn-primary" style="width: 100%;">
                     Entrar no Painel <i class="fa-solid fa-arrow-right-to-bracket"></i>
@@ -136,78 +140,86 @@
     </script>
 
     <script type="module">
-        // Importamos a função de reset de senha oficial do Firebase e a configuração local
-        import { auth, signInWithEmailAndPassword } from "./firebase-config.js";
-        import { sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    // Importamos a função de reset de senha oficial do Firebase e a configuração local
+    import { auth, signInWithEmailAndPassword } from "./firebase-config.js";
+    import { sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-        const loginForm = document.getElementById('login-form');
-        const forgotPasswordLink = document.getElementById('forgot-password');
-        const emailInput = document.getElementById('email');
+    const loginForm = document.getElementById('login-form');
+    const forgotPasswordLink = document.getElementById('forgot-password');
+    const emailInput = document.getElementById('email');
 
-        // 1. LOGICA DE LOGIN (Mantida e protegida)
-        if (loginForm) {
-            loginForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const passwordInput = document.getElementById('password');
+    // 1. LOGICA DE LOGIN (Protegida com reCAPTCHA)
+    if (loginForm) {
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
 
-                if (!emailInput || !passwordInput) return;
+            // --- SEGURANÇA: VALIDAÇÃO CAPTCHA ---
+            const recaptchaResponse = grecaptcha.getResponse();
+            if (recaptchaResponse.length === 0) {
+                showToast('Por favor, complete o desafio "Não sou robô".', 'danger');
+                return;
+            }
+            // ------------------------------------
 
-                const email = emailInput.value.trim().toLowerCase();
-                const password = passwordInput.value;
+            const passwordInput = document.getElementById('password');
 
-                try {
-                    await signInWithEmailAndPassword(auth, email, password);
-                    window.location.href = 'dashboard.html';
-                } catch (error) {
-                    console.error("Erro na autenticação do Firebase:", error.code, error.message);
-                    if (typeof showToast === 'function') {
-                        showToast('Credenciais incorretas ou inválidas. Tente novamente.', 'danger');
-                    } else {
-                        alert('Erro ao acessar a conta: Verifique o e-mail e a senha informados.');
-                    }
+            if (!emailInput || !passwordInput) return;
+
+            const email = emailInput.value.trim().toLowerCase();
+            const password = passwordInput.value;
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                window.location.href = 'dashboard.html';
+            } catch (error) {
+                // Reseta o captcha em caso de erro para permitir nova tentativa
+                grecaptcha.reset();
+                
+                console.error("Erro na autenticação do Firebase:", error.code, error.message);
+                if (typeof showToast === 'function') {
+                    showToast('Credenciais incorretas ou inválidas. Tente novamente.', 'danger');
+                } else {
+                    alert('Erro ao acessar a conta: Verifique o e-mail e a senha informados.');
                 }
-            });
-        }
+            }
+        });
+    }
 
-        // 2. NOVA LOGICA: ESQUECEU A SENHA
-        if (forgotPasswordLink) {
-            forgotPasswordLink.addEventListener('click', async (e) => {
-                e.preventDefault(); // Evita que a página recarregue ou role para o topo
+    // 2. LOGICA: ESQUECEU A SENHA
+    if (forgotPasswordLink) {
+        forgotPasswordLink.addEventListener('click', async (e) => {
+            e.preventDefault();
 
-                if (!emailInput || !emailInput.value.trim()) {
-                    if (typeof showToast === 'function') {
-                        showToast('Por favor, digite o seu endereço de e-mail no campo acima antes de clicar em recuperar.', 'danger');
-                    }
-                    emailInput.focus();
-                    return;
+            if (!emailInput || !emailInput.value.trim()) {
+                if (typeof showToast === 'function') {
+                    showToast('Por favor, digite o seu e-mail no campo acima antes de clicar em recuperar.', 'danger');
                 }
+                emailInput.focus();
+                return;
+            }
 
-                const email = emailInput.value.trim().toLowerCase();
+            const email = emailInput.value.trim().toLowerCase();
 
-                try {
-                    // Envia o e-mail de redefinição configurado no Firebase Console
-                    await sendPasswordResetEmail(auth, email);
-                    
-                    if (typeof showToast === 'function') {
-                        showToast('E-mail de recuperação enviado! Verifique sua caixa de entrada ou spam.', 'success');
-                    }
-                } catch (error) {
-                    console.error("Erro ao enviar reset de senha:", error.code, error.message);
-                    let erroMensagem = 'Ocorreu um erro ao tentar enviar o e-mail de recuperação.';
-                    
-                    if (error.code === 'auth/invalid-email') {
-                        erroMensagem = 'O formato do e-mail inserido é inválido.';
-                    } else if (error.code === 'auth/user-not-found') {
-                        erroMensagem = 'Não encontramos nenhuma conta vinculada a este e-mail.';
-                    }
-                    
-                    if (typeof showToast === 'function') {
-                        showToast(erroMensagem, 'danger');
-                    }
+            try {
+                await sendPasswordResetEmail(auth, email);
+                if (typeof showToast === 'function') {
+                    showToast('E-mail de recuperação enviado! Verifique sua caixa de entrada.', 'success');
                 }
-            });
-        }
-    </script>
+            } catch (error) {
+                let erroMensagem = 'Ocorreu um erro ao tentar enviar o e-mail de recuperação.';
+                if (error.code === 'auth/invalid-email') {
+                    erroMensagem = 'O formato do e-mail inserido é inválido.';
+                } else if (error.code === 'auth/user-not-found') {
+                    erroMensagem = 'Não encontramos nenhuma conta vinculada a este e-mail.';
+                }
+                
+                if (typeof showToast === 'function') {
+                    showToast(erroMensagem, 'danger');
+                }
+            }
+        });
+    }
+</script>
 </body>
 </html>
 
