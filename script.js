@@ -52,34 +52,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-/**
- * NOVAS FUNÇÕES: Controle de Modais (Deposit/PIX) - Ajustado para 'active'
- */
-window.openModal = function(modalId) {
-    const modal = document.getElementById(modalId);
-    if(modal) {
-        modal.classList.add('active'); // Padronizado para coincidir com o script de saque
-        document.body.style.overflow = 'hidden';
-    }
-}
-
-window.closeModal = function(modalId) {
-    const modal = document.getElementById(modalId);
-    if(modal) {
-        modal.classList.remove('active'); // Padronizado para coincidir com o script de saque
-        document.body.style.overflow = 'auto';
-    }
-}
-
-window.addEventListener('click', function(event) {
-    const modals = document.getElementsByClassName('modal');
-    for (let i = 0; i < modals.length; i++) {
-        if (event.target == modals[i]) {
-            modals[i].classList.remove('active'); // Padronizado para coincidir
-            document.body.style.overflow = 'auto';
-        }
-    }
-});
 
 /**
  * NOVAS FUNÇÕES: Sistema de Toast (Notificações Premium)
