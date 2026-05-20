@@ -338,38 +338,11 @@
             background: rgba(7, 11, 20, 0.4);
         }
 
-        /* Responsividade Perfeita */
         @media (max-width: 768px) {
-            .profile-container {
-                margin: 2rem auto;
-            }
-            .profile-header {
-                margin-bottom: 2.5rem;
-            }
-            .profile-header h1 {
-                font-size: 1.85rem;
-            }
-            .profile-card {
-                padding: 1.75rem;
-                border-radius: 20px;
-            }
-            .btn-submit, .btn-secondary {
-                width: 100%;
-                justify-content: center;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .profile-nav {
-                padding: 1rem 1.25rem;
-            }
-            .btn-back {
-                padding: 8px 14px;
-                font-size: 0.85rem;
-            }
-            .profile-nav .logo {
-                font-size: 1.2rem;
-            }
+            .profile-container { margin: 2rem auto; }
+            .profile-header h1 { font-size: 1.85rem; }
+            .profile-card { padding: 1.75rem; border-radius: 20px; }
+            .btn-submit, .btn-secondary { width: 100%; justify-content: center; }
         }
     </style>
 </head>
@@ -393,7 +366,6 @@
         </header>
 
         <div class="profile-grid">
-            
             <div class="profile-card">
                 <h3><i class="fa-solid fa-key"></i> Alterar Minha Senha</h3>
                 <span class="card-description">Caso saiba sua senha atual e queira modificá-la diretamente por aqui.</span>
@@ -445,7 +417,6 @@
                     <i class="fa-solid fa-paper-plane"></i> Enviar Link de Redefinição
                 </button>
             </div>
-
         </div>
     </main>
 
@@ -456,14 +427,11 @@
     </footer>
 
     <script>
-        // Função do Toast Premium idêntico ao dos planos
         function showPremiumToast(title, message, type) {
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
-            
             const icon = type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation';
-
             toast.innerHTML = `
                 <div class="toast-icon"><i class="fa-solid ${icon}"></i></div>
                 <div class="toast-content">
@@ -471,10 +439,8 @@
                     <div class="toast-message">${message}</div>
                 </div>
             `;
-            
             container.appendChild(toast);
             setTimeout(() => toast.classList.add('active'), 50);
-            
             setTimeout(() => {
                 toast.classList.remove('active');
                 setTimeout(() => toast.remove(), 400);
@@ -484,7 +450,6 @@
 
     <script type="module">
         import { auth, onAuthStateChanged } from "./firebase-config.js";
-        // Importações necessárias do Firebase Auth para gerenciar credenciais
         import { 
             updatePassword, 
             EmailAuthProvider, 
@@ -495,17 +460,14 @@
 
         let currentUserEmail = "";
 
-        // Verifica estado de autenticação do usuário
-        onAuthStateChanged(auth, (user) => {
-           
-        const expiry = localStorage.getItem('session_expiry');
-        if (expiry && Date.now() > parseInt(expiry)) {
-            localStorage.removeItem('session_expiry');
-            await signOut(auth);
-            window.location.href = 'login.html';
-            return;
-        }
-            
+        onAuthStateChanged(auth, async (user) => {
+            const expiry = localStorage.getItem('session_expiry');
+            if (expiry && Date.now() > parseInt(expiry)) {
+                localStorage.removeItem('session_expiry');
+                await signOut(auth);
+                window.location.href = 'login.html';
+                return;
+            }
             
             if (user) {
                 currentUserEmail = user.email;
@@ -516,10 +478,8 @@
             }
         });
 
-        // listener de 'submit' do próprio elemento form
         document.getElementById('formUpdatePassword').addEventListener('submit', async (e) => {
-            e.preventDefault(); // Evita o reload nativo síncrono da tag <form>
-
+            e.preventDefault();
             const currentPassword = document.getElementById('currentPassword').value;
             const newPassword = document.getElementById('newPassword').value;
             const confirmNewPassword = document.getElementById('confirmNewPassword').value;
@@ -541,13 +501,9 @@
             }
 
             try {
-                // Cria a credencial para provar que o usuário sabe a senha atual antes de trocar
                 const credential = EmailAuthProvider.credential(user.email, currentPassword);
                 await reauthenticateWithCredential(user, credential);
-                
-                // Atualiza de fato a senha após o sucesso da verificação anterior
                 await updatePassword(user, newPassword);
-                
                 showPremiumToast("Senha Atualizada", "Sua senha foi redefinida internamente com sucesso.", "success");
                 document.getElementById('formUpdatePassword').reset();
             } catch (error) {
@@ -560,17 +516,11 @@
             }
         });
 
-        // Evento 2: Enviar link para o e-mail cadastrado caso não saiba a senha
         document.getElementById('btnSendResetLink').addEventListener('click', async () => {
             if(!currentUserEmail) return;
-
             try {
                 await sendPasswordResetEmail(auth, currentUserEmail);
-                showPremiumToast(
-                    "E-mail Enviado", 
-                    `Um link seguro de redefinição foi encaminhado para o endereço ${currentUserEmail}.`, 
-                    "success"
-                );
+                showPremiumToast("E-mail Enviado", `Um link seguro de redefinição foi encaminhado para o endereço ${currentUserEmail}.`, "success");
             } catch (error) {
                 console.error(error);
                 showPremiumToast("Falha no Envio", "Houve um problema ao solicitar o link. Verifique mais tarde.", "error");
