@@ -140,7 +140,7 @@
         });
     </script>
 
-    <script type="module">
+   <script type="module">
     // Importamos a função de reset de senha oficial do Firebase e a configuração local
     import { auth, signInWithEmailAndPassword } from "./firebase-config.js";
     import { sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -171,6 +171,13 @@
 
             try {
                 await signInWithEmailAndPassword(auth, email, password);
+                
+                // --- IMPLEMENTAÇÃO 72H: SALVA EXPIRAÇÃO ---
+                const seventyTwoHoursInMs = 72 * 60 * 60 * 1000;
+                const expirationTime = Date.now() + seventyTwoHoursInMs;
+                localStorage.setItem('session_expiry', expirationTime);
+                // ------------------------------------------
+
                 window.location.href = 'dashboard.html';
             } catch (error) {
                 // Reseta o captcha em caso de erro para permitir nova tentativa
