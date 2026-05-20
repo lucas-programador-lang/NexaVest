@@ -606,7 +606,7 @@
 
                 // 2. Buscar Afiliados Ativos
                 const usersRef = collection(db, "users");
-                const qAfiliados = query(usersRef, where("indicador_uid", "==", user.uid));
+                const qAfiliados = query(usersRef, where("indicador_por", "==", user.uid));
                 const snapAfiliados = await getDocs(qAfiliados);
                 const referralsDisplay = document.getElementById('referrals-display');
                 if (referralsDisplay) referralsDisplay.innerText = snapAfiliados.size;
