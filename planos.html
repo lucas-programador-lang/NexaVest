@@ -607,6 +607,29 @@
     import { auth, onAuthStateChanged, db } from "./firebase-config.js";
     import { doc, getDoc, updateDoc, collection, addDoc, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+      async function aplicarComissao(uidAfiliado, valorInvestido) {
+    try {
+        const afiliadoRef = doc(db, "users", uidAfiliado);
+        const afiliadoSnap = await getDoc(afiliadoRef);
+        
+        if (afiliadoSnap.exists()) {
+            const uidPadrinho = afiliadoSnap.data().indicado_por;
+
+            if (uidPadrinho) {
+                const comissao = valorInvestido * 0.06;
+                const padrinhoRef = doc(db, "users", uidPadrinho);
+                
+                await updateDoc(padrinhoRef, {
+                    saldo: increment(comissao)
+                });
+                console.log("Comissão de 6% aplicada ao saldo do padrinho!");
+            }
+        }
+    } catch (error) {
+        console.error("Erro ao processar comissão:", error);
+    }
+}
+
     // Variáveis globais de controle dentro do escopo do módulo
     let activePlanName = "";
     let activePlanValue = 0;
@@ -732,6 +755,8 @@
                     data_compra: serverTimestamp(),
                     status: "ativo"
                 });
+
+                await aplicarComissao(user.uid, activePlanValue);
 
                 showPremiumToast(
                     "Operação Concluída", 
