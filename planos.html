@@ -619,10 +619,12 @@
                 const comissao = valorInvestido * 0.06;
                 const padrinhoRef = doc(db, "users", uidPadrinho);
                 
+                // SALVA AMBOS: o saldo disponível e o acumulado de comissões
                 await updateDoc(padrinhoRef, {
-                    saldo: increment(comissao)
+                    saldo: increment(comissao),
+                    total_comissoes: increment(comissao) // <--- ADICIONE ESTA LINHA
                 });
-                console.log("Comissão de 6% aplicada ao saldo do padrinho!");
+                console.log("Comissão de 6% aplicada com sucesso!");
             }
         }
     } catch (error) {
