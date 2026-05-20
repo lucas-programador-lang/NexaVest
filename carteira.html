@@ -383,12 +383,25 @@
                 const q = query(invCollectionRef, where("uid", "==", user.uid));
                 const querySnapshot = await getDocs(q);
 
+                console.log("--- INÍCIO DO DIAGNÓSTICO ---");
+console.log("Total de documentos encontrados na coleção:", querySnapshot.size);
+
+querySnapshot.forEach((doc) => {
+    console.log("ID do documento:", doc.id);
+    console.log("UID salvo no documento:", doc.data().uid);
+    console.log("UID do usuário logado:", user.uid);
+    console.log("Os UIDs são iguais?", doc.data().uid === user.uid);
+});
+console.log("--- FIM DO DIAGNÓSTICO ---");
+
                 if (!querySnapshot.empty) {
                     noInvestmentsMessage.style.display = 'none';
                     investmentsTable.style.display = 'table';
                     investmentsTbody.innerHTML = '';
 
                     querySnapshot.forEach((doc) => {
+                        console.log("ID:", doc.id, "Conteúdo:", doc.data());
+                        
                         const data = doc.data();
                         
                         // Correção de parsing de data segura para String ou objeto Timestamp nativo do Firebase
