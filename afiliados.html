@@ -444,6 +444,10 @@
             const userDocRef = doc(db, "users", user.uid);
             const userDocSnap = await getDoc(userDocRef);
             const userData = userDocSnap.exists() ? userDocSnap.data() : {};
+            
+            if (displayNameElement) {
+            displayNameElement.innerText = userData.nome || "Investidor";
+        }
 
             // 1. Configurar Link de Indicação
             const termoReferencia = userData.codigo_afiliado || user.uid;
