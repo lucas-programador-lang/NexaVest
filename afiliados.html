@@ -456,8 +456,9 @@
 
                 if (userDocSnap.exists()) {
                     const userData = userDocSnap.data();
-                    if (displayNameElement) {
-                        displayNameElement.innerText = userData.nome || (user.email ? user.email.split('@')[0] : "Investidor");
+                    const valorTotalComissao = userData.total_comissoes || 0;
+                    if (totalCommissionsAmount) {
+                        totalCommissionsAmount.innerText = userData.nome || (user.email ? user.email.split('@')[0] : "Investidor");
                     }
                     if (userData.codigo_afiliado) {
                         termoReferencia = userData.codigo_afiliado;
