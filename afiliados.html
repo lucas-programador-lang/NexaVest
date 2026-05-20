@@ -559,7 +559,7 @@
                     });
 
                     if (totalReferralsCount) totalReferralsCount.innerText = totalIndicados;
-                    if (pendingReferralsCount) totalReferralsCount.innerText = totalAguardando;
+                    if (pendingReferralsCount) pendingReferralsCount.innerText = totalAguardando; // <--- ALTERADO DE totalReferralsCount PARA pendingReferralsCount
                     if (totalCommissionsAmount) totalCommissionsAmount.innerText = `R$ ${acumuladoComissoes.toFixed(2)}`;
 
                 } else {
