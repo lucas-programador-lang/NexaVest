@@ -497,6 +497,16 @@
 
         // Verifica estado de autenticação do usuário
         onAuthStateChanged(auth, (user) => {
+           
+        const expiry = localStorage.getItem('session_expiry');
+        if (expiry && Date.now() > parseInt(expiry)) {
+            localStorage.removeItem('session_expiry');
+            await signOut(auth);
+            window.location.href = 'login.html';
+            return;
+        }
+            
+            
             if (user) {
                 currentUserEmail = user.email;
                 document.getElementById('recoveryEmailField').value = user.email;
