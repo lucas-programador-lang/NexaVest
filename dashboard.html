@@ -577,7 +577,6 @@
         }
     };
     
-    // GARANTIR QUE O CLIQUE FORA DO MODAL TAMBÉM FECHE
     window.addEventListener('click', function(event) {
         const modals = document.querySelectorAll('.modal');
         modals.forEach(modal => {
@@ -593,7 +592,7 @@
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             try {
-              // 1. Buscar Rendimentos Acumulados
+                // 1. Buscar Rendimentos Acumulados
                 const investimentosRef = collection(db, "user_investimentos");
                 const qInvest = query(investimentosRef, where("uid", "==", user.uid));
                 const snapInvest = await getDocs(qInvest);
@@ -634,14 +633,14 @@
                         }
                     });
                 }
+                
+                // CORREÇÃO: Verificação de existência antes de acessar os dados do usuário
                 const userDocRef = doc(db, "users", user.uid);
                 const userDocSnap = await getDoc(userDocRef);
 
-                // 1. Atualiza o link de afiliado
                 const affInput = document.getElementById('affiliate-link-input');
                 if (affInput) affInput.value = `${window.location.origin}/register.html?ref=${user.uid}`;
 
-                // 2. Define o nome do usuário e badge de forma unificada
                 const displayNameElement = document.getElementById('user-name-display');
                 let nomeUsuario = "Investidor";
 
@@ -650,7 +649,6 @@
                     currentBalance = userData.saldo || 0.00;
                     nomeUsuario = userData.nome || userData.Nome || userData.name || (user.email ? user.email.split('@')[0] : "Investidor");
 
-                    // Atualiza outros campos
                     const balanceDisplay = document.getElementById('balance-display');
                     if (balanceDisplay) balanceDisplay.innerText = `R$ ${currentBalance.toFixed(2)}`;
                     
@@ -676,7 +674,6 @@
                 console.error("Erro ao resgatar dados do perfil no Firestore:", error);
             }
         } else {
-            // FORÇAR SAÍDA SE NÃO ESTIVER AUTENTICADO
             window.location.href = 'login.html';
         }
     });
