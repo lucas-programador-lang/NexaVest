@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NexaVest | Meu Perfil & Segurança</title>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -395,6 +396,10 @@
                         </div>
                     </div>
 
+                    <div class="form-group">
+                        <div class="g-recaptcha" data-sitekey="6Lew2_IsAAAAALlOfwDpD6mptrWC_QCw4KksUrdA"></div>
+                    </div>
+
                     <button type="submit" class="btn-submit" id="btnSaveNewPassword">
                         <i class="fa-solid fa-floppy-disk"></i> Atualizar Senha
                     </button>
@@ -411,6 +416,10 @@
                         <input type="email" id="recoveryEmailField" class="form-control" placeholder="Carregando seu e-mail..." disabled>
                         <i class="fa-solid fa-at"></i>
                     </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <div class="g-recaptcha" data-sitekey="6Lew2_IsAAAAALlOfwDpD6mptrWC_QCw4KksUrdA" id="recaptcha-reset"></div>
                 </div>
 
                 <button class="btn-secondary" id="btnSendResetLink">
@@ -480,6 +489,14 @@
 
         document.getElementById('formUpdatePassword').addEventListener('submit', async (e) => {
             e.preventDefault();
+
+               const recaptchaResponse = grecaptcha.getResponse();
+               if (recaptchaResponse.length === 0) {
+                   showPremiumToast("Verificação Necessária", "Por favor, marque a caixa 'Não sou um robô'.", "error");
+                   return;
+               }
+
+            
             const currentPassword = document.getElementById('currentPassword').value;
             const newPassword = document.getElementById('newPassword').value;
             const confirmNewPassword = document.getElementById('confirmNewPassword').value;
@@ -506,8 +523,10 @@
                 await updatePassword(user, newPassword);
                 showPremiumToast("Senha Atualizada", "Sua senha foi redefinida internamente com sucesso.", "success");
                 document.getElementById('formUpdatePassword').reset();
+                grecaptcha.reset();
             } catch (error) {
                 console.error(error);
+                grecaptcha.reset();
                 if (error.code === 'auth/wrong-password') {
                     showPremiumToast("Acesso Negado", "A senha atual informada está incorreta.", "error");
                 } else {
@@ -517,12 +536,20 @@
         });
 
         document.getElementById('btnSendResetLink').addEventListener('click', async () => {
+            const recaptchaResponse = grecaptcha.getResponse();
+            if (recaptchaResponse.length === 0) {
+                showPremiumToast("Verificação Necessária", "Por favor, marque a caixa 'Não sou um robô'.", "error");
+                return;
+            }
+            
             if(!currentUserEmail) return;
             try {
                 await sendPasswordResetEmail(auth, currentUserEmail);
                 showPremiumToast("E-mail Enviado", `Um link seguro de redefinição foi encaminhado para o endereço ${currentUserEmail}.`, "success");
+                grecaptcha.reset();
             } catch (error) {
                 console.error(error);
+                grecaptcha.reset();
                 showPremiumToast("Falha no Envio", "Houve um problema ao solicitar o link. Verifique mais tarde.", "error");
             }
         });
