@@ -638,17 +638,29 @@
                 const qSaques = query(collection(db, "saques_solicitados"), where("uid", "==", user.uid));
                 const snapSaques = await getDocs(qSaques);
 
-                if (!snapSaques.empty) {
+               if (!snapSaques.empty) {
                     if (msgNenhuma) msgNenhuma.style.display = 'none';
                     extratoTbody.innerHTML = ''; // Limpa para evitar duplicados
+                    
                     snapSaques.forEach((doc) => {
                         const d = doc.data();
+                        
+                        // Lógica de cores baseada no status
+                        let statusCor = '#6b7280'; // Cinza (padrão)
+                        if (d.status === 'confirmado') {
+                            statusCor = '#10b981'; // Verde
+                        } else if (d.status === 'pendente') {
+                            statusCor = '#f59e0b'; // Amarelo
+                        }
+
                         extratoTbody.innerHTML += `
                             <tr>
-                                <td>${new Date(d.data_solicitacao).toLocaleDateString()}</td>
-                                <td>Saque via ${d.tipo_chave}</td>
-                                <td style="color: #ef4444;">- R$ ${d.valor_solicitado.toFixed(2)}</td>
-                                <td>${d.status}</td>
+                                <td style="padding: 1rem 0.75rem;">${new Date(d.data_solicitacao).toLocaleDateString()}</td>
+                                <td style="padding: 1rem 0.75rem;">Saque via ${d.tipo_chave}</td>
+                                <td style="padding: 1rem 0.75rem; color: #ef4444;">- R$ ${d.valor_solicitado.toFixed(2)}</td>
+                                <td style="padding: 1rem 0.75rem; color: ${statusCor}; font-weight: bold;">
+                                    ${d.status.toUpperCase()}
+                                </td>
                             </tr>`;
                     });
                 }
