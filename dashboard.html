@@ -589,14 +589,35 @@
 
     let currentBalance = 0.00;
 
-    onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            try {
-                // 1. Buscar Rendimentos Acumulados
-                const investimentosRef = collection(db, "user_investimentos");
-                const qInvest = query(investimentosRef, where("uid", "==", user.uid));
-                const snapInvest = await getDocs(qInvest);
+   onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        try {
+            // 1. Buscar Dados do Usuário (Nome, Saldo, Afiliados, Rendimentos)
+            const qUser = query(collection(db, "users"), where("email", "==", user.email));
+            const querySnap = await getDocs(qUser);
+            
+            if (!querySnap.empty) {
+                const userDoc = querySnap.docs[0];
+                const userData = userDoc.data();
+                
+                // Atualizar Saldo e Nome
+                currentBalance = userData.saldo || 0.00;
+                const nomeUsuario = userData.nome || user.email.split('@')[0];
+                
+                const balanceDisplay = document.getElementById('balance-display');
+                if (balanceDisplay) balanceDisplay.innerText = `R$ ${currentBalance.toFixed(2)}`;
+                
+                const displayNameElement = document.getElementById('user-name-display');
+                if (displayNameElement) displayNameElement.innerText = nomeUsuario;
 
+                // 2. Buscar Afiliados usando 'indicado_por'
+                const qAfiliados = query(collection(db, "users"), where("indicado_por", "==", user.uid));
+                const snapAfiliados = await getDocs(qAfiliados);
+                const referralsDisplay = document.getElementById('referrals-display');
+                if (referralsDisplay) referralsDisplay.innerText = snapAfiliados.size;
+
+                // 3. Buscar Rendimentos Acumulados
+                const snapInvest = await getDocs(query(collection(db, "user_investimentos"), where("uid", "==", user.uid)));
                 let totalRendimentos = 0;
                 snapInvest.forEach((doc) => {
                     totalRendimentos += parseFloat(doc.data().lucro_acumulado || 0);
@@ -604,14 +625,7 @@
                 const yieldDisplay = document.getElementById('yield-display');
                 if (yieldDisplay) yieldDisplay.innerText = `R$ ${totalRendimentos.toFixed(2)}`;
 
-                // 2. Buscar Afiliados Ativos
-                const usersRef = collection(db, "users");
-                const qAfiliados = query(usersRef, where("indicador_por", "==", user.uid));
-                const snapAfiliados = await getDocs(qAfiliados);
-                const referralsDisplay = document.getElementById('referrals-display');
-                if (referralsDisplay) referralsDisplay.innerText = snapAfiliados.size;
-
-                // 3. Preencher Extrato de Operações
+                // 4. Preencher Extrato de Operações
                 const extratoTbody = document.getElementById('transactions-tbody');
                 const msgNenhuma = document.getElementById('no-transactions-message');
                 const qSaques = query(collection(db, "saques_solicitados"), where("uid", "==", user.uid));
@@ -619,65 +633,26 @@
 
                 if (!snapSaques.empty) {
                     if (msgNenhuma) msgNenhuma.style.display = 'none';
+                    extratoTbody.innerHTML = ''; // Limpa para evitar duplicados
                     snapSaques.forEach((doc) => {
                         const d = doc.data();
-                        if (extratoTbody) {
-                            extratoTbody.innerHTML += `
-                                <tr>
-                                    <td style="padding: 1rem 0.75rem;">${new Date(d.data_solicitacao).toLocaleDateString()}</td>
-                                    <td style="padding: 1rem 0.75rem;">Saque via ${d.tipo_chave}</td>
-                                    <td style="padding: 1rem 0.75rem; color: #ef4444;">- R$ ${d.valor_solicitado.toFixed(2)}</td>
-                                    <td style="padding: 1rem 0.75rem;">${d.status}</td>
-                                </tr>
-                            `;
-                        }
+                        extratoTbody.innerHTML += `
+                            <tr>
+                                <td>${new Date(d.data_solicitacao).toLocaleDateString()}</td>
+                                <td>Saque via ${d.tipo_chave}</td>
+                                <td style="color: #ef4444;">- R$ ${d.valor_solicitado.toFixed(2)}</td>
+                                <td>${d.status}</td>
+                            </tr>`;
                     });
                 }
-                
-                // CORREÇÃO: Buscando usuário pelo e-mail (evita erro de permissão por ID incorreto)
-                const qUser = query(collection(db, "users"), where("email", "==", user.email));
-                const querySnap = await getDocs(qUser);
-                const userDocSnap = !querySnap.empty ? querySnap.docs[0] : null;
-
-                const affInput = document.getElementById('affiliate-link-input');
-                if (affInput) affInput.value = `${window.location.origin}/register.html?ref=${user.uid}`;
-
-                const displayNameElement = document.getElementById('user-name-display');
-                let nomeUsuario = "Investidor";
-
-                if (userDocSnap) {
-                    const userData = userDocSnap.data();
-                    currentBalance = userData.saldo || 0.00;
-                    nomeUsuario = userData.nome || userData.Nome || userData.name || (user.email ? user.email.split('@')[0] : "Investidor");
-
-                    const balanceDisplay = document.getElementById('balance-display');
-                    if (balanceDisplay) balanceDisplay.innerText = `R$ ${currentBalance.toFixed(2)}`;
-                    
-                    const yieldDisplay = document.getElementById('yield-display');
-                    if (yieldDisplay) yieldDisplay.innerText = `R$ ${(userData.rendimentos || 0.00).toFixed(2)}`;
-                    
-                    const referralsDisplay = document.getElementById('referrals-display');
-                    if (referralsDisplay) referralsDisplay.innerText = userData.afiliados_ativos || 0;
-                } else {
-                    nomeUsuario = user.email ? user.email.split('@')[0] : "Investidor";
-                }
-
-                if (displayNameElement) {
-                    displayNameElement.innerHTML = `
-                        ${nomeUsuario} 
-                        <span style="display: block; color: var(--emerald-premium); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.5px;">
-                            <i class="fa-solid fa-shield-halved"></i> CONTA PREMIUM
-                        </span>
-                    `;
-                }
-
-            } catch (error) {
-                console.error("Erro ao resgatar dados do perfil no Firestore:", error);
             }
-        } else {
-            window.location.href = 'login.html';
+        } catch (error) {
+            console.error("Erro ao carregar Dashboard:", error);
         }
-    });
+    } else {
+        window.location.href = 'login.html';
+    }
+});
 
     document.addEventListener('DOMContentLoaded', () => {
         const withdrawAmountInput = document.getElementById('withdraw-amount');
