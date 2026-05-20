@@ -542,6 +542,7 @@
     </footer>
 
     <script src="script.js"></script>
+<script src="script.js"></script>
 <script type="module">
     import { auth, db } from "./firebase-config.js";
     import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -721,6 +722,15 @@
             });
         }
     });
+</script>
+
+<script>
+    // Verificação instantânea de sessão
+    const expiry = localStorage.getItem('session_expiry');
+    if (!expiry || Date.now() > parseInt(expiry)) {
+        window.location.replace('login.html');
+    }
+</script>
 </script>
 </body> 
 </html>
