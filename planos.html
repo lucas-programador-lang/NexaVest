@@ -605,7 +605,7 @@
 
   <script type="module">
     import { auth, onAuthStateChanged, db } from "./firebase-config.js";
-    import { doc, getDoc, updateDoc, collection, addDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { doc, getDoc, updateDoc, collection, addDoc, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     // Variáveis globais de controle dentro do escopo do módulo
     let activePlanName = "";
