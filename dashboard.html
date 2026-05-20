@@ -608,8 +608,15 @@
                 if (balanceDisplay) balanceDisplay.innerText = `R$ ${currentBalance.toFixed(2)}`;
                 
                 const displayNameElement = document.getElementById('user-name-display');
-                if (displayNameElement) displayNameElement.innerText = nomeUsuario;
-
+                if (displayNameElement) {
+                    displayNameElement.innerHTML = `
+                        ${nomeUsuario} 
+                        <span style="display: block; color: var(--emerald-premium); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.5px;">
+                            <i class="fa-solid fa-shield-halved"></i> CONTA PREMIUM
+                        </span>
+                    `;
+                }
+                
                 // 2. Buscar Afiliados usando 'indicado_por'
                 const qAfiliados = query(collection(db, "users"), where("indicado_por", "==", user.uid));
                 const snapAfiliados = await getDocs(qAfiliados);
