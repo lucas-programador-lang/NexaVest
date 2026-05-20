@@ -614,6 +614,15 @@
 
     // Garante que o corpo do site só aparece após validar o estado do auth
     onAuthStateChanged(auth, async (user) => {
+        
+        const expiry = localStorage.getItem('session_expiry');
+        if (expiry && Date.now() > parseInt(expiry)) {
+            localStorage.removeItem('session_expiry');
+            await signOut(auth);
+            window.location.href = 'login.html';
+            return;
+        }
+        
         if (user) {
             document.body.style.opacity = '1';
             await carregarDadosUsuario(user.uid);
