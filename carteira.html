@@ -358,6 +358,15 @@
     const investmentsTable = document.getElementById('investments-table');
 
     onAuthStateChanged(auth, async (user) => {
+       
+        const expiry = localStorage.getItem('session_expiry');
+        if (expiry && Date.now() > parseInt(expiry)) {
+            localStorage.removeItem('session_expiry');
+            await signOut(auth);
+            window.location.href = 'login.html';
+            return;
+        }
+        
         if (user) {
             try {
                 // Carregar Nome do Usuário no Topo
