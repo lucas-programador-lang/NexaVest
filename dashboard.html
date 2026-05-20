@@ -634,9 +634,10 @@
                     });
                 }
                 
-                // CORREÇÃO: Verificação de existência antes de acessar os dados do usuário
-                const userDocRef = doc(db, "users", user.uid);
-                const userDocSnap = await getDoc(userDocRef);
+                // CORREÇÃO: Buscando usuário pelo e-mail (evita erro de permissão por ID incorreto)
+                const qUser = query(collection(db, "users"), where("email", "==", user.email));
+                const querySnap = await getDocs(qUser);
+                const userDocSnap = !querySnap.empty ? querySnap.docs[0] : null;
 
                 const affInput = document.getElementById('affiliate-link-input');
                 if (affInput) affInput.value = `${window.location.origin}/register.html?ref=${user.uid}`;
@@ -644,7 +645,7 @@
                 const displayNameElement = document.getElementById('user-name-display');
                 let nomeUsuario = "Investidor";
 
-                if (userDocSnap.exists()) {
+                if (userDocSnap) {
                     const userData = userDocSnap.data();
                     currentBalance = userData.saldo || 0.00;
                     nomeUsuario = userData.nome || userData.Nome || userData.name || (user.email ? user.email.split('@')[0] : "Investidor");
@@ -722,10 +723,16 @@
                 }
 
                 try {
-                    const userDocRef = doc(db, "users", user.uid);
-                    await updateDoc(userDocRef, {
-                        saldo: increment(-amount)
-                    });
+                    // Nota: Aqui mantemos o setDoc com ID aleatório ou mantemos o fluxo de saque.
+                    // Para garantir que o updateDoc funcione, você pode precisar também buscar o ID do doc aqui
+                    const qUser = query(collection(db, "users"), where("email", "==", user.email));
+                    const snap = await getDocs(qUser);
+                    if (!snap.empty) {
+                        const userDocRef = doc(db, "users", snap.docs[0].id);
+                        await updateDoc(userDocRef, {
+                            saldo: increment(-amount)
+                        });
+                    }
 
                     const withdrawRef = doc(db, "saques_solicitados", `${user.uid}_${Date.now()}`);
                     await setDoc(withdrawRef, {
