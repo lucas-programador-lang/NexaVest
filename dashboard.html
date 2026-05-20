@@ -545,7 +545,20 @@
 <script type="module">
     import { auth, onAuthStateChanged, db, doc, getDoc, setDoc, updateDoc, increment } from "./firebase-config.js";
 
-   // EXPOR AS FUNÇÕES PARA O WINDOW DE FORMA DEFINITIVA
+   // 1. VERIFICAÇÃO DE SESSÃO 72H (Implementada)
+    const checkSession = () => {
+        const expiry = localStorage.getItem('session_expiry');
+        if (expiry && Date.now() > parseInt(expiry)) {
+            localStorage.removeItem('session_expiry');
+            signOut(auth).then(() => {
+                window.location.href = 'login.html';
+            });
+        }
+    };
+    checkSession();
+    
+    
+    // EXPOR AS FUNÇÕES PARA O WINDOW DE FORMA DEFINITIVA
     window.openModal = function(modalId) {
         const modal = document.getElementById(modalId);
         if (modal) {
