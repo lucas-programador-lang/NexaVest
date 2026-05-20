@@ -120,6 +120,24 @@
     import { auth, createUserWithEmailAndPassword, db, doc, setDoc, updateDoc, increment } from "./firebase-config.js";
     import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
+    // --- FUNÇÃO CORRIGIDA DENTRO DO MÓDULO ---
+    function showToast(message, type) {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+
+        const toast = document.createElement('div');
+        toast.className = `toast ${type === 'danger' ? 'danger' : 'info'} show`;
+        toast.innerHTML = `<span>${message}</span>`;
+        
+        container.appendChild(toast);
+
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 400);
+        }, 4000);
+    }
+    // ------------------------------------------
+
     const urlParams = new URLSearchParams(window.location.search);
     const indicadorRef = urlParams.get('ref') || null;
 
@@ -138,13 +156,10 @@
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            // --- INÍCIO DA SEGURANÇA: VALIDAÇÃO CAPTCHA ---
-            // Adicionado verificação de existência do grecaptcha
             if (typeof grecaptcha === 'undefined' || grecaptcha.getResponse().length === 0) {
                 showToast('Por favor, complete o desafio "Não sou robô".', 'danger');
                 return;
             }
-            // --- FIM DA SEGURANÇA ---
 
             let createdUser = null;
 
@@ -168,7 +183,6 @@
                     return;
                 }
 
-                // 1. CHECAGEM DE CPF ANTES DE CRIAR O AUTH:
                 const usersRef = collection(db, "users");
                 const cpfQuery = query(usersRef, where("cpf", "==", cpfClean));
                 const cpfQuerySnapshot = await getDocs(cpfQuery);
@@ -179,7 +193,6 @@
                     return;
                 }
 
-                // 2. RASTREAMENTO DO PADRINHO
                 let uidPadrinho = null;
                 if (indicadorRef) {
                     try {
@@ -200,13 +213,11 @@
                     }
                 }
 
-                // 3. Se o CPF está livre, cria o usuário no Auth
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 createdUser = userCredential.user;
                 
                 const novoCodigoAfiliado = gerarCodigoAfiliado();
                 
-                // 4. Gravação dos dados no Firestore
                 await setDoc(doc(db, "users", createdUser.uid), {
                     nome: fullname,
                     cpf: cpfClean,
@@ -222,9 +233,7 @@
                 if (uidPadrinho) {
                     try {
                         const padrinhoRef = doc(db, "users", uidPadrinho);
-                        await updateDoc(padrinhoRef, {
-                            afiliados_ativos: increment(1)
-                        });
+                        await updateDoc(padrinhoRef, { afiliados_ativos: increment(1) });
                     } catch (err) {
                         console.error("Erro ao incrementar contador de afiliados do padrinho:", err);
                     }
@@ -234,7 +243,6 @@
 
             } catch (error) {
                 console.error("Erro completo no processo de cadastro:", error);
-                
                 if (typeof grecaptcha !== 'undefined') grecaptcha.reset();
                 
                 if (createdUser && auth.currentUser) {
