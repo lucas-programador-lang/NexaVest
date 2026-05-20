@@ -476,7 +476,10 @@
                 }
 
                 const usersRef = collection(db, "users");
-                const qReferrals = query(usersRef, where("indicado_por", "==", user.uid));
+                const qReferrals = query(
+                    usersRef, 
+                    where("indicado_por", "in", [user.uid, userDocSnap.data().codigo_afiliado || ""])
+                    );
                 const referralsSnapshot = await getDocs(qReferrals);
 
                 if (!referralsSnapshot.empty) {
